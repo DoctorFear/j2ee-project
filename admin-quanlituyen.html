@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FUTA Dispatcher — Quản lý Tuyến & Giá vé Chặng (Full Interactive)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #f95721;
+      --primary-hover: #e04410;
+      --primary-light: #fff2ed;
+      --accent-green: #007646;
+      --green-light: #ecfdf5;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --bg-page: #f8fafc;
+      --card-bg: #ffffff;
+      --sidebar-bg: #0f172a;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-full: 9999px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-card: 0 8px 24px -4px rgba(15, 23, 42, 0.06);
+      --shadow-popup: 0 20px 40px rgba(15, 23, 42, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* 1. SIDEBAR */
+    .sidebar {
+      width: 260px;
+      background: var(--sidebar-bg);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      border-right: 1px solid #1e293b;
+    }
+    .sidebar-brand {
+      padding: 22px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    .brand-title h3 {
+      font-size: 16px;
+      font-weight: 800;
+      color: #f8fafc;
+      letter-spacing: -0.3px;
+    }
+    .brand-title span {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+    }
+    .nav-item a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 14px;
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      transition: all 0.15s;
+    }
+    .nav-item a:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+    }
+    .nav-item.active a {
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .sidebar-user {
+      padding: 16px 20px;
+      border-top: 1px solid #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .user-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #334155;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 14px;
+    }
+    .user-meta h4 {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #f1f5f9;
+    }
+    .user-meta span {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    /* 2. MAIN CONTAINER */
+    .main-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .top-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .header-left h1 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+    .header-left p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .route-selector-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .route-selector-box label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .select-route {
+      padding: 8px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-main);
+      background: #fff;
+      outline: none;
+      cursor: pointer;
+    }
+    .select-route:focus {
+      border-color: var(--primary);
+    }
+
+    .dashboard-body {
+      padding: 24px 32px 60px 32px;
+    }
+
+    /* STATS SUMMARY */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .stat-card span {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .stat-card h3 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-top: 4px;
+    }
+
+    /* TABS */
+    .tab-pills-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+    .tab-trigger {
+      background: transparent;
+      border: none;
+      padding: 9px 20px;
+      border-radius: var(--radius-full);
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s;
+    }
+    .tab-trigger.active {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    /* DATA PANELS */
+    .card-panel {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+    }
+    .panel-header h3 {
+      font-size: 15.5px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-action-primary {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s;
+    }
+    .btn-action-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .custom-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+    .custom-table th {
+      background: #f8fafc;
+      padding: 12px 18px;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+    }
+    .custom-table td {
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-main);
+      vertical-align: middle;
+    }
+    .custom-table tbody tr:hover {
+      background: #fdfaf9;
+    }
+
+    .table-input {
+      padding: 6px 10px;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+      width: 95px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .table-input:focus {
+      border-color: var(--primary);
+    }
+    .order-badge {
+      width: 26px;
+      height: 26px;
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .station-name-bold {
+      font-weight: 800;
+      color: var(--text-main);
+      display: block;
+    }
+    .station-address-sub {
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    .btn-icon {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 14px;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 4px;
+      transition: all 0.15s;
+    }
+    .btn-icon:hover {
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+    .btn-icon.delete:hover {
+      color: #dc2626;
+      background: #fef2f2;
+    }
+
+    /* MODAL POPUP THÊM TRẠM */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(2px);
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 460px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-popup);
+      padding: 22px;
+      animation: pop 0.2s ease;
+    }
+    @keyframes pop {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-card h3 {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .form-group {
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .form-group label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .form-control {
+      padding: 8px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13.5px;
+      outline: none;
+      font-weight: 600;
+    }
+    .form-control:focus {
+      border-color: var(--primary);
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .btn-cancel {
+      padding: 8px 16px;
+      background: #f1f5f9;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0f172a;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      font-size: 13.5px;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.2s;
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast i { color: #4ade80; }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon"><i class="fa-solid fa-bus"></i></div>
+      <div class="brand-title">
+        <h3>FUTA Admin</h3>
+        <span>Trung tâm điều hành</span>
+      </div>
+    </div>
+
+    <ul class="nav-list">
+      <li class="nav-item active"><a href="#"><i class="fa-solid fa-route"></i> Tuyến &amp; Bảng giá chặng</a></li>
+      <li class="nav-item"><a href="#"><i class="fa-solid fa-calendar-days"></i> Lịch chạy &amp; Phân tài xế</a></li>
+      <li class="nav-item"><a href="#"><i class="fa-solid fa-van-shuttle"></i> Quản lý Phương tiện</a></li>
+      <li class="nav-item"><a href="#"><i class="fa-solid fa-users-gear"></i> Tài khoản nội bộ</a></li>
+      <li class="nav-item"><a href="#"><i class="fa-solid fa-chart-line"></i> Báo cáo doanh thu</a></li>
+    </ul>
+
+    <div class="sidebar-user">
+      <div class="user-avatar">VT</div>
+      <div class="user-meta">
+        <h4>VĂN THUẬT</h4>
+        <span>Dispatcher / Điều hành</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA -->
+  <div class="main-wrapper">
+    <header class="top-header">
+      <div class="header-left">
+        <h1>Cấu hình Tuyến đường &amp; Giá vé chặng</h1>
+        <p>Quản lý chuỗi trạm dừng, offset thời gian di chuyển và ma trận giá vé con.</p>
+      </div>
+
+      <div class="route-selector-box">
+        <label>Chọn tuyến cấu hình:</label>
+        <select class="select-route" id="routeSelect" onchange="onSelectRouteChange()">
+          <option value="R01" selected>Tuyến 01: Bình Định (An Nhơn) ⇄ TP.HCM (BX Miền Tây)</option>
+          <option value="R02">Tuyến 02: Đà Nẵng (BX Trung Tâm) ⇄ TP.HCM (BX Miền Đông Mới)</option>
+        </select>
+      </div>
+    </header>
+
+    <div class="dashboard-body">
+
+      <!-- TỔNG QUAN STATS (CẬP NHẬT REALTIME QUA JS) -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span>Tổng số trạm dừng</span>
+          <h3 id="statTotalStops">7 Trạm</h3>
+        </div>
+        <div class="stat-card">
+          <span>Tổng cự ly toàn tuyến</span>
+          <h3 id="statTotalKm">650 Km</h3>
+        </div>
+        <div class="stat-card">
+          <span>Tổng thời gian hành trình</span>
+          <h3 id="statTotalTime">12 Giờ 20 Phút</h3>
+        </div>
+        <div class="stat-card">
+          <span>Số cặp chặng con sinh ra</span>
+          <h3 id="statTotalSegments" style="color: var(--primary);">21 Chặng con</h3>
+        </div>
+      </div>
+
+      <!-- TABS CHUYỂN ĐỔI -->
+      <div class="tab-pills-row">
+        <button class="tab-trigger active" id="tabStopsBtn" onclick="switchAdminTab('stops')">
+          <i class="fa-solid fa-list-ol"></i> 1. Cấu hình Trạm dừng &amp; Offset thời gian (route_stops)
+        </button>
+        <button class="tab-trigger" id="tabPricingBtn" onclick="switchAdminTab('pricing')">
+          <i class="fa-solid fa-tags"></i> 2. Thiết lập Giá vé theo chặng con (origin_stop → dest_stop)
+        </button>
+      </div>
+
+      <!-- TAB 1: DANH SÁCH TRẠM DỪNG -->
+      <div id="stopsPanel" class="card-panel">
+        <div class="panel-header">
+          <h3><i class="fa-solid fa-map-pin" style="color: var(--primary);"></i> Chuỗi trạm dừng dọc tuyến (Giờ xuất bến gốc: 17:30)</h3>
+          <button class="btn-action-primary" onclick="openAddStopModal()">
+            <i class="fa-solid fa-plus"></i> Thêm trạm đón/trả
+          </button>
+        </div>
+
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th style="width: 70px;">Thứ tự</th>
+              <th>Tên trạm dừng</th>
+              <th>Địa chỉ / Vị trí</th>
+              <th style="width: 140px;">Cự ly (Km)</th>
+              <th style="width: 160px;">Offset thời gian (Phút)</th>
+              <th style="width: 160px;">Giờ dự kiến đến</th>
+              <th style="width: 90px; text-align: right;">Xóa</th>
+            </tr>
+          </thead>
+          <tbody id="stopsTableBody">
+            <!-- Render qua Javascript -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- TAB 2: THIẾT LẬP GIÁ VÉ CHẶNG CON -->
+      <div id="pricingPanel" class="card-panel" style="display: none;">
+        <div class="panel-header">
+          <div>
+            <h3><i class="fa-solid fa-money-bill-transfer" style="color: var(--accent-green);"></i> Bảng giá vé theo từng cặp chặng con</h3>
+            <span style="font-size: 12px; color: var(--text-muted);">Giá vé được tính độc lập cho khách đặt giữa bất kỳ 2 điểm dừng nào dọc lộ trình.</span>
+          </div>
+          <button class="btn-action-primary" onclick="savePricingChanges()">
+            <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi giá
+          </button>
+        </div>
+
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>Điểm đón (origin_stop)</th>
+              <th style="width: 40px;"></th>
+              <th>Điểm trả (dest_stop)</th>
+              <th>Cự ly chặng</th>
+              <th>Thời gian dự kiến</th>
+              <th style="width: 180px;">Giá vé niêm yết (VNĐ)</th>
+              <th style="width: 120px; text-align: center;">Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody id="pricingTableBody">
+            <!-- Render qua Javascript -->
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL THÊM TRẠM DỪNG MỚI -->
+  <div class="modal-overlay" id="addStopModal">
+    <div class="modal-card">
+      <h3><i class="fa-solid fa-map-location-dot" style="color: var(--primary);"></i> Thêm trạm dừng mới</h3>
+      <div class="form-group">
+        <label>Tên trạm dừng</label>
+        <input type="text" class="form-control" id="newStopName" placeholder="Ví dụ: Bến xe Nha Trang">
+      </div>
+      <div class="form-group">
+        <label>Địa chỉ cụ thể</label>
+        <input type="text" class="form-control" id="newStopAddress" placeholder="Đường, Phường/Xã, Tỉnh...">
+      </div>
+      <div class="form-group">
+        <label>Cự ly tính từ điểm xuất phát (Km)</label>
+        <input type="number" class="form-control" id="newStopKm" value="200">
+      </div>
+      <div class="form-group">
+        <label>Offset thời gian di chuyển (Phút tính từ giờ xuất phát)</label>
+        <input type="number" class="form-control" id="newStopOffset" value="180">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeAddStopModal()">Hủy</button>
+        <button class="btn-action-primary" onclick="handleAddStopSubmit()">Thêm vào tuyến</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"><i class="fa-solid fa-circle-check"></i><span id="toastMsg">Thành công</span></div>
+
+  <script>
+    /* ---------------- DỮ LIỆU GIẢ LẬP ĐẦY ĐỦ ---------------- */
+    const routesData = {
+      R01: {
+        name: "Bình Định (An Nhơn) ⇄ TP.HCM (BX Miền Tây)",
+        startTime: "17:30",
+        baseHour: 17,
+        baseMin: 30,
+        stops: [
+          { id: 1, name: "Bến xe An Nhơn", address: "02 Nguyễn Văn Linh, Tx. An Nhơn, Bình Định", km: 0, offset: 0 },
+          { id: 2, name: "207 Tây Sơn (Quy Nhơn)", address: "207 Tây Sơn, P. Quang Trung, TP. Quy Nhơn", km: 25, offset: 40 },
+          { id: 3, name: "Chí Thạnh (Tuy An)", address: "437 Đ. QL1A Cũ, Chí Thạnh, Phú Yên", km: 65, offset: 75 },
+          { id: 4, name: "Bến xe Sông Cầu", address: "QL1A, Tx. Sông Cầu, Phú Yên", km: 90, offset: 95 },
+          { id: 5, name: "Bến xe Nam Tuy Hòa", address: "507 Nguyễn Văn Linh, Tuy Hòa, Phú Yên", km: 140, offset: 150 },
+          { id: 6, name: "Ngã tư Bình Phước", address: "QL1A, P. Hiệp Bình Phước, TP. Thủ Đức, TP.HCM", km: 635, offset: 675 },
+          { id: 7, name: "Bến xe Miền Tây", address: "395 Kinh Dương Vương, Bình Tân, TP.HCM", km: 650, offset: 740 }
+        ],
+        prices: {
+          "1-7": 390000,
+          "1-6": 380000,
+          "1-5": 140000,
+          "2-7": 380000,
+          "4-7": 360000,
+          "5-7": 340000
+        }
+      },
+      R02: {
+        name: "Đà Nẵng (BX Trung Tâm) ⇄ TP.HCM (BX Miền Đông Mới)",
+        startTime: "09:45",
+        baseHour: 9,
+        baseMin: 45,
+        stops: [
+          { id: 1, name: "Bến xe Trung Tâm Đà Nẵng", address: "Tôn Đức Thắng, Liên Chiểu, Đà Nẵng", km: 0, offset: 0 },
+          { id: 2, name: "Bến xe Quảng Ngãi", address: "02 Trần Khánh Dư, Quảng Ngãi", km: 130, offset: 150 },
+          { id: 3, name: "Bến xe Quy Nhơn", address: "71 Tây Sơn, Quy Nhơn", km: 300, offset: 360 },
+          { id: 4, name: "Bến xe Miền Đông Mới", address: "501 Hoàng Hữu Nam, Thủ Đức, TP.HCM", km: 927, offset: 1215 }
+        ],
+        prices: {
+          "1-4": 560000,
+          "1-2": 180000,
+          "2-4": 420000,
+          "3-4": 380000
+        }
+      }
+    };
+
+    let activeRouteId = "R01";
+
+    /* TÍNH TOÁN GIỜ DỰ KIẾN (BASE TIME + OFFSET MINUTES) */
+    function calcEstimatedTime(baseH, baseM, offsetM) {
+      if (offsetM === 0) return `${pad(baseH)}:${pad(baseM)} (Xuất bến)`;
+      let totalMinutes = baseH * 60 + baseM + offsetM;
+      let days = Math.floor(totalMinutes / (24 * 60));
+      let remainM = totalMinutes % (24 * 60);
+      let h = Math.floor(remainM / 60);
+      let m = remainM % 60;
+      let dayText = days > 0 ? ` (+${days}N)` : "";
+      return `<b>${pad(h)}:${pad(m)}</b>${dayText}`;
+    }
+
+    function pad(n) { return (n < 10 ? "0" : "") + n; }
+
+    /* RENDER BẢNG TRẠM DỪNG (TAB 1) */
+    function renderStopsTable() {
+      const route = routesData[activeRouteId];
+      const tbody = document.getElementById("stopsTableBody");
+      let html = "";
+
+      route.stops.forEach((s, idx) => {
+        const estTime = calcEstimatedTime(route.baseHour, route.baseMin, s.offset);
+        const isFirst = idx === 0;
+
+        html += `
+          <tr>
+            <td><span class="order-badge">${idx + 1}</span></td>
+            <td><span class="station-name-bold">${s.name}</span></td>
+            <td><span class="station-address-sub">${s.address}</span></td>
+            <td>${s.km} km</td>
+            <td>
+              <input type="number" 
+                     class="table-input" 
+                     value="${s.offset}" 
+                     ${isFirst ? 'disabled' : ''} 
+                     onchange="updateStopOffset(${idx}, this.value)">
+            </td>
+            <td>${estTime}</td>
+            <td style="text-align: right;">
+              ${!isFirst ? `<button class="btn-icon delete" title="Xóa trạm" onclick="deleteStop(${idx})"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+            </td>
+          </tr>
+        `;
+      });
+
+      tbody.innerHTML = html;
+      updateStatsUI();
+    }
+
+    /* RENDER BẢNG GIÁ VÉ CHẶNG CON (TAB 2) */
+    function renderPricingTable() {
+      const route = routesData[activeRouteId];
+      const tbody = document.getElementById("pricingTableBody");
+      let html = "";
+
+      // Sinh ma trận cặp chặng con (origin -> dest)
+      for (let i = 0; i < route.stops.length; i++) {
+        for (let j = i + 1; j < route.stops.length; j++) {
+          const origin = route.stops[i];
+          const dest = route.stops[j];
+          const pairKey = `${origin.id}-${dest.id}`;
+          const distance = dest.km - origin.km;
+          const durationMin = dest.offset - origin.offset;
+          const durationHours = Math.floor(durationMin / 60);
+          const durationRemainMin = durationMin % 60;
+          const durationStr = `${durationHours}h ${durationRemainMin}m`;
+
+          // Giá mặc định tính theo cự ly (~600đ/km) nếu chưa gán
+          const currentPrice = route.prices[pairKey] || Math.round((distance * 600) / 10000) * 10000;
+
+          html += `
+            <tr>
+              <td><b>${origin.name}</b></td>
+              <td style="color: var(--primary); text-align: center;"><i class="fa-solid fa-arrow-right"></i></td>
+              <td><b>${dest.name}</b></td>
+              <td>${distance} Km</td>
+              <td>${durationStr}</td>
+              <td>
+                <input type="number" 
+                       class="table-input" 
+                       style="width: 140px; color: var(--primary);" 
+                       value="${currentPrice}" 
+                       data-pair="${pairKey}" 
+                       onchange="updatePairPrice('${pairKey}', this.value)">
+              </td>
+              <td style="text-align: center;">
+                <span style="color: #16a34a; font-weight: 700; font-size: 12px;"><i class="fa-solid fa-circle-check"></i> Đang bán</span>
+              </td>
+            </tr>
+          `;
+        }
+      }
+
+      tbody.innerHTML = html;
+    }
+
+    /* CẬP NHẬT THỐNG KÊ REALTIME */
+    function updateStatsUI() {
+      const route = routesData[activeRouteId];
+      const totalStops = route.stops.length;
+      const lastStop = route.stops[totalStops - 1];
+
+      document.getElementById("statTotalStops").textContent = `${totalStops} Trạm`;
+      document.getElementById("statTotalKm").textContent = `${lastStop.km} Km`;
+
+      const h = Math.floor(lastStop.offset / 60);
+      const m = lastStop.offset % 60;
+      document.getElementById("statTotalTime").textContent = `${h} Giờ ${m} Phút`;
+
+      // Công thức tổ hợp n*(n-1)/2
+      const segmentsCount = (totalStops * (totalStops - 1)) / 2;
+      document.getElementById("statTotalSegments").textContent = `${segmentsCount} Chặng con`;
+    }
+
+    /* XỬ LÝ SỰ KIỆN */
+    function updateStopOffset(index, val) {
+      const route = routesData[activeRouteId];
+      route.stops[index].offset = parseInt(val) || 0;
+      renderStopsTable();
+      renderPricingTable();
+      showToast(`Đã cập nhật offset trạm ${route.stops[index].name} thành ${val} phút`);
+    }
+
+    function deleteStop(index) {
+      const route = routesData[activeRouteId];
+      const name = route.stops[index].name;
+      if (confirm(`Bạn có chắc muốn xóa trạm "${name}" khỏi lộ trình không?`)) {
+        route.stops.splice(index, 1);
+        renderStopsTable();
+        renderPricingTable();
+        showToast(`Đã xóa trạm "${name}" khỏi tuyến`);
+      }
+    }
+
+    function updatePairPrice(pairKey, newPrice) {
+      routesData[activeRouteId].prices[pairKey] = parseInt(newPrice) || 0;
+    }
+
+    function savePricingChanges() {
+      showToast("Đã lưu toàn bộ thay đổi bảng giá vé vào Database!");
+    }
+
+    function onSelectRouteChange() {
+      activeRouteId = document.getElementById("routeSelect").value;
+      renderStopsTable();
+      renderPricingTable();
+      showToast(`Đã tải dữ liệu ${routesData[activeRouteId].name}`);
+    }
+
+    /* MODAL THÊM TRẠM */
+    function openAddStopModal() {
+      document.getElementById("addStopModal").classList.add("active");
+    }
+    function closeAddStopModal() {
+      document.getElementById("addStopModal").classList.remove("active");
+    }
+    function handleAddStopSubmit() {
+      const name = document.getElementById("newStopName").value.trim();
+      const address = document.getElementById("newStopAddress").value.trim();
+      const km = parseInt(document.getElementById("newStopKm").value) || 0;
+      const offset = parseInt(document.getElementById("newStopOffset").value) || 0;
+
+      if (!name || !address) {
+        alert("Vui lòng nhập tên trạm và địa chỉ!");
+        return;
+      }
+
+      const route = routesData[activeRouteId];
+      const newId = Date.now();
+      route.stops.push({ id: newId, name, address, km, offset });
+
+      // Sắp xếp lại theo khoảng cách / offset
+      route.stops.sort((a, b) => a.km - b.km);
+
+      closeAddStopModal();
+      renderStopsTable();
+      renderPricingTable();
+      showToast(`Đã thêm trạm "${name}" vào tuyến`);
+
+      // Reset form
+      document.getElementById("newStopName").value = "";
+      document.getElementById("newStopAddress").value = "";
+    }
+
+    /* TAB SWITCHER */
+    function switchAdminTab(tab) {
+      const stopsBtn = document.getElementById("tabStopsBtn");
+      const pricingBtn = document.getElementById("tabPricingBtn");
+      const stopsPanel = document.getElementById("stopsPanel");
+      const pricingPanel = document.getElementById("pricingPanel");
+
+      if (tab === "stops") {
+        stopsBtn.classList.add("active");
+        pricingBtn.classList.remove("active");
+        stopsPanel.style.display = "block";
+        pricingPanel.style.display = "none";
+      } else {
+        pricingBtn.classList.add("active");
+        stopsBtn.classList.remove("active");
+        pricingPanel.style.display = "block";
+        stopsPanel.style.display = "none";
+      }
+    }
+
+    let toastTimer;
+    function showToast(msg) {
+      const toast = document.getElementById("toast");
+      document.getElementById("toastMsg").textContent = msg;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 2400);
+    }
+
+    // Khởi tạo chạy ban đầu
+    renderStopsTable();
+    renderPricingTable();
+  </script>
+</body>
+</html>

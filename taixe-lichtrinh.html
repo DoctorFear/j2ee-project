@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Tài xế FUTA — Lịch trình được phân công</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #f95721;
+      --primary-dark: #c83607;
+      --primary-light: #fff2ed;
+      --accent-green: #007646;
+      --green-light: #ecfdf5;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --bg-page: #f1f5f9;
+      --card-bg: #ffffff;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-full: 9999px;
+      --shadow-card: 0 4px 16px rgba(15, 23, 42, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding-bottom: 80px;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* KHUNG GIAO DIỆN CHUẨN APP DI ĐỘNG */
+    .app-container {
+      width: 100%;
+      max-width: 500px;
+      min-height: 100vh;
+      background: #ffffff;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+      position: relative;
+    }
+
+    /* 1. APP HEADER */
+    .driver-header {
+      background: linear-gradient(135deg, var(--primary), #fb7040);
+      color: #ffffff;
+      padding: 16px 20px 20px 20px;
+      border-bottom-left-radius: var(--radius-lg);
+      border-bottom-right-radius: var(--radius-lg);
+      box-shadow: 0 6px 18px rgba(249, 87, 33, 0.25);
+    }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .driver-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .driver-avatar {
+      width: 44px;
+      height: 44px;
+      background: #ffffff;
+      color: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 800;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+    .driver-info h2 {
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .driver-info span {
+      font-size: 12px;
+      opacity: 0.9;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .btn-notification {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: #fff;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    /* THANH TRƯỢT NGÀY (DATE STRIP) */
+    .date-strip {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 4px 0;
+      scrollbar-width: none;
+    }
+    .date-strip::-webkit-scrollbar { display: none; }
+    .date-pill {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 8px 16px;
+      border-radius: var(--radius-full);
+      font-size: 12.5px;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .date-pill.active {
+      background: #ffffff;
+      color: var(--primary);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+    }
+
+    /* 2. NỘI DUNG DANH SÁCH CHUYẾN */
+    .content-area {
+      padding: 20px 16px;
+    }
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .section-head h3 {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+    .trip-counter-badge {
+      background: var(--green-light);
+      color: var(--accent-green);
+      font-size: 12px;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+    }
+
+    /* CARD CHUYẾN XE */
+    .trip-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      border: 1.5px solid var(--border);
+      padding: 16px 18px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      overflow: hidden;
+    }
+    .trip-card.active-run {
+      border-color: var(--primary);
+      box-shadow: 0 6px 20px rgba(249, 87, 33, 0.12);
+    }
+    .status-strip-tag {
+      position: absolute;
+      top: 0;
+      right: 0;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-bottom-left-radius: 10px;
+    }
+    .status-strip-tag.ready {
+      background: #eff6ff;
+      color: #2563eb;
+    }
+    .status-strip-tag.running {
+      background: #fef2f2;
+      color: #dc2626;
+    }
+    .status-strip-tag.done {
+      background: #f1f5f9;
+      color: #64748b;
+    }
+
+    /* Chi tiết phương tiện */
+    .vehicle-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .plate-badge {
+      background: #fef08a;
+      color: #854d0e;
+      border: 1.5px solid #eab308;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+    }
+    .bus-type-text {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    /* Điểm xuất phát & Đích đến */
+    .trip-timeline-summary {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+    }
+    .time-station-col {
+      display: flex;
+      flex-direction: column;
+    }
+    .ts-time {
+      font-size: 19px;
+      font-weight: 900;
+      color: var(--text-main);
+    }
+    .ts-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      max-width: 110px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .timeline-arrow-mid {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      color: var(--primary);
+    }
+    .timeline-arrow-mid span {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    /* Thống kê khách & nút hành động */
+    .passenger-progress-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      font-size: 12.5px;
+    }
+    .p-count strong {
+      color: var(--accent-green);
+      font-size: 14px;
+    }
+
+    .card-actions {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 10px;
+    }
+    .btn-driver {
+      border: none;
+      padding: 10px 14px;
+      border-radius: var(--radius-full);
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .btn-driver.btn-outline {
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      color: var(--text-main);
+    }
+    .btn-driver.btn-outline:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .btn-driver.btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(249, 87, 33, 0.3);
+    }
+
+    /* 3. MODAL LỘ TRÌNH CHI TIẾT CÁC TRẠM DỪNG (STATION TIMELINE) */
+    .stops-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      z-index: 1000;
+      align-items: flex-end;
+      backdrop-filter: blur(2px);
+    }
+    .stops-modal-overlay.active {
+      display: flex;
+    }
+    .stops-modal-content {
+      background: #ffffff;
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+      border-top-left-radius: var(--radius-lg);
+      border-top-right-radius: var(--radius-lg);
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .modal-head {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-head h3 {
+      font-size: 16px;
+      font-weight: 800;
+    }
+    .modal-body-scroll {
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    /* Timeline dừng đón */
+    .driver-stepper {
+      position: relative;
+      border-left: 2px dashed #cbd5e1;
+      margin-left: 55px;
+      padding-left: 20px;
+    }
+    .stop-node {
+      position: relative;
+      margin-bottom: 22px;
+    }
+    .stop-node:last-child {
+      margin-bottom: 0;
+    }
+    .sn-time {
+      position: absolute;
+      left: -75px;
+      top: 0;
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--text-main);
+      width: 48px;
+      text-align: right;
+    }
+    .sn-dot {
+      position: absolute;
+      left: -26px;
+      top: 4px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 3px solid var(--primary);
+    }
+    .sn-dot.passed {
+      background: #94a3b8;
+      border-color: #cbd5e1;
+    }
+    .sn-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+    .sn-address {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .sn-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-top: 4px;
+    }
+    .sn-badge.pickup {
+      background: #ecfdf5;
+      color: #059669;
+    }
+    .sn-badge.drop {
+      background: #eff6ff;
+      color: #2563eb;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- KHUNG DI ĐỘNG -->
+  <div class="app-container">
+
+    <!-- 1. HEADER TÀI XẾ -->
+    <header class="driver-header">
+      <div class="top-bar">
+        <div class="driver-profile">
+          <div class="driver-avatar">VS</div>
+          <div class="driver-info">
+            <h2>Vũ Sang</h2>
+            <span><i class="fa-solid fa-id-card-clip"></i> MSNV: TX-5829 • Tài xế chính</span>
+          </div>
+        </div>
+        <button class="btn-notification" title="Thông báo">
+          <i class="fa-regular fa-bell"></i>
+        </button>
+      </div>
+
+      <!-- THANH TRƯỢT NGÀY -->
+      <div class="date-strip">
+        <div class="date-pill active" onclick="selectDate(this)">Hôm nay (22/08)</div>
+        <div class="date-pill" onclick="selectDate(this)">Ngày mai (23/08)</div>
+        <div class="date-pill" onclick="selectDate(this)">24/08/2026</div>
+        <div class="date-pill" onclick="selectDate(this)">25/08/2026</div>
+      </div>
+    </header>
+
+    <!-- 2. NỘI DUNG LỊCH TRÌNH -->
+    <main class="content-area">
+      <div class="section-head">
+        <h3>Chuyến xe được phân công</h3>
+        <span class="trip-counter-badge">2 Chuyến hôm nay</span>
+      </div>
+
+      <!-- CHUYẾN 1: AN NHƠN -> MIỀN TÂY (CHUYẾN CHÍNH SẮP CHẠY) -->
+      <div class="trip-card active-run">
+        <span class="status-strip-tag ready">Sắp xuất bến</span>
+
+        <div class="vehicle-row">
+          <span class="plate-badge">77B - 019.28</span>
+          <span class="bus-type-text">Limousine 34 Phòng VIP</span>
+        </div>
+
+        <div class="trip-timeline-summary">
+          <div class="time-station-col">
+            <span class="ts-time">17:30</span>
+            <span class="ts-name" title="An Nhơn">TX. An Nhơn</span>
+          </div>
+
+          <div class="timeline-arrow-mid">
+            <span>12h 20m</span>
+            <i class="fa-solid fa-arrow-right-long"></i>
+            <span>650 Km</span>
+          </div>
+
+          <div class="time-station-col" style="text-align: right;">
+            <span class="ts-time">05:50</span>
+            <span class="ts-name" title="BX Miền Tây">BX Miền Tây</span>
+          </div>
+        </div>
+
+        <div class="passenger-progress-row">
+          <div class="p-count"><i class="fa-solid fa-users" style="color: var(--primary);"></i> Hành khách: <strong>28/34</strong> đã đặt</div>
+          <div style="font-weight: 700; color: var(--accent-green);"><i class="fa-solid fa-qrcode"></i> Đã soát: 0/28</div>
+        </div>
+
+        <div class="card-actions">
+          <button class="btn-driver btn-outline" onclick="openRouteModal('trip1')">
+            <i class="fa-solid fa-map-location-dot"></i> Lộ trình trạm
+          </button>
+          <button class="btn-driver btn-primary" onclick="alert('Chuyển sang màn hình Quét mã QR & Soát vé hành khách')">
+            <i class="fa-solid fa-qrcode"></i> Soát vé ngay
+          </button>
+        </div>
+      </div>
+
+      <!-- CHUYẾN 2: MIỀN TÂY -> AN NHƠN (CHUYẾN SÁNG ĐÃ XONG HOẶC CA TIẾP THEO) -->
+      <div class="trip-card">
+        <span class="status-strip-tag done">Đã hoàn thành</span>
+
+        <div class="vehicle-row">
+          <span class="plate-badge">77B - 022.68</span>
+          <span class="bus-type-text">Limousine 34 Phòng VIP</span>
+        </div>
+
+        <div class="trip-timeline-summary">
+          <div class="time-station-col">
+            <span class="ts-time">05:30</span>
+            <span class="ts-name" title="BX Miền Tây">BX Miền Tây</span>
+          </div>
+
+          <div class="timeline-arrow-mid">
+            <span>12h 15m</span>
+            <i class="fa-solid fa-arrow-right-long"></i>
+            <span>650 Km</span>
+          </div>
+
+          <div class="time-station-col" style="text-align: right;">
+            <span class="ts-time">17:45</span>
+            <span class="ts-name" title="An Nhơn">TX. An Nhơn</span>
+          </div>
+        </div>
+
+        <div class="passenger-progress-row">
+          <div class="p-count"><i class="fa-solid fa-users"></i> Hành khách: <strong>34/34</strong></div>
+          <div style="font-weight: 700; color: var(--text-muted);"><i class="fa-solid fa-circle-check"></i> Đã trả đủ khách</div>
+        </div>
+
+        <div class="card-actions">
+          <button class="btn-driver btn-outline" onclick="openRouteModal('trip2')" style="grid-column: span 2;">
+            <i class="fa-solid fa-clock-rotate-left"></i> Xem lại nhật ký chuyến
+          </button>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- 3. MODAL POPUP: CHI TIẾT LỘ TRÌNH CÁC TRẠM DỪNG DỌC ĐƯỜNG -->
+    <div class="stops-modal-overlay" id="routeModal" onclick="closeRouteModal(event)">
+      <div class="stops-modal-content" onclick="event.stopPropagation()">
+        <div class="modal-head">
+          <div>
+            <h3>Lộ trình đón/trả dọc đường</h3>
+            <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Xe 77B-019.28 • Xuất bến 17:30</span>
+          </div>
+          <button onclick="closeRouteModal()" style="background:none; border:none; font-size: 18px; cursor: pointer; color: var(--text-muted);">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="modal-body-scroll">
+          <div class="driver-stepper">
+            
+            <div class="stop-node">
+              <div class="sn-time">17:30</div>
+              <div class="sn-dot"></div>
+              <div class="sn-title">Bến xe An Nhơn (Bến xuất phát)</div>
+              <div class="sn-address">02 Nguyễn Văn Linh, Tx. An Nhơn, Bình Định</div>
+              <span class="sn-badge pickup"><i class="fa-solid fa-arrow-up"></i> Đón 18 khách</span>
+            </div>
+
+            <div class="stop-node">
+              <div class="sn-time">18:10</div>
+              <div class="sn-dot"></div>
+              <div class="sn-title">207 Tây Sơn (TP. Quy Nhơn)</div>
+              <div class="sn-address">207 Tây Sơn, P. Quang Trung, Quy Nhơn</div>
+              <span class="sn-badge pickup"><i class="fa-solid fa-arrow-up"></i> Đón 6 khách</span>
+            </div>
+
+            <div class="stop-node">
+              <div class="sn-time">19:05</div>
+              <div class="sn-dot"></div>
+              <div class="sn-title">Bến xe Sông Cầu (Phú Yên)</div>
+              <div class="sn-address">QL1A, Tx. Sông Cầu, Phú Yên</div>
+              <span class="sn-badge pickup"><i class="fa-solid fa-arrow-up"></i> Đón 4 khách</span>
+            </div>
+
+            <div class="stop-node">
+              <div class="sn-time">23:45</div>
+              <div class="sn-dot"></div>
+              <div class="sn-title">Trạm dừng chân Ninh Hòa</div>
+              <div class="sn-address">Khánh Hòa (Nghỉ ngơi / ăn tối 30 phút)</div>
+            </div>
+
+            <div class="stop-node">
+              <div class="sn-time">04:45</div>
+              <div class="sn-dot"></div>
+              <div class="sn-title">Ngã tư Bình Phước (TP.HCM)</div>
+              <div class="sn-address">QL1A, P. Hiệp Bình Phước, TP. Thủ Đức</div>
+              <span class="sn-badge drop"><i class="fa-solid fa-arrow-down"></i> Trả 8 khách</span>
+            </div>
+
+            <div class="stop-node">
+              <div class="sn-time">05:15</div>
+              <div class="sn-dot"></div>
+              <div class="sn-title">Bến xe An Sương (TP.HCM)</div>
+              <div class="sn-address">QL22, Bà Điểm, Hóc Môn</div>
+              <span class="sn-badge drop"><i class="fa-solid fa-arrow-down"></i> Trả 10 khách</span>
+            </div>
+
+            <div class="stop-node">
+              <div class="sn-time">05:50</div>
+              <div class="sn-dot"></div>
+              <div class="sn-title">Bến xe Miền Tây (Bến cuối)</div>
+              <div class="sn-address">395 Kinh Dương Vương, P. An Lạc, Bình Tân</div>
+              <span class="sn-badge drop"><i class="fa-solid fa-arrow-down"></i> Trả 10 khách còn lại</span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function selectDate(element) {
+      document.querySelectorAll('.date-pill').forEach(el => el.classList.remove('active'));
+      element.classList.add('active');
+    }
+
+    function openRouteModal(tripId) {
+      document.getElementById('routeModal').classList.add('active');
+    }
+
+    function closeRouteModal(event) {
+      if (event && event.target !== event.currentTarget && event.type === 'click') return;
+      document.getElementById('routeModal').classList.remove('active');
+    }
+  </script>
+</body>
+</html>

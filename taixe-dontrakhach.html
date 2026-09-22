@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Tài xế FUTA — Danh sách đón trả khách</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #f95721;
+      --primary-dark: #c83607;
+      --primary-light: #fff2ed;
+      --accent-green: #007646;
+      --green-light: #ecfdf5;
+      --blue-light: #eff6ff;
+      --blue-text: #2563eb;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --bg-page: #f1f5f9;
+      --card-bg: #ffffff;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-full: 9999px;
+      --shadow-card: 0 4px 14px rgba(15, 23, 42, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding-bottom: 70px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 500px;
+      min-height: 100vh;
+      background: #ffffff;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+      position: relative;
+    }
+
+    /* 1. HEADER CHUYẾN XE */
+    .manifest-header {
+      background: linear-gradient(135deg, var(--primary), #fb7040);
+      color: #ffffff;
+      padding: 16px 20px 18px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 4px 14px rgba(249, 87, 33, 0.25);
+    }
+    .nav-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .back-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: #fff;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 15px;
+    }
+    .trip-badge-info {
+      font-size: 13px;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+    }
+    .manifest-header h2 {
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 2px;
+    }
+    .manifest-sub {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    /* 2. THANH TÌM KIẾM & BỘ LỌC */
+    .filter-bar {
+      padding: 14px 16px 10px 16px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+    }
+    .search-input-wrap {
+      position: relative;
+      margin-bottom: 12px;
+    }
+    .search-input-wrap i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    .search-input {
+      width: 100%;
+      padding: 9px 12px 9px 34px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      outline: none;
+    }
+    .search-input:focus {
+      border-color: var(--primary);
+    }
+
+    .filter-pills {
+      display: flex;
+      gap: 8px;
+    }
+    .f-pill {
+      flex: 1;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      padding: 6px 0;
+      text-align: center;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .f-pill.active {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* 3. DANH SÁCH GOM NHÓM THEO TRẠM */
+    .manifest-content {
+      padding: 16px;
+    }
+    .station-group {
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+    }
+
+    /* Tiêu đề trạm dừng */
+    .station-group-header {
+      padding: 12px 16px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .sg-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .station-type-tag {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+    .station-type-tag.pickup {
+      background: var(--green-light);
+      color: var(--accent-green);
+    }
+    .station-type-tag.dropoff {
+      background: var(--blue-light);
+      color: var(--blue-text);
+    }
+    .sg-title h4 {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+    .sg-title span {
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+    .sg-count-badge {
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      background: #ffffff;
+      border: 1px solid var(--border);
+    }
+
+    /* Danh sách khách trong trạm */
+    .passenger-list {
+      padding: 8px 14px;
+    }
+    .passenger-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px dashed var(--border);
+    }
+    .passenger-card:last-child {
+      border-bottom: none;
+    }
+    .p-main-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .seat-badge {
+      width: 38px;
+      height: 38px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1.5px solid var(--primary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+    .p-details h5 {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ticket-code-sub {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .p-status-text {
+      font-size: 11px;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+    .p-status-text.waiting { color: #d97706; }
+    .p-status-text.checked { color: #059669; }
+
+    /* Nút gọi điện nhanh & Soát vé */
+    .p-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-call {
+      width: 36px;
+      height: 36px;
+      background: #22c55e;
+      color: #ffffff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      font-size: 14px;
+      box-shadow: 0 2px 8px rgba(34, 197, 94, 0.35);
+      transition: transform 0.15s;
+    }
+    .btn-call:active {
+      transform: scale(0.92);
+    }
+    .btn-check-toggle {
+      border: 1.5px solid var(--border);
+      background: #f8fafc;
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+    .btn-check-toggle.checked {
+      background: var(--green-light);
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- 1. HEADER CHUYẾN XE -->
+    <header class="manifest-header">
+      <div class="nav-top">
+        <button class="back-btn" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+        <span class="trip-badge-info"><i class="fa-solid fa-bus"></i> 77B-019.28</span>
+      </div>
+      <h2>Danh sách đón / trả khách</h2>
+      <div class="manifest-sub">Tuyến An Nhơn → BX Miền Tây • Xuất bến: 17:30 Hôm nay</div>
+    </header>
+
+    <!-- 2. BỘ LỌC & TÌM KIẾM NHANH -->
+    <div class="filter-bar">
+      <div class="search-input-wrap">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" class="search-input" id="searchBox" placeholder="Tìm tên khách, số ghế (B11), số điện thoại..." oninput="searchPassengers()">
+      </div>
+      <div class="filter-pills">
+        <div class="f-pill active" onclick="filterType('ALL', this)">Tất cả (28)</div>
+        <div class="f-pill" onclick="filterType('PICKUP', this)">Điểm đón (18)</div>
+        <div class="f-pill" onclick="filterType('DROPOFF', this)">Điểm trả (10)</div>
+      </div>
+    </div>
+
+    <!-- 3. DANH SÁCH THEO TRẠM -->
+    <main class="manifest-content">
+
+      <!-- TRẠM 1: ĐÓN TẠI BẾN XE AN NHƠN -->
+      <div class="station-group" data-type="PICKUP">
+        <div class="station-group-header">
+          <div class="sg-left">
+            <div class="station-type-tag pickup"><i class="fa-solid fa-arrow-up"></i></div>
+            <div class="sg-title">
+              <h4>BX. An Nhơn (Bến khởi hành)</h4>
+              <span>Dự kiến: 17:30 • 02 Nguyễn Văn Linh</span>
+            </div>
+          </div>
+          <span class="sg-count-badge">2 khách</span>
+        </div>
+
+        <div class="passenger-list">
+          <!-- Khách 1: Hà Thái Sơn -->
+          <div class="passenger-card" data-search="hà thái sơn b11 0862860692 p8tpy4gs5">
+            <div class="p-main-info">
+              <div class="seat-badge">B11</div>
+              <div class="p-details">
+                <h5>Hà Thái Sơn</h5>
+                <span class="ticket-code-sub">Vé: P8TPY4GS5 • SĐT: 0862 860 692</span>
+                <div class="p-status-text waiting" id="status-B11">• Chờ lên xe</div>
+              </div>
+            </div>
+            <div class="p-actions">
+              <!-- Nút gọi nhanh tel: -->
+              <a href="tel:0862860692" class="btn-call" title="Gọi khách hẹn giờ đón">
+                <i class="fa-solid fa-phone"></i>
+              </a>
+              <button class="btn-check-toggle" onclick="toggleCheckIn('B11', this)">Soát vé</button>
+            </div>
+          </div>
+
+          <!-- Khách 2: Trần Văn Nam -->
+          <div class="passenger-card" data-search="trần văn nam a03 0912345678">
+            <div class="p-main-info">
+              <div class="seat-badge">A03</div>
+              <div class="p-details">
+                <h5>Trần Văn Nam</h5>
+                <span class="ticket-code-sub">Vé: P8TT4891A • SĐT: 0912 345 678</span>
+                <div class="p-status-text checked">• Đã lên xe</div>
+              </div>
+            </div>
+            <div class="p-actions">
+              <a href="tel:0912345678" class="btn-call">
+                <i class="fa-solid fa-phone"></i>
+              </a>
+              <button class="btn-check-toggle checked">Đã soát</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRẠM 2: ĐÓN TẠI 207 TÂY SƠN (QUY NHƠN) -->
+      <div class="station-group" data-type="PICKUP">
+        <div class="station-group-header">
+          <div class="sg-left">
+            <div class="station-type-tag pickup"><i class="fa-solid fa-arrow-up"></i></div>
+            <div class="sg-title">
+              <h4>207 Tây Sơn (TP. Quy Nhơn)</h4>
+              <span>Dự kiến: 18:10 • Văn phòng đón</span>
+            </div>
+          </div>
+          <span class="sg-count-badge">1 khách</span>
+        </div>
+
+        <div class="passenger-list">
+          <div class="passenger-card" data-search="lê thị mai b05 0935112233">
+            <div class="p-main-info">
+              <div class="seat-badge">B05</div>
+              <div class="p-details">
+                <h5>Lê Thị Mai</h5>
+                <span class="ticket-code-sub">Vé: P8TM5512B • SĐT: 0935 112 233</span>
+                <div class="p-status-text waiting" id="status-B05">• Chờ đón tại trạm</div>
+              </div>
+            </div>
+            <div class="p-actions">
+              <a href="tel:0935112233" class="btn-call">
+                <i class="fa-solid fa-phone"></i>
+              </a>
+              <button class="btn-check-toggle" onclick="toggleCheckIn('B05', this)">Soát vé</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRẠM 3: TRẢ KHÁCH TẠI NGÃ TƯ BÌNH PHƯỚC (TP.HCM) -->
+      <div class="station-group" data-type="DROPOFF">
+        <div class="station-group-header">
+          <div class="sg-left">
+            <div class="station-type-tag dropoff"><i class="fa-solid fa-arrow-down"></i></div>
+            <div class="sg-title">
+              <h4>Ngã tư Bình Phước (QL1A)</h4>
+              <span>Dự kiến: 04:45 sáng mai • Điểm trả dọc đường</span>
+            </div>
+          </div>
+          <span class="sg-count-badge">1 khách</span>
+        </div>
+
+        <div class="passenger-list">
+          <div class="passenger-card" data-search="nguyễn hoàng đức a09 0988776655">
+            <div class="p-main-info">
+              <div class="seat-badge">A09</div>
+              <div class="p-details">
+                <h5>Nguyễn Hoàng Đức</h5>
+                <span class="ticket-code-sub">Vé: P8TX9921C • SĐT: 0988 776 655</span>
+                <div class="p-status-text" style="color: var(--blue-text);">• Xuống tại Bình Phước</div>
+              </div>
+            </div>
+            <div class="p-actions">
+              <a href="tel:0988776655" class="btn-call" title="Gọi khách trước khi tới điểm trả">
+                <i class="fa-solid fa-phone"></i>
+              </a>
+              <button class="btn-check-toggle" onclick="alert('Đã xác nhận trả khách an toàn')">Đã trả</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRẠM 4: TRẢ KHÁCH TẠI BẾN XE MIỀN TÂY -->
+      <div class="station-group" data-type="DROPOFF">
+        <div class="station-group-header">
+          <div class="sg-left">
+            <div class="station-type-tag dropoff"><i class="fa-solid fa-arrow-down"></i></div>
+            <div class="sg-title">
+              <h4>Bến xe Miền Tây (Bến cuối)</h4>
+              <span>Dự kiến: 05:50 sáng mai • Trả khách bến cuối</span>
+            </div>
+          </div>
+          <span class="sg-count-badge">24 khách</span>
+        </div>
+
+        <div class="passenger-list">
+          <div class="passenger-card" data-search="võ minh quang b02 0903445566">
+            <div class="p-main-info">
+              <div class="seat-badge">B02</div>
+              <div class="p-details">
+                <h5>Võ Minh Quang</h5>
+                <span class="ticket-code-sub">Vé: P8TQ1144D • SĐT: 0903 445 566</span>
+                <div class="p-status-text" style="color: var(--blue-text);">• Xuống bến cuối</div>
+              </div>
+            </div>
+            <div class="p-actions">
+              <a href="tel:0903445566" class="btn-call">
+                <i class="fa-solid fa-phone"></i>
+              </a>
+              <button class="btn-check-toggle" onclick="alert('Đã xác nhận trả khách')">Đã trả</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    // 1. Lọc theo Điểm đón / Điểm trả
+    function filterType(type, element) {
+      document.querySelectorAll('.f-pill').forEach(el => el.classList.remove('active'));
+      element.classList.add('active');
+
+      const groups = document.querySelectorAll('.station-group');
+      groups.forEach(group => {
+        if (type === 'ALL' || group.dataset.type === type) {
+          group.style.display = 'block';
+        } else {
+          group.style.display = 'none';
+        }
+      });
+    }
+
+    // 2. Tìm kiếm nhanh theo tên, ghế, SĐT
+    function searchPassengers() {
+      const q = document.getElementById('searchBox').value.toLowerCase().trim();
+      const cards = document.querySelectorAll('.passenger-card');
+
+      cards.forEach(card => {
+        const searchData = card.dataset.search.toLowerCase();
+        if (searchData.includes(q)) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    // 3. Đổi nhanh trạng thái soát vé
+    function toggleCheckIn(seatCode, btn) {
+      const statusEl = document.getElementById(`status-${seatCode}`);
+      if (btn.classList.contains('checked')) {
+        btn.classList.remove('checked');
+        btn.textContent = 'Soát vé';
+        if (statusEl) {
+          statusEl.textContent = '• Chờ lên xe';
+          statusEl.className = 'p-status-text waiting';
+        }
+      } else {
+        btn.classList.add('checked');
+        btn.textContent = 'Đã soát';
+        if (statusEl) {
+          statusEl.textContent = '• Đã lên xe';
+          statusEl.className = 'p-status-text checked';
+        }
+      }
+    }
+  </script>
+</body>
+</html>

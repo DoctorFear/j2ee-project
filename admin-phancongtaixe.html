@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FUTA Dispatcher — Lập lịch & Điều phối Tài nguyên (Fleet & Driver)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #f95721;
+      --primary-hover: #e04410;
+      --primary-light: #fff2ed;
+      --accent-green: #007646;
+      --green-light: #ecfdf5;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --bg-page: #f8fafc;
+      --card-bg: #ffffff;
+      --sidebar-bg: #0f172a;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-full: 9999px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-card: 0 8px 24px -4px rgba(15, 23, 42, 0.06);
+      --shadow-popup: 0 20px 40px rgba(15, 23, 42, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* 1. SIDEBAR */
+    .sidebar {
+      width: 260px;
+      background: var(--sidebar-bg);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      border-right: 1px solid #1e293b;
+    }
+    .sidebar-brand {
+      padding: 22px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    .brand-title h3 {
+      font-size: 16px;
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .brand-title span {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+    }
+    .nav-item a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 14px;
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      transition: all 0.15s;
+    }
+    .nav-item a:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+    }
+    .nav-item.active a {
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .sidebar-user {
+      padding: 16px 20px;
+      border-top: 1px solid #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .user-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #334155;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 14px;
+    }
+    .user-meta h4 {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #f1f5f9;
+    }
+    .user-meta span {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    /* 2. MAIN VIEW */
+    .main-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .top-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .header-left h1 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+    .header-left p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .date-picker-input {
+      padding: 8px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+      outline: none;
+    }
+    .btn-header {
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+      transition: all 0.15s;
+    }
+    .btn-auto-gen {
+      background: #f0fdf4;
+      color: var(--accent-green);
+      border: 1.5px solid #bbf7d0;
+    }
+    .btn-auto-gen:hover {
+      background: #dcfce7;
+    }
+    .btn-create-trip {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-create-trip:hover {
+      background: var(--primary-hover);
+    }
+
+    .dashboard-body {
+      padding: 24px 32px 60px 32px;
+    }
+
+    /* STATS SUMMARY */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+    .stat-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .stat-card span {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .stat-card h3 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-top: 4px;
+    }
+
+    /* FILTER BAR */
+    .filter-card-bar {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px 18px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .filter-pills {
+      display: flex;
+      gap: 8px;
+    }
+    .f-pill {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .f-pill.active {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* TRIP LIST TABLE */
+    .card-panel {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+    .custom-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+    .custom-table th {
+      background: #f8fafc;
+      padding: 12px 18px;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+    }
+    .custom-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .custom-table tbody tr:hover {
+      background: #fcfdfe;
+    }
+
+    .trip-code-text {
+      font-weight: 800;
+      color: var(--text-main);
+      background: #f1f5f9;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      display: inline-block;
+    }
+    .route-bold {
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .time-slot {
+      font-weight: 800;
+      color: var(--primary);
+      font-size: 14px;
+    }
+
+    /* TAGS XE & TÀI XẾ */
+    .vehicle-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #fef08a;
+      border: 1px solid #eab308;
+      color: #854d0e;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 12px;
+    }
+    .driver-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      font-weight: 700;
+      font-size: 12px;
+    }
+    .unassigned-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+      color: #dc2626;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      font-weight: 700;
+      font-size: 11.5px;
+    }
+
+    .btn-action-group {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+    .btn-assign {
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .btn-assign:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+    .btn-delete-trip {
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      color: #dc2626;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-delete-trip:hover {
+      background: #fee2e2;
+      border-color: #fca5a5;
+    }
+
+    /* MODAL ĐIỀU PHỐI (XE NHẬP TAY) */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(2px);
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 520px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-popup);
+      padding: 24px;
+      animation: pop 0.2s ease;
+    }
+    @keyframes pop {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-card h3 {
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .modal-sub-info {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .form-group {
+      margin-bottom: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-group label {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .form-select, .form-input {
+      padding: 9px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13.5px;
+      outline: none;
+      font-weight: 600;
+      background: #fff;
+    }
+    .form-select:focus, .form-input:focus {
+      border-color: var(--primary);
+    }
+    .conflict-warning {
+      display: none;
+      background: #fef2f2;
+      border-left: 3px solid #ef4444;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      color: #991b1b;
+      margin-bottom: 12px;
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .btn-cancel {
+      padding: 9px 18px;
+      background: #f1f5f9;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0f172a;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      font-size: 13.5px;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.2s;
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast i { color: #4ade80; }
+  </style>
+</head>
+<body>
+
+  <!-- 1. SIDEBAR NỘI BỘ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon"><i class="fa-solid fa-bus"></i></div>
+      <div class="brand-title">
+        <h3>FUTA Admin</h3>
+        <span>Trung tâm điều hành</span>
+      </div>
+    </div>
+
+    <ul class="nav-list">
+      <li class="nav-item"><a href="#"><i class="fa-solid fa-route"></i> Tuyến &amp; Bảng giá chặng</a></li>
+      <li class="nav-item active"><a href="#"><i class="fa-solid fa-calendar-days"></i> Lập lịch &amp; Phân tài xế</a></li>
+      <li class="nav-item"><a href="#"><i class="fa-solid fa-van-shuttle"></i> Quản lý Phương tiện</a></li>
+      <li class="nav-item"><a href="#"><i class="fa-solid fa-users-gear"></i> Tài khoản nội bộ</a></li>
+      <li class="nav-item"><a href="#"><i class="fa-solid fa-chart-line"></i> Báo cáo doanh thu</a></li>
+    </ul>
+
+    <div class="sidebar-user">
+      <div class="user-avatar">VT</div>
+      <div class="user-meta">
+        <h4>VĂN THUẬT</h4>
+        <span>Dispatcher / Điều hành</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- 2. MAIN AREA -->
+  <div class="main-wrapper">
+    <header class="top-header">
+      <div class="header-left">
+        <h1>Lập lịch chuyến xe &amp; Điều phối tài nguyên</h1>
+        <p>Sinh chuyến chạy tự động từ mẫu tuyến, nhập tay biển số xe và phân công tài xế.</p>
+      </div>
+
+      <div class="header-actions">
+        <input type="date" class="date-picker-input" id="dispatchDate" value="2026-09-22" onchange="filterTrips()">
+        <button class="btn-header btn-auto-gen" onclick="autoGenerateTrips()">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Sinh chuyến tự động
+        </button>
+        <button class="btn-header btn-create-trip" onclick="openCreateTripModal()">
+          <i class="fa-solid fa-plus"></i> Tạo chuyến mới
+        </button>
+      </div>
+    </header>
+
+    <div class="dashboard-body">
+
+      <!-- STATS THỐNG KÊ NHANH -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span>Tổng số chuyến trong ngày</span>
+          <h3 id="statTotalTrips">5 Chuyến</h3>
+        </div>
+        <div class="stat-card">
+          <span>Đã đủ xe &amp; Tài xế</span>
+          <h3 id="statAssigned" style="color: var(--accent-green);">3 Chuyến</h3>
+        </div>
+        <div class="stat-card">
+          <span>Chưa gán xe / tài xế</span>
+          <h3 id="statUnassigned" style="color: #dc2626;">2 Chuyến</h3>
+        </div>
+        <div class="stat-card">
+          <span>Tài xế đang sẵn sàng</span>
+          <h3 id="statAvailDrivers">4 Tài xế</h3>
+        </div>
+      </div>
+
+      <!-- FILTER BAR -->
+      <div class="filter-card-bar">
+        <div class="filter-pills">
+          <div class="f-pill active" onclick="filterByStatus('ALL', this)">Tất cả (<span id="countAll">5</span>)</div>
+          <div class="f-pill" onclick="filterByStatus('ASSIGNED', this)">Đã điều phối (<span id="countAssigned">3</span>)</div>
+          <div class="f-pill" onclick="filterByStatus('UNASSIGNED', this)">Cần gán tài nguyên (<span id="countPending">2</span>)</div>
+        </div>
+        <div style="font-size: 12.5px; color: var(--text-muted); font-weight: 600;">
+          <i class="fa-solid fa-circle-info"></i> Bấm "Phân công" để nhập biển số xe và chọn tài xế
+        </div>
+      </div>
+
+      <!-- TABLE LIST CHUYẾN XE -->
+      <div class="card-panel">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th style="width: 100px;">Mã chuyến</th>
+              <th>Tuyến lộ trình</th>
+              <th style="width: 120px;">Giờ xuất bến</th>
+              <th>Phương tiện (Biển số xe &amp; Loại xe)</th>
+              <th>Tài xế phụ trách</th>
+              <th style="width: 130px; text-align: center;">Trạng thái</th>
+              <th style="width: 180px; text-align: right;">Hành động</th>
+            </tr>
+          </thead>
+          <tbody id="tripsTableBody">
+            <!-- Render qua JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL ĐIỀU PHỐI (NHẬP TAY BIỂN SỐ XE & CHỌN TÀI XẾ) -->
+  <div class="modal-overlay" id="assignModal">
+    <div class="modal-card">
+      <h3><i class="fa-solid fa-id-card-clip" style="color: var(--primary);"></i> Phân công Xe &amp; Tài xế</h3>
+      <div class="modal-sub-info" id="assignModalSub">Chuyến TRIP-102 • An Nhơn ⇄ BX Miền Tây (17:30)</div>
+
+      <div class="conflict-warning" id="conflictAlert">
+        <i class="fa-solid fa-triangle-exclamation"></i> Cảnh báo: Biển số xe hoặc tài xế đã được phân công cho chuyến khác trùng khung giờ!
+      </div>
+
+      <!-- Nhập tay biển số xe -->
+      <div class="form-group">
+        <label>Biển số xe (Nhập tay trực tiếp) <span style="color:#ef4444;">*</span></label>
+        <input type="text" class="form-input" id="inputVehiclePlate" placeholder="Ví dụ: 77B - 019.28, 51B - 889.12..." oninput="checkConflict()">
+      </div>
+
+      <!-- Chọn loại xe / sơ đồ ghế tương ứng -->
+      <div class="form-group">
+        <label>Loại xe &amp; Quy chuẩn số ghế <span style="color:#ef4444;">*</span></label>
+        <select class="form-select" id="selectBusType">
+          <option value="Limousine 34 Giường VIP">Limousine 34 Giường VIP (34 Ghế - A01-A17, B01-B17)</option>
+          <option value="Limousine 22 Phòng VIP">Limousine 22 Phòng VIP (22 Cabin riêng biệt)</option>
+          <option value="Giường nằm 40 Chỗ">Giường nằm 40 Chỗ (40 Chỗ tiêu chuẩn)</option>
+        </select>
+      </div>
+
+      <!-- Chọn tài xế nội bộ -->
+      <div class="form-group">
+        <label>Phân công Tài xế phụ trách <span style="color:#ef4444;">*</span></label>
+        <select class="form-select" id="selectDriver" onchange="checkConflict()">
+          <option value="">-- Chọn tài xế sẵn sàng --</option>
+          <option value="Vũ Sang">Vũ Sang (MSNV: TX-5829 • Bằng E)</option>
+          <option value="Trần Văn Nam">Trần Văn Nam (MSNV: TX-4412 • Bằng E)</option>
+          <option value="Nguyễn Hoàng Long">Nguyễn Hoàng Long (MSNV: TX-3108 • Bằng E)</option>
+          <option value="Lê Thành Đạt">Lê Thành Đạt (MSNV: TX-6671 • Bằng E)</option>
+        </select>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeAssignModal()">Đóng</button>
+        <button class="btn-header btn-create-trip" id="btnSaveAssign" onclick="saveAssignment()">Lưu phân công</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL TẠO CHUYẾN MỚI THỦ CÔNG (CHO PHÉP NHẬP XE TRỰC TIẾP HOẶC ĐỂ TRỐNG) -->
+  <div class="modal-overlay" id="createTripModal">
+    <div class="modal-card">
+      <h3><i class="fa-solid fa-plus" style="color: var(--primary);"></i> Tạo chuyến xe mới</h3>
+      <div class="modal-sub-info">Nhập thông tin lịch trình và tài nguyên cho chuyến xe mới</div>
+
+      <div class="form-group">
+        <label>Tuyến đường</label>
+        <select class="form-select" id="newTripRoute">
+          <option value="Bình Định (An Nhơn) → BX Miền Tây">Bình Định (An Nhơn) → BX Miền Tây</option>
+          <option value="Đà Nẵng → BX Miền Đông Mới">Đà Nẵng → BX Miền Đông Mới</option>
+          <option value="Quy Nhơn → TP.HCM">Quy Nhơn → TP.HCM</option>
+          <option value="BX Miền Tây → Bình Định (An Nhơn)">BX Miền Tây → Bình Định (An Nhơn)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Giờ xuất bến</label>
+        <input type="time" class="form-input" id="newTripTime" value="20:00">
+      </div>
+
+      <div class="form-group">
+        <label>Biển số xe (Tùy chọn - có thể nhập sau)</label>
+        <input type="text" class="form-input" id="newTripVehicle" placeholder="Ví dụ: 77B - 033.45">
+      </div>
+
+      <div class="form-group">
+        <label>Loại xe</label>
+        <select class="form-select" id="newTripBusType">
+          <option value="Limousine 34 Giường VIP">Limousine 34 Giường VIP (34 Ghế)</option>
+          <option value="Limousine 22 Phòng VIP">Limousine 22 Phòng VIP (22 Ghế)</option>
+          <option value="Giường nằm 40 Chỗ">Giường nằm 40 Chỗ (40 Ghế)</option>
+        </select>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeCreateTripModal()">Hủy</button>
+        <button class="btn-header btn-create-trip" onclick="submitCreateTrip()">Tạo chuyến</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"><i class="fa-solid fa-circle-check"></i><span id="toastMsg">Thành công</span></div>
+
+  <script>
+    /* DỮ LIỆU CÁC CHUYẾN XE MẪU */
+    let tripsList = [
+      {
+        code: "TRIP-101",
+        route: "Bình Định (An Nhơn) → BX Miền Tây",
+        time: "06:00",
+        vehicle: "77B - 022.68",
+        vehicleType: "Limousine 34 Giường VIP",
+        driver: "Trần Văn Nam",
+        status: "ASSIGNED"
+      },
+      {
+        code: "TRIP-102",
+        route: "Bình Định (An Nhơn) → BX Miền Tây",
+        time: "17:30",
+        vehicle: "77B - 019.28",
+        vehicleType: "Limousine 34 Giường VIP",
+        driver: "Vũ Sang",
+        status: "ASSIGNED"
+      },
+      {
+        code: "TRIP-103",
+        route: "Đà Nẵng → BX Miền Đông Mới",
+        time: "09:45",
+        vehicle: "43B - 552.19",
+        vehicleType: "Limousine 22 Phòng VIP",
+        driver: "Nguyễn Hoàng Long",
+        status: "ASSIGNED"
+      },
+      {
+        code: "TRIP-104",
+        route: "Bình Định (An Nhơn) → BX Miền Tây",
+        time: "13:00",
+        vehicle: null,
+        vehicleType: null,
+        driver: null,
+        status: "UNASSIGNED"
+      },
+      {
+        code: "TRIP-105",
+        route: "Quy Nhơn → TP.HCM",
+        time: "21:00",
+        vehicle: null,
+        vehicleType: null,
+        driver: null,
+        status: "UNASSIGNED"
+      }
+    ];
+
+    let currentFilter = "ALL";
+    let editingTripCode = null;
+
+    /* 1. RENDER BẢNG CHUYẾN XE */
+    function renderTripsTable() {
+      const tbody = document.getElementById("tripsTableBody");
+      let filtered = tripsList.filter(t => currentFilter === "ALL" || t.status === currentFilter);
+      let html = "";
+
+      filtered.forEach((t) => {
+        const isAssigned = t.status === "ASSIGNED";
+
+        html += `
+          <tr>
+            <td><span class="trip-code-text">${t.code}</span></td>
+            <td><span class="route-bold"><i class="fa-solid fa-route" style="color: var(--primary);"></i> ${t.route}</span></td>
+            <td><span class="time-slot">${t.time}</span></td>
+            <td>
+              ${isAssigned 
+                ? `<span class="vehicle-tag"><i class="fa-solid fa-van-shuttle"></i> ${t.vehicle}</span> <span style="font-size:11.5px; color:var(--text-muted);">(${t.vehicleType})</span>` 
+                : `<span class="unassigned-tag"><i class="fa-solid fa-circle-exclamation"></i> Chưa gán xe</span>`}
+            </td>
+            <td>
+              ${isAssigned 
+                ? `<span class="driver-tag"><i class="fa-solid fa-user-check"></i> ${t.driver}</span>` 
+                : `<span class="unassigned-tag"><i class="fa-solid fa-user-xmark"></i> Chưa có tài xế</span>`}
+            </td>
+            <td style="text-align: center;">
+              ${isAssigned 
+                ? `<span style="color: #16a34a; font-weight:800; font-size:12px;"><i class="fa-solid fa-circle-check"></i> Sẵn sàng</span>` 
+                : `<span style="color: #dc2626; font-weight:800; font-size:12px;"><i class="fa-solid fa-clock"></i> Chờ điều phối</span>`}
+            </td>
+            <td style="text-align: right;">
+              <div class="btn-action-group">
+                <button class="btn-assign" onclick="openAssignModal('${t.code}')">
+                  <i class="fa-solid fa-sliders"></i> ${isAssigned ? 'Đổi tài nguyên' : 'Phân công'}
+                </button>
+                <button class="btn-delete-trip" title="Xóa chuyến" onclick="deleteTrip('${t.code}')">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+
+      tbody.innerHTML = html;
+      updateStats();
+    }
+
+    /* 2. CẬP NHẬT CHỈ SỐ THỐNG KÊ */
+    function updateStats() {
+      const total = tripsList.length;
+      const assigned = tripsList.filter(t => t.status === "ASSIGNED").length;
+      const unassigned = total - assigned;
+
+      document.getElementById("statTotalTrips").textContent = `${total} Chuyến`;
+      document.getElementById("statAssigned").textContent = `${assigned} Chuyến`;
+      document.getElementById("statUnassigned").textContent = `${unassigned} Chuyến`;
+
+      document.getElementById("countAll").textContent = total;
+      document.getElementById("countAssigned").textContent = assigned;
+      document.getElementById("countPending").textContent = unassigned;
+    }
+
+    /* 3. SINH CHUYẾN TỰ ĐỘNG TỪ MẪU TUYẾN */
+    function autoGenerateTrips() {
+      const defaultSlots = ["08:00", "11:30", "15:00", "19:30"];
+      const startId = tripsList.length + 101;
+
+      defaultSlots.forEach((slot, i) => {
+        tripsList.push({
+          code: `TRIP-${startId + i}`,
+          route: "Bình Định (An Nhơn) → BX Miền Tây",
+          time: slot,
+          vehicle: null,
+          vehicleType: null,
+          driver: null,
+          status: "UNASSIGNED"
+        });
+      });
+
+      renderTripsTable();
+      showToast("Đã tự động sinh thêm 4 chuyến chạy mẫu cho ngày đã chọn!");
+    }
+
+    /* 4. MODAL PHÂN CÔNG (GÁN XE VÀ TÀI XẾ) */
+    function openAssignModal(tripCode) {
+      editingTripCode = tripCode;
+      const trip = tripsList.find(t => t.code === tripCode);
+      document.getElementById("assignModalSub").textContent = `Chuyến ${trip.code} • ${trip.route} (Xuất bến: ${trip.time})`;
+      document.getElementById("conflictAlert").style.display = "none";
+
+      // Đổ lại dữ liệu cũ nếu đã gán trước đó
+      document.getElementById("inputVehiclePlate").value = trip.vehicle || "";
+      document.getElementById("selectBusType").value = trip.vehicleType || "Limousine 34 Giường VIP";
+      document.getElementById("selectDriver").value = trip.driver || "";
+
+      document.getElementById("assignModal").classList.add("active");
+    }
+
+    function closeAssignModal() {
+      document.getElementById("assignModal").classList.remove("active");
+    }
+
+    /* THUẬT TOÁN KIỂM TRA XUNG ĐỘT TÀI XẾ / BIỂN SỐ XE */
+    function checkConflict() {
+      const plate = document.getElementById("inputVehiclePlate").value.trim().toUpperCase();
+      const driver = document.getElementById("selectDriver").value;
+      const alertBox = document.getElementById("conflictAlert");
+      const currentTrip = tripsList.find(t => t.code === editingTripCode);
+
+      let conflictMsg = "";
+
+      // Kiểm tra trùng lặp trên các chuyến xe khác
+      for (let t of tripsList) {
+        if (t.code === editingTripCode) continue;
+
+        // Trùng biển số xe cùng mốc giờ
+        if (plate && t.vehicle && t.vehicle.toUpperCase().replace(/\s/g, '') === plate.replace(/\s/g, '')) {
+          if (t.time === currentTrip.time) {
+            conflictMsg = `Xe ${plate} đã được gán cho chuyến ${t.code} xuất bến cùng lúc ${t.time}!`;
+            break;
+          }
+        }
+
+        // Trùng tài xế cùng mốc giờ
+        if (driver && t.driver === driver) {
+          if (t.time === currentTrip.time) {
+            conflictMsg = `Tài xế ${driver} đang lái chuyến ${t.code} lúc ${t.time}! Không thể chạy 2 chuyến cùng lúc.`;
+            break;
+          }
+        }
+      }
+
+      if (conflictMsg) {
+        alertBox.style.display = "block";
+        alertBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Cảnh báo: ${conflictMsg}`;
+        document.getElementById("btnSaveAssign").disabled = true;
+      } else {
+        alertBox.style.display = "none";
+        document.getElementById("btnSaveAssign").disabled = false;
+      }
+    }
+
+    function saveAssignment() {
+      const plate = document.getElementById("inputVehiclePlate").value.trim().toUpperCase();
+      const busType = document.getElementById("selectBusType").value;
+      const driver = document.getElementById("selectDriver").value;
+
+      if (!plate) {
+        alert("Vui lòng nhập biển số xe!");
+        return;
+      }
+      if (!driver) {
+        alert("Vui lòng chọn tài xế phụ trách!");
+        return;
+      }
+
+      const trip = tripsList.find(t => t.code === editingTripCode);
+      trip.vehicle = plate;
+      trip.vehicleType = busType;
+      trip.driver = driver;
+      trip.status = "ASSIGNED";
+
+      closeAssignModal();
+      renderTripsTable();
+      showToast(`Đã điều phối xe ${plate} & tài xế ${driver} cho chuyến ${trip.code}!`);
+    }
+
+    /* 5. TẠO CHUYẾN MỚI THỦ CÔNG */
+    function openCreateTripModal() {
+      document.getElementById("createTripModal").classList.add("active");
+    }
+    function closeCreateTripModal() {
+      document.getElementById("createTripModal").classList.remove("active");
+    }
+    function submitCreateTrip() {
+      const route = document.getElementById("newTripRoute").value;
+      const time = document.getElementById("newTripTime").value;
+      const vehicle = document.getElementById("newTripVehicle").value.trim().toUpperCase();
+      const busType = document.getElementById("newTripBusType").value;
+
+      const newCode = `TRIP-${Math.floor(100 + Math.random() * 900)}`;
+      const isAssigned = vehicle.length > 0;
+
+      tripsList.unshift({
+        code: newCode,
+        route: route,
+        time: time,
+        vehicle: isAssigned ? vehicle : null,
+        vehicleType: isAssigned ? busType : null,
+        driver: null,
+        status: "UNASSIGNED"
+      });
+
+      closeCreateTripModal();
+      renderTripsTable();
+      showToast(`Đã tạo chuyến mới ${newCode} lúc ${time}!`);
+
+      // Reset form
+      document.getElementById("newTripVehicle").value = "";
+    }
+
+    /* 6. XÓA CHUYẾN XE */
+    function deleteTrip(tripCode) {
+      if (confirm(`Bạn có chắc chắn muốn xóa chuyến ${tripCode} không?`)) {
+        tripsList = tripsList.filter(t => t.code !== tripCode);
+        renderTripsTable();
+        showToast(`Đã xóa chuyến ${tripCode}!`);
+      }
+    }
+
+    /* 7. BỘ LỌC VÀ TIỆN ÍCH */
+    function filterByStatus(status, pill) {
+      currentFilter = status;
+      document.querySelectorAll(".f-pill").forEach(p => p.classList.remove("active"));
+      pill.classList.add("active");
+      renderTripsTable();
+    }
+
+    function filterTrips() {
+      const d = document.getElementById("dispatchDate").value;
+      showToast(`Đã cập nhật danh sách điều phối ngày: ${d}`);
+    }
+
+    let toastTimer;
+    function showToast(msg) {
+      const toast = document.getElementById("toast");
+      document.getElementById("toastMsg").textContent = msg;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 2400);
+    }
+
+    // Khởi chạy ban đầu
+    renderTripsTable();
+  </script>
+</body>
+</html>

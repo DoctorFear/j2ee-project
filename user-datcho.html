@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>FUTA Bus Lines — Chọn sơ đồ ghế & Thanh toán MoMo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #f95721;
+      --primary-hover: #c83607;
+      --primary-light: #fff2ed;
+      --primary-subtle: #fef6f3;
+      --accent-green: #007646;
+      --momo: #a50064;
+      --momo-hover: #80004d;
+      --momo-light: #fdf2f8;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --text-light: #94a3b8;
+      --border: #e2e8f0;
+      --bg-page: #f8fafc;
+      --card-bg: #ffffff;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-full: 9999px;
+      --shadow-card: 0 8px 24px -4px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+      --shadow-popup: 0 24px 48px -12px rgba(15, 23, 42, 0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding-bottom: 60px;
+    }
+
+    /* HEADER */
+    .app-header {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--primary), #fb7040);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+    .brand-title h2 {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--accent-green);
+      line-height: 1.1;
+    }
+    .brand-title span {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+    .header-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #f1f5f9;
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    /* MAIN CONTAINER */
+    .checkout-container {
+      max-width: 1200px;
+      margin: 24px auto 0 auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .section-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      padding: 20px 22px;
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-size: 15.5px;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-title i {
+      color: var(--primary);
+      font-size: 16px;
+    }
+
+    /* SƠ ĐỒ GHẾ THU NHỎ */
+    .seat-status-bar {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      padding: 8px 14px;
+      background: #f8fafc;
+      border-radius: var(--radius-md);
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+    }
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .status-sample {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+    }
+    .status-sample.available { background: #fff; border: 1.5px solid #cbd5e1; }
+    .status-sample.selected { background: var(--primary); border: 1.5px solid var(--primary); color: #fff; }
+    .status-sample.sold { background: #e2e8f0; border: 1.5px solid #cbd5e1; color: #94a3b8; }
+
+    .bus-deck-wrapper {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+    .deck-container {
+      background: #f8fafc;
+      border: 1.5px dashed var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 12px;
+    }
+    .deck-header {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+    }
+    .driver-pos {
+      width: 30px;
+      height: 30px;
+      background: #e2e8f0;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      margin: 0 auto 12px auto;
+      font-size: 13px;
+    }
+    .seats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px 6px;
+      justify-items: center;
+    }
+    .seat-slot {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      border: 1.5px solid #cbd5e1;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 800;
+      color: #475569;
+      transition: all 0.16s ease;
+      user-select: none;
+    }
+    .seat-slot i { font-size: 10px; margin-bottom: 1px; }
+    .seat-slot:hover:not(.sold):not(.selected) {
+      border-color: #fb923c;
+      background: var(--primary-light);
+      color: var(--primary);
+      transform: translateY(-2px);
+    }
+    .seat-slot.selected {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(249, 87, 33, 0.35);
+    }
+    .seat-slot.selected:hover {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
+      box-shadow: 0 4px 12px rgba(200, 54, 7, 0.45);
+      transform: translateY(-2px) scale(1.04);
+    }
+    .seat-slot.sold {
+      background: #e2e8f0;
+      border-color: #cbd5e1;
+      color: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    /* ĐIỂM ĐÓN TRẢ */
+    .point-block {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      margin-bottom: 14px;
+      background: #ffffff;
+    }
+    .point-title {
+      font-size: 13.5px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .type-switcher { display: flex; gap: 8px; margin-bottom: 12px; }
+    .switch-btn {
+      flex: 1;
+      padding: 7px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border);
+      background: #f8fafc;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .switch-btn.active {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .station-select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+      outline: none;
+      cursor: pointer;
+    }
+    .notice-box {
+      margin-top: 8px;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      background: #fefce8;
+      border-left: 3px solid #eab308;
+      font-size: 12px;
+      color: #854d0e;
+      line-height: 1.4;
+    }
+
+    /* THÔNG TIN KHÁCH HÀNG (BÊN PHẢI) */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 12px;
+    }
+    .form-group:last-child { margin-bottom: 0; }
+    .form-group label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+    .form-group label span { color: #ef4444; }
+    .form-control {
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+      outline: none;
+      transition: all 0.15s;
+    }
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(249, 87, 33, 0.12);
+    }
+
+    /* TỔNG KẾT VÉ & MOMO */
+    .summary-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--border);
+    }
+    .summary-header {
+      font-size: 15.5px;
+      font-weight: 800;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 11px;
+      font-size: 13px;
+    }
+    .summary-item .label { color: var(--text-muted); font-weight: 600; }
+    .summary-item .val { font-weight: 700; color: var(--text-main); text-align: right; }
+    .seats-tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      justify-content: flex-end;
+      max-width: 180px;
+    }
+    .seat-tag {
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 14px 0;
+    }
+
+    /* PHƯƠNG THỨC THANH TOÁN MOMO DUY NHẤT */
+    .payment-title {
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .momo-pay-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 1.5px solid var(--momo);
+      background: var(--momo-light);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+    .momo-logo-img {
+      width: 38px;
+      height: 38px;
+      background: var(--momo);
+      color: #fff;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+    .momo-info h4 {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #83004f;
+    }
+    .momo-info p {
+      font-size: 11.5px;
+      color: #9d174d;
+      font-weight: 500;
+    }
+
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 16px;
+    }
+    .total-row .total-label { font-size: 14px; font-weight: 800; }
+    .total-row .total-price {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--primary);
+      letter-spacing: -0.4px;
+    }
+
+    .btn-checkout {
+      width: 100%;
+      background: linear-gradient(135deg, var(--momo), var(--momo-hover));
+      color: #fff;
+      border: none;
+      padding: 13px 18px;
+      border-radius: var(--radius-full);
+      font-size: 14.5px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 8px 20px -4px rgba(165, 0, 100, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-checkout:hover:not(:disabled) { transform: translateY(-1px); }
+    .btn-checkout:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* MODAL GIẢ LẬP THANH TOÁN MOMO & GIỮ CHỖ 10 PHÚT */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+      padding: 20px;
+    }
+    .modal-overlay.active { display: flex; }
+    .momo-modal {
+      background: #ffffff;
+      width: 100%;
+      max-width: 480px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-popup);
+      overflow: hidden;
+      animation: popUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes popUp {
+      from { transform: translateY(20px) scale(0.96); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .momo-modal-header {
+      background: linear-gradient(135deg, var(--momo), #d81b60);
+      color: #fff;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .momo-modal-header h3 {
+      font-size: 16px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .timer-badge {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .momo-modal-body {
+      padding: 24px 22px;
+      text-align: center;
+    }
+
+    /* QR Code & Mock Data */
+    .qr-container {
+      width: 190px;
+      height: 190px;
+      margin: 0 auto 16px auto;
+      border: 2px dashed #f472b6;
+      border-radius: var(--radius-md);
+      padding: 10px;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .qr-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .qr-momo-center {
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      background: var(--momo);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 900;
+      font-size: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .transfer-info-list {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      text-align: left;
+      margin-bottom: 20px;
+      font-size: 13px;
+    }
+    .transfer-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .transfer-row:last-child { margin-bottom: 0; }
+    .transfer-row .t-label { color: var(--text-muted); font-weight: 600; }
+    .transfer-row .t-val { font-weight: 800; color: var(--text-main); }
+    .transfer-row .t-val.price { color: var(--momo); font-size: 15px; }
+
+    /* ACTION BUTTONS GIẢ LẬP */
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .btn-simulate-success {
+      background: #10b981;
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: var(--radius-full);
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+      transition: all 0.2s;
+    }
+    .btn-simulate-success:hover { background: #059669; }
+    .btn-cancel-pay {
+      background: transparent;
+      color: #64748b;
+      border: 1px solid var(--border);
+      padding: 10px;
+      border-radius: var(--radius-full);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-cancel-pay:hover { background: #f1f5f9; color: var(--text-main); }
+
+    /* SUCCESS RESULT OVERLAY */
+    .success-card {
+      text-align: center;
+      padding: 20px 10px;
+      display: none;
+    }
+    .success-icon {
+      width: 64px;
+      height: 64px;
+      background: #dcfce7;
+      color: #16a34a;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin: 0 auto 16px auto;
+    }
+    .success-card h3 { font-size: 19px; font-weight: 800; color: var(--text-main); margin-bottom: 6px; }
+    .success-card p { font-size: 13.5px; color: var(--text-muted); margin-bottom: 18px; }
+    .ticket-pass {
+      background: #fdf2f8;
+      border: 1.5px dashed var(--momo);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 20px;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #0f172a;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: var(--radius-full);
+      font-size: 13.5px;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.2s ease;
+      z-index: 2000;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 960px) {
+      .checkout-container { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 540px) {
+      .bus-deck-wrapper { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="app-header">
+    <a href="#" class="brand-logo">
+      <div class="brand-icon"><i class="fa-solid fa-bus-simple"></i></div>
+      <div class="brand-title">
+        <h2>FUTA Bus Lines</h2>
+        <span>Đặt vé trực tuyến</span>
+      </div>
+    </a>
+
+    <div class="header-badge">
+      <i class="fa-solid fa-shield-check" style="color: var(--accent-green);"></i>
+      <span>Thanh toán an toàn MoMo</span>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <div class="checkout-container">
+
+    <!-- CỘT TRÁI: SƠ ĐỒ GHẾ & THÔNG TIN ĐÓN TRẢ -->
+    <div class="left-content">
+
+      <!-- SECTION: SƠ ĐỒ GHẾ -->
+      <div class="section-card">
+        <div class="section-title">
+          <i class="fa-solid fa-couch"></i> Chọn ghế &amp; Sơ đồ xe Limousine
+        </div>
+
+        <div class="seat-status-bar">
+          <div class="status-item">
+            <div class="status-sample sold"><i class="fa-solid fa-ban"></i></div>
+            <span>Đã bán</span>
+          </div>
+          <div class="status-item">
+            <div class="status-sample available"></div>
+            <span>Còn trống</span>
+          </div>
+          <div class="status-item">
+            <div class="status-sample selected"><i class="fa-solid fa-check"></i></div>
+            <span>Đang chọn</span>
+          </div>
+        </div>
+
+        <!-- Layout 2 Tầng -->
+        <div class="bus-deck-wrapper">
+          <div class="deck-container">
+            <div class="deck-header"><i class="fa-solid fa-layer-group"></i> Tầng dưới (A)</div>
+            <div class="driver-pos" title="Bác tài"><i class="fa-solid fa-dharmachakra"></i></div>
+            <div class="seats-grid" id="lowerDeckGrid"></div>
+          </div>
+
+          <div class="deck-container">
+            <div class="deck-header"><i class="fa-solid fa-layer-group"></i> Tầng trên (B)</div>
+            <div class="driver-pos" style="visibility: hidden;"><i class="fa-solid fa-dharmachakra"></i></div>
+            <div class="seats-grid" id="upperDeckGrid"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: THÔNG TIN ĐÓN TRẢ -->
+      <div class="section-card">
+        <div class="section-title">
+          <i class="fa-solid fa-map-location-dot"></i> Thông tin đón trả
+        </div>
+
+        <div class="point-block">
+          <div class="point-title"><i class="fa-solid fa-location-dot" style="color: var(--primary);"></i> Điểm đón</div>
+          <div class="type-switcher">
+            <button class="switch-btn active" onclick="switchPickupType('station', this)"><i class="fa-solid fa-building"></i> Bến xe / VP</button>
+            <button class="switch-btn" onclick="switchPickupType('transit', this)"><i class="fa-solid fa-van-shuttle"></i> Trung chuyển</button>
+          </div>
+          <select class="station-select" id="pickupSelect">
+            <option value="BX_QUANG_NGAI">Bến xe Quảng Ngãi (02 Trần Khánh Dư, P.Nghĩa Chánh)</option>
+            <option value="VP_QUANG_NGAI">Văn phòng 26 Bà Triệu, TP.Quảng Ngãi</option>
+          </select>
+          <div class="notice-box">
+            Quý khách vui lòng có mặt tại Bến xe/Văn Phòng <strong>Bến xe Quảng Ngãi</strong> trước <strong>13:15 30/09/2026</strong> để kiểm tra thông tin trước khi lên xe.
+          </div>
+        </div>
+
+        <div class="point-block">
+          <div class="point-title"><i class="fa-solid fa-location-crosshairs" style="color: var(--accent-green);"></i> Điểm trả</div>
+          <div class="type-switcher">
+            <button class="switch-btn active" onclick="switchDropoffType('station', this)"><i class="fa-solid fa-building"></i> Bến xe / VP</button>
+            <button class="switch-btn" onclick="switchDropoffType('transit', this)"><i class="fa-solid fa-van-shuttle"></i> Trung chuyển</button>
+          </div>
+          <select class="station-select" id="dropoffSelect">
+            <option value="BX_MIEN_TAY">Bến xe Miền Tây (395 Kinh Dương Vương, P.An Lạc, Q.Bình Tân, TP.HCM)</option>
+            <option value="BX_AN_SUONG">Bến xe An Sương (Quốc Lộ 22, Bà Điểm, Hóc Môn)</option>
+            <option value="VP_LE_HONG_PHONG">202 Lê Hồng Phong, Phường 4, Quận 5, TP.HCM</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CỘT PHẢI: THÔNG TIN KHÁCH HÀNG & TỔNG KẾT VÉ -->
+    <div class="right-content">
+
+      <!-- 1. THÔNG TIN KHÁCH HÀNG -->
+      <div class="section-card">
+        <div class="section-title">
+          <i class="fa-regular fa-user"></i> Thông tin khách hàng
+        </div>
+        <div class="form-group">
+          <label>Họ và tên <span>*</span></label>
+          <input type="text" class="form-control" id="custName" placeholder="Ví dụ: Nguyễn Văn A" value="Hà Thái Sơn">
+        </div>
+        <div class="form-group">
+          <label>Số điện thoại <span>*</span></label>
+          <input type="tel" class="form-control" id="custPhone" placeholder="Ví dụ: 0912345678" value="0987654321">
+        </div>
+        <div class="form-group">
+          <label>Email <span>*</span></label>
+          <input type="email" class="form-control" id="custEmail" placeholder="nhanve@example.com" value="thaison@example.com">
+        </div>
+      </div>
+
+      <!-- 2. THÔNG TIN CHUYẾN ĐI & MOMO -->
+      <div class="summary-card">
+        <div class="summary-header">
+          <span>Thông tin chuyến đi</span>
+          <span style="font-size: 12.5px; color: var(--accent-green); font-weight: 700;"><i class="fa-solid fa-circle-check"></i> Limousine</span>
+        </div>
+
+        <div class="summary-item">
+          <span class="label">Tuyến xe</span>
+          <span class="val">Quang Ngai - Mien Tay</span>
+        </div>
+
+        <div class="summary-item">
+          <span class="label">Thời gian xuất bến</span>
+          <span class="val">13:30 30/09/2026</span>
+        </div>
+
+        <div class="summary-item">
+          <span class="label">Số lượng ghế</span>
+          <span class="val" id="seatCountText">0 Ghế</span>
+        </div>
+
+        <div class="summary-item">
+          <span class="label">Số ghế</span>
+          <div class="seats-tag-list" id="selectedSeatsTags">
+            <span style="color: var(--text-light); font-size: 12px;">Chưa chọn ghế</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- PHƯƠNG THỨC DUY NHẤT: MOMO -->
+        <div class="payment-title"><i class="fa-solid fa-wallet" style="color: var(--momo);"></i> Phương thức thanh toán</div>
+        <div class="momo-pay-box">
+          <div class="momo-logo-img">M</div>
+          <div class="momo-info">
+            <h4>Chuyển khoản Ví MoMo</h4>
+            <p>Quét mã QR chuyển khoản tức thì 24/7</p>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- CHI TIẾT GIÁ -->
+        <div class="summary-item">
+          <span class="label">Giá vé lượt đi</span>
+          <span class="val" id="rawFareText">0đ</span>
+        </div>
+
+        <div class="summary-item">
+          <span class="label">Phí thanh toán</span>
+          <span class="val">0đ</span>
+        </div>
+
+        <div class="total-row">
+          <span class="total-label">Tổng tiền</span>
+          <span class="total-price" id="totalFareText">0đ</span>
+        </div>
+
+        <!-- NÚT BẮT ĐẦU GIỮ CHỖ & MỞ POPUP MOMO -->
+        <button class="btn-checkout" id="btnSubmitPayment" disabled onclick="startCheckoutHolding()">
+          <i class="fa-solid fa-lock"></i> Thanh toán ngay
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- 3. POPUP MODAL GIẢ LẬP THANH TOÁN MOMO & ĐẾM NGƯỢC 10 PHÚT -->
+  <div class="modal-overlay" id="momoModal">
+    <div class="momo-modal">
+      <div class="momo-modal-header">
+        <h3><i class="fa-solid fa-qrcode"></i> Thanh toán Ví MoMo</h3>
+        <!-- Đồng hồ 10 phút kích hoạt ở đây -->
+        <div class="timer-badge">
+          <i class="fa-regular fa-clock"></i>
+          <span id="holdingCountdown">10:00</span>
+        </div>
+      </div>
+
+      <div class="momo-modal-body" id="momoModalBody">
+        
+        <!-- CỤM QUÉT MÃ QR MOMO -->
+        <div id="paymentContent">
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
+            Ghế của bạn đang được <b>tạm giữ trong 10 phút</b>. Vui lòng mở ứng dụng MoMo để quét mã chuyển tiền:
+          </p>
+
+          <div class="qr-container">
+            <!-- Mã QR minh họa -->
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=2|99|0987654321|FUTA%20BUS|thaison@gmail.com|0|0|420000|FUTA12345" alt="MoMo QR" class="qr-img">
+            <div class="qr-momo-center">M</div>
+          </div>
+
+          <div class="transfer-info-list">
+            <div class="transfer-row">
+              <span class="t-label">Số tài khoản MoMo:</span>
+              <span class="t-val">0987 654 321</span>
+            </div>
+            <div class="transfer-row">
+              <span class="t-label">Người thụ hưởng:</span>
+              <span class="t-val">FUTA BUS LINES CO.</span>
+            </div>
+            <div class="transfer-row">
+              <span class="t-label">Số tiền:</span>
+              <span class="t-val price" id="modalAmount">0đ</span>
+            </div>
+            <div class="transfer-row">
+              <span class="t-label">Nội dung chuyển khoản:</span>
+              <span class="t-val" id="modalTransferCode" style="color: var(--primary);">FUTA-89241</span>
+            </div>
+          </div>
+
+          <!-- NÚT GIẢ LẬP THANH TOÁN CHO ĐỒ ÁN -->
+          <div class="modal-actions">
+            <button class="btn-simulate-success" onclick="simulatePaymentSuccess()">
+              <i class="fa-solid fa-circle-check"></i> Giả lập: Đã nhận tiền thành công
+            </button>
+            <button class="btn-cancel-pay" onclick="cancelPaymentHolding()">
+              Hủy thanh toán &amp; Nhả ghế
+            </button>
+          </div>
+        </div>
+
+        <!-- MÀN HÌNH XÁC NHẬN VÉ KHI THANH TOÁN THÀNH CÔNG -->
+        <div class="success-card" id="successContent">
+          <div class="success-icon"><i class="fa-solid fa-check"></i></div>
+          <h3>Thanh toán thành công!</h3>
+          <p>Hệ thống đã ghi nhận vé của bạn vào hệ thống.</p>
+          
+          <div class="ticket-pass">
+            <div style="font-weight: 800; font-size: 15px; color: var(--accent-green); margin-bottom: 6px;">VÉ XE ĐIỆN TỬ FUTA</div>
+            <div><b>Mã vé:</b> <span id="resTicketCode">FUTA-9981</span></div>
+            <div><b>Tuyến:</b> Quảng Ngãi → BX Miền Tây</div>
+            <div><b>Ghế đã đặt:</b> <span id="resSeatsList" style="font-weight: 800; color: var(--primary);"></span></div>
+            <div><b>Khách hàng:</b> <span id="resCustName"></span></div>
+          </div>
+
+          <button class="btn-simulate-success" onclick="location.reload()" style="background: var(--primary); width: 100%;">
+            Hoàn tất &amp; Quay lại trang chủ
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Thông báo</div>
+
+  <script>
+    const TICKET_PRICE = 420000;
+    const soldSeats = new Set(['A02', 'A05', 'A12', 'B03', 'B07', 'B14']);
+    const selectedSeats = new Set();
+    let holdingTimer = null;
+    let timeLeft = 600; // 10 phút = 600 giây
+
+    /* 1. RENDER SƠ ĐỒ GHẾ */
+    function renderDeckSeats(deckPrefix, containerId) {
+      const container = document.getElementById(containerId);
+      let html = '';
+      for (let i = 1; i <= 17; i++) {
+        const seatNum = (i < 10 ? '0' : '') + i;
+        const seatCode = deckPrefix + seatNum;
+        const isSold = soldSeats.has(seatCode);
+
+        html += `
+          <div class="seat-slot ${isSold ? 'sold' : ''}" 
+               data-seat="${seatCode}" 
+               onclick="toggleSeatSelection('${seatCode}')"
+               title="${isSold ? 'Ghế đã bán' : 'Bấm để chọn ' + seatCode}">
+            <i class="fa-solid fa-couch"></i>
+            <span>${seatCode}</span>
+          </div>
+        `;
+      }
+      container.innerHTML = html;
+    }
+
+    /* 2. CHỌN / BỎ CHỌN GHẾ */
+    function toggleSeatSelection(seatCode) {
+      if (soldSeats.has(seatCode)) return;
+
+      const seatEl = document.querySelector(`.seat-slot[data-seat="${seatCode}"]`);
+      if (selectedSeats.has(seatCode)) {
+        selectedSeats.delete(seatCode);
+        seatEl.classList.remove('selected');
+      } else {
+        if (selectedSeats.size >= 5) {
+          showToast('Chỉ được chọn tối đa 5 ghế mỗi đơn hàng!');
+          return;
+        }
+        selectedSeats.add(seatCode);
+        seatEl.classList.add('selected');
+      }
+
+      updateSummaryUI();
+    }
+
+    function updateSummaryUI() {
+      const count = selectedSeats.size;
+      document.getElementById('seatCountText').textContent = `${count} Ghế`;
+
+      const tagsContainer = document.getElementById('selectedSeatsTags');
+      if (count === 0) {
+        tagsContainer.innerHTML = '<span style="color: var(--text-light); font-size: 12px;">Chưa chọn ghế</span>';
+      } else {
+        const sortedSeats = Array.from(selectedSeats).sort();
+        tagsContainer.innerHTML = sortedSeats.map(s => `<span class="seat-tag">${s}</span>`).join('');
+      }
+
+      const total = count * TICKET_PRICE;
+      const formattedTotal = total.toLocaleString('vi-VN') + 'đ';
+      document.getElementById('rawFareText').textContent = formattedTotal;
+      document.getElementById('totalFareText').textContent = formattedTotal;
+
+      document.getElementById('btnSubmitPayment').disabled = (count === 0);
+    }
+
+    function switchPickupType(type, btn) {
+      btn.parentElement.querySelectorAll('.switch-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function switchDropoffType(type, btn) {
+      btn.parentElement.querySelectorAll('.switch-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    /* 3. BẮT ĐẦU GIỮ CHỖ TRONG 10 PHÚT KHI BẤM THANH TOÁN */
+    function startCheckoutHolding() {
+      const name = document.getElementById('custName').value.trim();
+      const phone = document.getElementById('custPhone').value.trim();
+      if (!name || !phone) {
+        showToast('Vui lòng nhập họ tên và số điện thoại trước khi thanh toán!');
+        return;
+      }
+
+      // Cập nhật thông tin lên popup MoMo
+      const total = selectedSeats.size * TICKET_PRICE;
+      document.getElementById('modalAmount').textContent = total.toLocaleString('vi-VN') + 'đ';
+      const randomBookingCode = 'FUTA' + Math.floor(10000 + Math.random() * 90000);
+      document.getElementById('modalTransferCode').textContent = randomBookingCode;
+
+      // Mở Popup
+      document.getElementById('momoModal').classList.add('active');
+      document.getElementById('paymentContent').style.display = 'block';
+      document.getElementById('successContent').style.display = 'none';
+
+      // Kích hoạt đồng hồ 10 phút đếm ngược
+      timeLeft = 600;
+      clearInterval(holdingTimer);
+      updateTimerDisplay();
+
+      holdingTimer = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+        if (timeLeft <= 0) {
+          clearInterval(holdingTimer);
+          alert('Đã hết 10 phút giữ chỗ! Ghế của bạn đã được hoàn trả lại hệ thống.');
+          cancelPaymentHolding();
+        }
+      }, 1000);
+
+      showToast('Đã khóa giữ chỗ trong 10 phút!');
+    }
+
+    function updateTimerDisplay() {
+      const m = Math.floor(timeLeft / 60);
+      const s = timeLeft % 60;
+      document.getElementById('holdingCountdown').textContent = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    /* 4. HỦY GIỮ CHỖ & ĐÓNG MODAL */
+    function cancelPaymentHolding() {
+      clearInterval(holdingTimer);
+      document.getElementById('momoModal').classList.remove('active');
+      showToast('Đã hủy phiên thanh toán. Ghế vẫn đang ở trạng thái chọn.');
+    }
+
+    /* 5. GIẢ LẬP NHẬN TIỀN MOMO THÀNH CÔNG (WEBHOOK MOCK) */
+    function simulatePaymentSuccess() {
+      clearInterval(holdingTimer);
+      
+      // Chuyển sang màn hình chúc mừng
+      document.getElementById('paymentContent').style.display = 'none';
+      document.getElementById('successContent').style.display = 'block';
+
+      // Hiển thị thông tin vé
+      const sortedSeats = Array.from(selectedSeats).sort().join(', ');
+      document.getElementById('resSeatsList').textContent = sortedSeats;
+      document.getElementById('resCustName').textContent = document.getElementById('custName').value;
+      document.getElementById('resTicketCode').textContent = document.getElementById('modalTransferCode').textContent;
+
+      // Đánh dấu các ghế này vĩnh viễn là ĐÃ BÁN (SOLD)
+      selectedSeats.forEach(seat => soldSeats.add(seat));
+      selectedSeats.clear();
+      renderDeckSeats('A', 'lowerDeckGrid');
+      renderDeckSeats('B', 'upperDeckGrid');
+      updateSummaryUI();
+
+      showToast('Xác nhận thanh toán MoMo thành công!');
+    }
+
+    let toastTimer;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    renderDeckSeats('A', 'lowerDeckGrid');
+    renderDeckSeats('B', 'upperDeckGrid');
+  </script>
+</body>
+</html>

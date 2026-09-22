@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Soát vé QR — Tài xế Vũ Sang</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #f95721;
+      --accent-green: #007646;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --bg-page: #0f172a;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-full: 9999px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Plus Jakarta Sans", sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .scanner-app-container {
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background: #000;
+      overflow: hidden;
+    }
+
+    /* TOP BAR */
+    .scanner-top {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+      background: linear-gradient(180deg, rgba(0,0,0,0.8), transparent);
+    }
+    .btn-circle {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+    }
+    .trip-tag {
+      font-size: 13px;
+      font-weight: 700;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+    }
+
+    /* CAMERA VIEWFINDER */
+    .camera-viewport {
+      flex: 1;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .viewfinder-frame {
+      width: 250px;
+      height: 250px;
+      position: relative;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.55);
+    }
+
+    /* GÓC KHUNG QUÉT */
+    .corner {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border-color: var(--primary);
+      border-style: solid;
+    }
+    .corner.tl { top: -2px; left: -2px; border-width: 4px 0 0 4px; border-top-left-radius: 18px; }
+    .corner.tr { top: -2px; right: -2px; border-width: 4px 4px 0 0; border-top-right-radius: 18px; }
+    .corner.bl { bottom: -2px; left: -2px; border-width: 0 0 4px 4px; border-bottom-left-radius: 18px; }
+    .corner.br { bottom: -2px; right: -2px; border-width: 0 4px 4px 0; border-bottom-right-radius: 18px; }
+
+    /* TIA LASER QUÉT */
+    .laser-line {
+      position: absolute;
+      top: 0;
+      left: 5%;
+      width: 90%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #22c55e, transparent);
+      box-shadow: 0 0 10px #22c55e;
+      animation: scanLaser 2s infinite ease-in-out;
+    }
+    @keyframes scanLaser {
+      0% { top: 10px; opacity: 0.3; }
+      50% { top: 230px; opacity: 1; }
+      100% { top: 10px; opacity: 0.3; }
+    }
+
+    .scan-guide {
+      margin-top: 24px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.8);
+      font-weight: 600;
+      text-align: center;
+      z-index: 5;
+    }
+
+    /* BOTTOM CONTROLS & THỐNG KÊ */
+    .scanner-bottom {
+      padding: 20px 24px 34px 24px;
+      background: #1e293b;
+      border-top-left-radius: var(--radius-lg);
+      border-top-right-radius: var(--radius-lg);
+      z-index: 10;
+    }
+    .counter-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .counter-box h4 {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .counter-box p {
+      font-size: 20px;
+      font-weight: 900;
+      color: #fff;
+    }
+    .counter-box p span {
+      color: #22c55e;
+    }
+
+    .manual-btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .btn-bottom {
+      padding: 12px;
+      border-radius: var(--radius-full);
+      border: none;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-manual {
+      background: #334155;
+      color: #fff;
+    }
+    .btn-flash {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+    }
+
+    /* RESULT MODAL (KHI QUÉT THÀNH CÔNG) */
+    .checkin-result-sheet {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      color: var(--text-main);
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+      transform: translateY(100%);
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 100;
+    }
+    .checkin-result-sheet.active {
+      transform: translateY(0);
+    }
+    .res-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #ecfdf5;
+      color: #059669;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      margin-bottom: 12px;
+    }
+    .res-passenger-name {
+      font-size: 18px;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+    .res-ticket-code {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .res-seat-highlight {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff7ed;
+      border: 1.5px solid #fed7aa;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      margin-bottom: 18px;
+    }
+    .seat-big {
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--primary);
+    }
+    .btn-confirm-board {
+      width: 100%;
+      background: linear-gradient(135deg, var(--primary), #e04410);
+      color: #fff;
+      border: none;
+      padding: 14px;
+      border-radius: var(--radius-full);
+      font-size: 14.5px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="scanner-app-container">
+
+    <!-- 1. TOP NAV -->
+    <div class="scanner-top">
+      <button class="btn-circle" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+      <div class="trip-tag">Xe 77B-019.28 • An Nhơn</div>
+      <button class="btn-circle"><i class="fa-solid fa-gear"></i></button>
+    </div>
+
+    <!-- 2. CAMERA VIEWFINDER -->
+    <div class="camera-viewport">
+      <div class="viewfinder-frame" onclick="simulateScanSuccess()">
+        <div class="corner tl"></div>
+        <div class="corner tr"></div>
+        <div class="corner bl"></div>
+        <div class="corner br"></div>
+        <div class="laser-line"></div>
+      </div>
+      <p class="scan-guide">Hướng camera vào mã QR vé của khách<br><span style="font-size: 11px; opacity: 0.6;">(Bấm vào khung quét để giả lập quét vé)</span></p>
+    </div>
+
+    <!-- 3. BOTTOM PANEL -->
+    <div class="scanner-bottom">
+      <div class="counter-row">
+        <div class="counter-box">
+          <h4>Trạng thái lên xe</h4>
+          <p><span id="boardedCount">18</span> / 28 Khách</p>
+        </div>
+        <div class="counter-box" style="text-align: right;">
+          <h4>Trạm hiện tại</h4>
+          <p style="font-size: 16px; color: #f8fafc;">Bến xe An Nhơn</p>
+        </div>
+      </div>
+
+      <div class="manual-btn-row">
+        <button class="btn-bottom btn-manual" onclick="promptManualCheckin()"><i class="fa-solid fa-keyboard"></i> Nhập vé tay</button>
+        <button class="btn-bottom btn-flash" onclick="toggleFlash(this)"><i class="fa-solid fa-bolt"></i> Bật đèn pin</button>
+      </div>
+    </div>
+
+    <!-- 4. BOTTOM SHEET XÁC NHẬN SOÁT VÉ (HIỆN KHI QUÉT TRÚNG MÃ) -->
+    <div class="checkin-result-sheet" id="resultSheet">
+      <div class="res-badge"><i class="fa-solid fa-circle-check"></i> VÉ HỢP LỆ • ĐÚNG CHUYẾN</div>
+      <div class="res-passenger-name" id="resName">Hà Thái Sơn</div>
+      <div class="res-ticket-code">Mã vé: <b id="resCode">P8TPY4GS5</b> • SĐT: 0862 860 692</div>
+
+      <div class="res-seat-highlight">
+        <div>
+          <span style="font-size: 12px; color: #9a3412; font-weight: 700; display: block;">VỊ TRÍ GIƯỜNG / GHẾ</span>
+          <span style="font-size: 12px; color: var(--text-muted);">Tầng 2 (Tầng trên)</span>
+        </div>
+        <div class="seat-big" id="resSeat">B11</div>
+      </div>
+
+      <button class="btn-confirm-board" onclick="confirmBoarding()">
+        <i class="fa-solid fa-check"></i> Xác nhận khách đã lên xe
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+    // 1. Giả lập quét trúng mã QR vé P8TPY4GS5
+    function simulateScanSuccess() {
+      document.getElementById('resultSheet').classList.add('active');
+    }
+
+    // 2. Xác nhận lên xe thành công
+    function confirmBoarding() {
+      document.getElementById('resultSheet').classList.remove('active');
+      let count = parseInt(document.getElementById('boardedCount').textContent);
+      document.getElementById('boardedCount').textContent = count + 1;
+      alert('Đã cập nhật vé P8TPY4GS5 sang trạng thái: ĐÃ LÊN XE!');
+    }
+
+    // 3. Nhập soát vé thủ công
+    function promptManualCheckin() {
+      const code = prompt('Nhập mã vé hoặc 4 số cuối SĐT khách hàng:');
+      if (code) {
+        simulateScanSuccess();
+      }
+    }
+
+    // 4. Bật/tắt đèn flash
+    function toggleFlash(btn) {
+      btn.classList.toggle('active');
+      btn.style.background = btn.classList.contains('active') ? '#eab308' : 'rgba(255,255,255,0.1)';
+      btn.style.color = btn.classList.contains('active') ? '#000' : '#fff';
+    }
+  </script>
+</body>
+</html>

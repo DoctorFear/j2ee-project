@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>FUTA Bus Lines — Đặt vé xe khách đường dài</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #f95721;
+      --primary-hover: #e04410;
+      --primary-light: #fff2ed;
+      --primary-subtle: #fef6f3;
+      --accent-green: #007646;
+      --green-light: #ecfdf5;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --text-light: #94a3b8;
+      --border: #e2e8f0;
+      --border-focus: #fca583;
+      --bg-page: #f8fafc;
+      --card-bg: #ffffff;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 22px;
+      --radius-full: 9999px;
+      --shadow-soft: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+      --shadow-card: 0 10px 30px -4px rgba(15, 23, 42, 0.06), 0 4px 12px -2px rgba(15, 23, 42, 0.03);
+      --shadow-hover: 0 20px 35px -6px rgba(249, 87, 33, 0.12), 0 8px 16px -4px rgba(15, 23, 42, 0.04);
+      --shadow-popup: 0 24px 48px -12px rgba(15, 23, 42, 0.18);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.5;
+    }
+
+    /* 1. HEADER GLASSMORPHISM */
+    .app-header {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 44px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+    }
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, var(--primary), #fb7040);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      font-size: 19px;
+      box-shadow: 0 6px 14px rgba(249, 87, 33, 0.28);
+    }
+    .brand-title h2 {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--accent-green);
+      letter-spacing: -0.3px;
+      line-height: 1.1;
+    }
+    .brand-title span {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    /* User Profile Pill */
+    .user-menu-container { position: relative; }
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #f1f5f9;
+      padding: 5px 14px 5px 6px;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-main);
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .user-pill:hover {
+      background: #fff;
+      border-color: var(--border);
+      box-shadow: var(--shadow-soft);
+    }
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #fb923c, var(--primary));
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .user-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      width: 220px;
+      background: #fff;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-popup);
+      border: 1px solid var(--border);
+      padding: 6px;
+      z-index: 101;
+    }
+    .user-dropdown.active {
+      display: block;
+      animation: modalFadeIn 0.2s ease forwards;
+    }
+    .user-dropdown a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-main);
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      transition: all 0.15s;
+    }
+    .user-dropdown a:hover {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+    .user-dropdown a.logout {
+      color: #ef4444;
+      border-top: 1px solid #f1f5f9;
+      margin-top: 4px;
+    }
+    .user-dropdown a.logout:hover {
+      background: #fef2f2;
+      color: #dc2626;
+    }
+
+    /* 2. SEARCH ISLAND */
+    .search-wrapper {
+      max-width: 1180px;
+      margin: 32px auto 0 auto;
+      padding: 0 20px;
+    }
+    .search-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      padding: 26px 32px 30px 32px;
+      box-shadow: var(--shadow-card);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      position: relative;
+    }
+    .trip-type-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+    .radio-pill-group {
+      display: inline-flex;
+      background: #f1f5f9;
+      padding: 4px;
+      border-radius: var(--radius-full);
+      gap: 4px;
+    }
+    .radio-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      padding: 7px 18px;
+      border-radius: var(--radius-full);
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .radio-pill input[type="radio"] { display: none; }
+    .radio-pill.active {
+      background: #ffffff;
+      color: var(--primary);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Search Inputs */
+    .search-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1.35fr 1fr 1fr;
+      gap: 14px;
+      position: relative;
+    }
+    .input-box {
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .input-box:hover {
+      border-color: #cbd5e1;
+    }
+    .input-box:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(249, 87, 33, 0.12);
+    }
+    .input-box.disabled {
+      background: #f8fafc;
+      border-color: #edf2f7;
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+    .input-box label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .input-box label i { color: var(--primary); font-size: 11px; }
+    .location-display {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--text-main);
+      padding: 2px 0;
+    }
+    .input-box input[type="date"] {
+      border: none;
+      outline: none;
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--text-main);
+      background: transparent;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    /* Swap Button */
+    .swap-btn {
+      position: absolute;
+      left: calc(95%);
+      top: 50%;
+      transform: translateY(-50%);
+      width: 36px;
+      height: 36px;
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      cursor: pointer;
+      z-index: 5;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .swap-btn:hover {
+      transform: translateY(-50%) rotate(180deg) scale(1.08);
+      border-color: var(--primary);
+      color: var(--primary-hover);
+    }
+
+    /* DROPDOWN POPUP CHO ĐỊA ĐIỂM */
+    .station-modal {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      width: 360px;
+      background: #ffffff;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-popup);
+      border: 1px solid var(--border);
+      z-index: 999;
+      overflow: hidden;
+    }
+    .station-modal.active {
+      display: block;
+      animation: modalFadeIn 0.2s ease forwards;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .modal-search-box {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      background: #f8fafc;
+    }
+    .modal-search-input {
+      width: 100%;
+      padding: 9px 14px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border);
+      font-size: 13.5px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .modal-search-input:focus {
+      border-color: var(--primary);
+      background: #fff;
+    }
+    .modal-content-list {
+      max-height: 290px;
+      overflow-y: auto;
+      padding: 6px 0;
+    }
+    .province-group { margin-bottom: 4px; }
+    .province-header {
+      padding: 6px 16px;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-muted);
+      background: #f1f5f9;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .station-item {
+      padding: 10px 18px 10px 24px;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text-main);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .station-item:hover {
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 700;
+    }
+    .station-item.no-match { display: none !important; }
+    .no-results-msg {
+      padding: 20px;
+      font-size: 13px;
+      color: var(--text-muted);
+      text-align: center;
+      display: none;
+    }
+    .no-results-msg.show { display: block; }
+
+    /* Nút tìm kiếm */
+    .btn-search-row {
+      display: flex;
+      justify-content: center;
+      margin-top: 24px;
+    }
+    .btn-search {
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      color: #fff;
+      border: none;
+      padding: 14px 54px;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      box-shadow: 0 10px 25px -4px rgba(249, 87, 33, 0.35);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn-search:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 28px -4px rgba(249, 87, 33, 0.45);
+    }
+    .btn-search:active { transform: translateY(0); }
+
+    /* 3. MAIN WRAPPER (SIDEBAR + TICKETS) */
+    .content-wrapper {
+      max-width: 1180px;
+      margin: 36px auto 70px auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 290px 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    /* Filter Card */
+    .filter-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      padding: 22px;
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--border);
+      position: sticky;
+      top: 90px;
+    }
+    .filter-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 18px;
+    }
+    .filter-head h3 {
+      font-size: 13.5px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+    }
+    .btn-clear {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn-clear:hover { opacity: 0.8; }
+    .filter-group { margin-bottom: 20px; }
+    .filter-group:last-child { margin-bottom: 0; }
+    .filter-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 11px;
+    }
+    .time-checkboxes label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #475569;
+      margin-bottom: 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .time-checkboxes label .tc-left { display: flex; align-items: center; gap: 10px; }
+    .time-checkboxes input[type="checkbox"] {
+      accent-color: var(--primary);
+      width: 17px;
+      height: 17px;
+      border-radius: 4px;
+    }
+    .time-checkboxes .tc-count { color: var(--text-light); font-size: 12px; font-weight: 600; }
+    .pill-filters { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pill-btn {
+      background: #f8fafc;
+      border: 1.5px solid var(--border);
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .pill-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .pill-btn.active {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* Results Header & Sorting */
+    .results-head {
+      margin-bottom: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 14px;
+    }
+    .route-name {
+      font-size: 21px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      color: var(--text-main);
+    }
+    .route-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      font-weight: 600;
+    }
+    .sort-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .sort-chip {
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      padding: 8px 18px;
+      border-radius: var(--radius-full);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .sort-chip:hover {
+      border-color: #cbd5e1;
+      color: var(--text-main);
+    }
+    .sort-chip.active {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* Ticket Card */
+    .ticket-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      padding: 22px 26px;
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--border);
+      margin-bottom: 18px;
+      position: relative;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .ticket-card:hover {
+      box-shadow: var(--shadow-hover);
+      border-color: #fdba74;
+      transform: translateY(-2px);
+    }
+    .ticket-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .bus-type {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent-green);
+      background: var(--green-light);
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+    }
+    .rating {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .rating i { color: #f59e0b; }
+
+    .ticket-main {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .timeline {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+    .point h4 {
+      font-size: 23px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--text-main);
+    }
+    .point span {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 600;
+      display: block;
+      margin-top: 1px;
+    }
+    .travel-info {
+      text-align: center;
+      padding: 0 10px;
+    }
+    .travel-info span {
+      font-size: 12px;
+      color: var(--text-light);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .travel-line {
+      width: 110px;
+      height: 2px;
+      background: #e2e8f0;
+      margin: 8px auto;
+      position: relative;
+    }
+    .travel-line::before, .travel-line::after {
+      content: "";
+      position: absolute;
+      top: -3px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+    .travel-line::before { left: 0; }
+    .travel-line::after { right: 0; }
+    .travel-bus-icon {
+      position: absolute;
+      top: -4px;
+      left: calc(50% - 9px);
+      background: #ffffff;
+      color: var(--text-light);
+      font-size: 11px;
+      padding: 0 4px;
+    }
+
+    .ticket-price { text-align: right; }
+    .seat-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      margin-bottom: 4px;
+    }
+    .seat-badge.ok { background: #f0fdf4; color: #16a34a; }
+    .seat-badge.warn { background: #fffbeb; color: #d97706; }
+    .seat-badge.low { background: #fef2f2; color: #dc2626; }
+    .seat-badge i { font-size: 6px; }
+    .fare {
+      font-size: 23px;
+      font-weight: 900;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+    }
+    .fare-old {
+      font-size: 13px;
+      color: var(--text-light);
+      text-decoration: line-through;
+      font-weight: 600;
+      margin-right: 4px;
+    }
+
+    /* Ticket Footer */
+    .ticket-footer {
+      border-top: 1px solid #f1f5f9;
+      margin-top: 18px;
+      padding-top: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .quick-links { display: flex; gap: 20px; }
+    .quick-links a {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-decoration: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.15s;
+    }
+    .quick-links a:hover { color: var(--primary); }
+    .btn-select {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 9px 24px;
+      border-radius: var(--radius-full);
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(249, 87, 33, 0.28);
+      transition: all 0.2s ease;
+    }
+    .btn-select:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 6px 18px rgba(249, 87, 33, 0.38);
+      transform: translateY(-1px);
+    }
+
+    /* Empty state */
+    .empty-state {
+      background: var(--card-bg);
+      border: 1.5px dashed var(--border);
+      border-radius: var(--radius-md);
+      padding: 56px 20px;
+      text-align: center;
+      display: none;
+    }
+    .empty-state.show { display: block; }
+    .empty-state i { font-size: 38px; color: #cbd5e1; margin-bottom: 12px; }
+    .empty-state strong { font-size: 16px; color: var(--text-main); display: block; }
+    .empty-state p { font-size: 13.5px; color: var(--text-muted); margin-top: 4px; }
+
+    /* 4. MODAL LỊCH TRÌNH */
+    .schedule-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+      padding: 20px;
+    }
+    .schedule-modal-overlay.active { display: flex; }
+    .schedule-modal {
+      background: #ffffff;
+      width: 100%;
+      max-width: 620px;
+      max-height: 85vh;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-popup);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes modalSlideUp {
+      from { transform: translateY(24px) scale(0.98); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .schedule-modal-header {
+      padding: 18px 24px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .schedule-modal-header h3 {
+      font-size: 16.5px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+    .schedule-modal-header span {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+      display: block;
+      margin-top: 2px;
+    }
+    .btn-close-modal {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #f1f5f9;
+      border: none;
+      font-size: 15px;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .btn-close-modal:hover {
+      background: #e2e8f0;
+      color: var(--text-main);
+    }
+    .schedule-modal-body {
+      padding: 24px 28px;
+      overflow-y: auto;
+    }
+
+    /* Stepper Timeline */
+    .timeline-stepper {
+      position: relative;
+      border-left: 2px dashed #cbd5e1;
+      margin-left: 60px;
+      padding-left: 26px;
+    }
+    .step-item { position: relative; margin-bottom: 24px; }
+    .step-item:last-child { margin-bottom: 0; }
+    .step-time {
+      position: absolute;
+      left: -96px;
+      top: -3px;
+      font-size: 14.5px;
+      font-weight: 800;
+      color: var(--text-main);
+      width: 55px;
+      text-align: right;
+    }
+    .step-dot {
+      position: absolute;
+      left: -32px;
+      top: 4px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 3px solid var(--primary);
+    }
+    .step-item.inactive .step-dot {
+      border-color: #94a3b8;
+      background: #cbd5e1;
+    }
+    .step-station-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .step-badge-inactive {
+      background: #fef2f2;
+      color: #ef4444;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+    .step-address {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      line-height: 1.45;
+    }
+    .step-item.inactive .step-station-title { color: #94a3b8; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #0f172a;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: var(--radius-full);
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast i { color: #4ade80; }
+
+    @media (max-width: 960px) {
+      .search-grid { grid-template-columns: 1fr 1fr; }
+      .swap-btn { display: none; }
+      .content-wrapper { grid-template-columns: 1fr; }
+      .filter-card { position: static; }
+    }
+    @media (max-width: 640px) {
+      .app-header { padding: 12px 18px; }
+      .search-wrapper { margin-top: 16px; }
+      .search-card { padding: 20px 18px; }
+      .search-grid { grid-template-columns: 1fr; }
+      .brand-title span { display: none; }
+      .timeline { flex-direction: column; align-items: flex-start; gap: 6px; }
+      .travel-line { display: none; }
+      .ticket-main { flex-direction: column; align-items: flex-start; gap: 14px; }
+      .ticket-price { text-align: left; }
+      .ticket-footer { flex-direction: column; align-items: stretch; }
+      .quick-links { justify-content: space-between; }
+      .btn-select { width: 100%; text-align: center; }
+      .step-time { position: static; width: auto; text-align: left; margin-bottom: 2px; }
+      .timeline-stepper { margin-left: 8px; padding-left: 20px; }
+      .step-dot { left: -20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. HEADER -->
+  <header class="app-header">
+    <a href="#" class="brand-logo">
+      <div class="brand-icon"><i class="fa-solid fa-bus-simple"></i></div>
+      <div class="brand-title">
+        <h2>FUTA Bus Lines</h2>
+        <span>Hệ thống vé đường dài</span>
+      </div>
+    </a>
+
+    <div class="user-menu-container">
+      <div class="user-pill" onclick="toggleUserDropdown(event)">
+        <div class="user-avatar">S</div>
+        <span>Hà Thái Sơn</span>
+        <i class="fa-solid fa-angle-down" style="color: var(--text-light); font-size: 11px;"></i>
+      </div>
+      <div class="user-dropdown" id="userDropdown" onclick="event.stopPropagation()">
+        <a href="#"><i class="fa-regular fa-id-card"></i> Thông tin cá nhân</a>
+        <a href="#"><i class="fa-solid fa-ticket"></i> Danh sách vé</a>
+        <a href="#" class="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 2. SEARCH SECTION -->
+  <div class="search-wrapper">
+    <div class="search-card">
+      <div class="trip-type-row">
+        <div class="radio-pill-group">
+          <label class="radio-pill active" id="pillOneWay">
+            <input type="radio" name="trip_type" value="oneway" checked onchange="toggleReturnDate(false)">
+            <i class="fa-solid fa-arrow-right"></i> Một chiều
+          </label>
+          <label class="radio-pill" id="pillRoundTrip">
+            <input type="radio" name="trip_type" value="roundtrip" onchange="toggleReturnDate(true)">
+            <i class="fa-solid fa-arrow-right-arrow-left"></i> Khứ hồi
+          </label>
+        </div>
+      </div>
+
+      <div class="search-grid">
+        <!-- Điểm đi -->
+        <div class="input-box" id="originBox" onclick="openLocationModal('origin', event)">
+          <label><i class="fa-solid fa-location-dot"></i> Điểm đi</label>
+          <div class="location-display">
+            <span id="originText">Bình Định (Bến xe An Nhơn)</span>
+            <i class="fa-solid fa-chevron-down" style="font-size: 11px; color: var(--text-light);"></i>
+          </div>
+
+          <!-- Nút swap -->
+          <button class="swap-btn" onclick="swapLocations(event)" title="Đổi chiều đi/đến"><i class="fa-solid fa-right-left"></i></button>
+
+          <!-- Modal chọn điểm đi -->
+          <div class="station-modal" id="originModal" onclick="event.stopPropagation()">
+            <div class="modal-search-box">
+              <input type="text" class="modal-search-input" placeholder="Tìm tỉnh hoặc bến xe..." oninput="filterStations(this, 'originList')">
+            </div>
+            <div class="modal-content-list" id="originList">
+              <div class="province-group">
+                <div class="province-header"><i class="fa-solid fa-city"></i> Bình Định</div>
+                <div class="station-item" onclick="selectStation('origin', 'Bến xe An Nhơn', 'Bình Định')"><span>Bến xe An Nhơn</span><i class="fa-solid fa-check"></i></div>
+                <div class="station-item" onclick="selectStation('origin', '207 Tây Sơn (Quy Nhơn)', 'Bình Định')"><span>207 Tây Sơn (Quy Nhơn)</span></div>
+              </div>
+              <div class="province-group">
+                <div class="province-header"><i class="fa-solid fa-city"></i> Đà Nẵng</div>
+                <div class="station-item" onclick="selectStation('origin', 'Bến xe Trung Tâm Đà Nẵng', 'Đà Nẵng')"><span>Bến xe Trung Tâm Đà Nẵng</span></div>
+              </div>
+              <div class="province-group">
+                <div class="province-header"><i class="fa-solid fa-city"></i> Phú Yên</div>
+                <div class="station-item" onclick="selectStation('origin', 'Bến xe Nam Tuy Hòa', 'Phú Yên')"><span>Bến xe Nam Tuy Hòa</span></div>
+              </div>
+              <div class="no-results-msg">Không tìm thấy bến xe phù hợp</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Điểm đến -->
+        <div class="input-box" id="destBox" onclick="openLocationModal('dest', event)">
+          <label><i class="fa-solid fa-location-crosshairs"></i> Điểm đến</label>
+          <div class="location-display">
+            <span id="destText">TP. Hồ Chí Minh (BX Miền Tây)</span>
+            <i class="fa-solid fa-chevron-down" style="font-size: 11px; color: var(--text-light);"></i>
+          </div>
+
+          <!-- Modal chọn điểm đến -->
+          <div class="station-modal" id="destModal" onclick="event.stopPropagation()">
+            <div class="modal-search-box">
+              <input type="text" class="modal-search-input" placeholder="Tìm tỉnh hoặc bến xe..." oninput="filterStations(this, 'destList')">
+            </div>
+            <div class="modal-content-list" id="destList">
+              <div class="province-group">
+                <div class="province-header"><i class="fa-solid fa-city"></i> TP. Hồ Chí Minh</div>
+                <div class="station-item" onclick="selectStation('dest', 'Bến xe Miền Tây', 'TP. Hồ Chí Minh')"><span>Bến xe Miền Tây</span><i class="fa-solid fa-check"></i></div>
+                <div class="station-item" onclick="selectStation('dest', 'Bến xe Miền Đông Mới', 'TP. Hồ Chí Minh')"><span>Bến xe Miền Đông Mới</span></div>
+                <div class="station-item" onclick="selectStation('dest', 'Bến Xe An Sương', 'TP. Hồ Chí Minh')"><span>Bến Xe An Sương</span></div>
+                <div class="station-item" onclick="selectStation('dest', '202 Lê Hồng Phong (Q5)', 'TP. Hồ Chí Minh')"><span>202 Lê Hồng Phong</span></div>
+              </div>
+              <div class="no-results-msg">Không tìm thấy bến xe phù hợp</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ngày đi -->
+        <div class="input-box">
+          <label><i class="fa-regular fa-calendar-days"></i> Ngày đi</label>
+          <input type="date" id="departDateInput" value="2026-09-29">
+        </div>
+
+        <!-- Ngày về -->
+        <div class="input-box disabled" id="returnDateBox">
+          <label><i class="fa-regular fa-calendar-check"></i> Ngày về</label>
+          <input type="date" id="returnDateInput" value="2026-10-05" disabled>
+        </div>
+      </div>
+
+      <div class="btn-search-row">
+        <button class="btn-search" onclick="showToast('Đang cập nhật danh sách chuyến đi...')">
+          <i class="fa-solid fa-magnifying-glass"></i> Tìm chuyến xe
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. MAIN (BỘ LỌC + KẾT QUẢ) -->
+  <div class="content-wrapper">
+    <!-- Cột Lọc -->
+    <aside class="filter-card">
+      <div class="filter-head">
+        <h3>BỘ LỌC TÌM KIẾM</h3>
+        <button class="btn-clear" onclick="clearFilters()"><i class="fa-regular fa-trash-can"></i> Xóa lọc</button>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-title">Giờ khởi hành</div>
+        <div class="time-checkboxes" id="timeFilters">
+          <label><span class="tc-left"><input type="checkbox" data-range="0-6"> Sáng sớm (00:00 - 06:00)</span><span class="tc-count">1</span></label>
+          <label><span class="tc-left"><input type="checkbox" data-range="6-12"> Buổi sáng (06:00 - 12:00)</span><span class="tc-count">1</span></label>
+          <label><span class="tc-left"><input type="checkbox" data-range="12-18"> Buổi chiều (12:00 - 18:00)</span><span class="tc-count">1</span></label>
+          <label><span class="tc-left"><input type="checkbox" data-range="18-24"> Buổi tối (18:00 - 24:00)</span><span class="tc-count">2</span></label>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-title">Loại xe</div>
+        <div class="pill-filters" id="busTypeFilters">
+          <button class="pill-btn" data-type="Giường nằm">Giường nằm</button>
+          <button class="pill-btn" data-type="Limousine">Limousine</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-title">Vị trí hàng ghế</div>
+        <div class="pill-filters">
+          <button class="pill-btn">Hàng đầu</button>
+          <button class="pill-btn active">Hàng giữa</button>
+          <button class="pill-btn">Hàng cuối</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-title">Tầng</div>
+        <div class="pill-filters">
+          <button class="pill-btn">Tầng trên</button>
+          <button class="pill-btn active">Tầng dưới</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Cột Danh sách vé -->
+    <main>
+      <div class="results-head">
+        <div>
+          <h2 class="route-name">Bình Định (An Nhơn) đi TP. Hồ Chí Minh</h2>
+          <div class="route-sub" id="resultCount">Thứ Ba, 29/09/2026 · 5 chuyến phù hợp</div>
+        </div>
+        <div class="sort-row">
+          <button class="sort-chip" data-sort="price" onclick="applySort('price', this)"><i class="fa-solid fa-tags"></i> Giá rẻ nhất</button>
+          <button class="sort-chip active" data-sort="time" onclick="applySort('time', this)"><i class="fa-regular fa-clock"></i> Giờ khởi hành</button>
+          <button class="sort-chip" data-sort="seats" onclick="applySort('seats', this)"><i class="fa-solid fa-couch"></i> Ghế trống nhiều</button>
+        </div>
+      </div>
+
+      <!-- Danh sách thẻ xe -->
+      <div id="ticketList"></div>
+
+      <!-- Trạng thái trống -->
+      <div class="empty-state" id="emptyState">
+        <i class="fa-regular fa-face-frown"></i>
+        <strong>Không tìm thấy chuyến xe phù hợp</strong>
+        <p>Hãy thử bỏ bớt bộ lọc hoặc chọn một ngày khởi hành khác.</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- 4. MODAL LỊCH TRÌNH -->
+  <div class="schedule-modal-overlay" id="scheduleModal" onclick="closeScheduleModal(event)">
+    <div class="schedule-modal" onclick="event.stopPropagation()">
+      <div class="schedule-modal-header">
+        <div>
+          <h3>Lịch trình di chuyển &amp; Trạm đón/trả</h3>
+          <span id="scheduleModalSub">An Nhơn (Bình Định) → BX Miền Tây (TP.HCM)</span>
+        </div>
+        <button class="btn-close-modal" onclick="closeScheduleModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="schedule-modal-body">
+        <div class="timeline-stepper" id="scheduleStepper"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Thông báo -->
+  <div class="toast" id="toast"><i class="fa-solid fa-circle-check"></i><span id="toastMsg">Thành công</span></div>
+
+  <script>
+    const trips = [
+      {
+        id: 't1', busType: 'Giường nằm 34 chỗ', rating: 4.6,
+        depTime: '17:30', depH: 17, depPoint: 'An Nhơn (Bình Định)',
+        arrTime: '05:50', arrPoint: 'BX Miền Tây (TP.HCM)',
+        duration: '12h 20m (650 Km)', seats: 18, price: 380000, oldPrice: null,
+        stops: [
+          { time: '17:30', name: 'An Nhơn', address: '02 Nguyễn Văn Linh, P.Bình Định, Tx.An Nhơn, Tỉnh Bình Định', inactive: false },
+          { time: '18:10', name: '207 Tây Sơn', address: '207 Tây Sơn, KV4, P.Quang Trung, TP.Quy Nhơn, Tỉnh Bình Định', inactive: false },
+          { time: '18:45', name: 'Chí Thạnh', address: '437 Đ. Quốc lộ 1 Cũ, Chí Thạnh, Tuy An, Phú Yên', inactive: false },
+          { time: '19:05', name: 'Bến xe Sông Cầu', address: 'F665+7CW, Sông Cầu, Phú Yên', inactive: false },
+          { time: '20:00', name: 'Bến xe Nam Tuy Hòa', address: '507 Nguyễn Văn Linh, phường Phú Lâm, TP.Tuy Hòa, Phú Yên', inactive: false },
+          { time: '04:50', name: 'Bến xe Ga', address: '720, QL1A, Thạnh Lộc, Quận 12, Thành phố Hồ Chí Minh', inactive: true },
+          { time: '05:50', name: 'Bến xe Miền Tây', address: '395 Kinh Dương Vương, P.An Lạc, Q.Bình Tân, TP.HCM', inactive: false }
+        ]
+      },
+      {
+        id: 't2', busType: 'Limousine 22 chỗ', rating: 4.8,
+        depTime: '20:00', depH: 20, depPoint: 'An Nhơn (Bình Định)',
+        arrTime: '07:40', arrPoint: 'BX Miền Đông Mới (TP.HCM)',
+        duration: '11h 40m (650 Km)', seats: 4, price: 450000,
+        stops: [
+          { time: '20:00', name: 'An Nhơn', address: '02 Nguyễn Văn Linh, P.Bình Định, Tx.An Nhơn, Tỉnh Bình Định', inactive: false },
+          { time: '20:40', name: '207 Tây Sơn', address: '207 Tây Sơn, KV4, P.Quang Trung, TP.Quy Nhơn, Tỉnh Bình Định', inactive: false },
+          { time: '21:35', name: 'Bến xe Nam Tuy Hòa', address: '507 Nguyễn Văn Linh, phường Phú Lâm, TP.Tuy Hòa, Phú Yên', inactive: false },
+          { time: '07:00', name: 'Bến Xe An Sương', address: 'Quốc Lộ 22, Ấp Đông Lân, Bà Điểm, Hóc Môn, TP Hồ Chí Minh', inactive: false },
+          { time: '07:40', name: 'Bến xe Miền Đông Mới', address: '501 Hoàng Hữu Nam, P.Long Bình, TP.Thủ Đức, TP.HCM', inactive: false }
+        ]
+      },
+      {
+        id: 't3', busType: 'Giường nằm 34 chỗ', rating: 4.5,
+        depTime: '09:15', depH: 9, depPoint: 'An Nhơn (Bình Định)',
+        arrTime: '21:30', arrPoint: 'BX Miền Tây (TP.HCM)',
+        duration: '12h 15m (650 Km)', seats: 26, price: 360000, oldPrice: null,
+        stops: [
+          { time: '09:15', name: 'An Nhơn', address: '02 Nguyễn Văn Linh, P.Bình Định, Tx.An Nhơn, Tỉnh Bình Định', inactive: false },
+          { time: '10:00', name: '207 Tây Sơn', address: '207 Tây Sơn, KV4, P.Quang Trung, TP.Quy Nhơn, Tỉnh Bình Định', inactive: false },
+          { time: '11:30', name: 'Bến xe Sông Cầu', address: 'F665+7CW, Sông Cầu, Phú Yên', inactive: false },
+          { time: '20:50', name: 'Y Dược', address: '03 Mạc Thiên Tích, P11, Q5, TP.HCM', inactive: true },
+          { time: '21:30', name: 'Bến xe Miền Tây', address: '395 Kinh Dương Vương, P.An Lạc, Q.Bình Tân, TP.HCM', inactive: false }
+        ]
+      },
+      {
+        id: 't4', busType: 'Limousine 22 chỗ', rating: 4.7,
+        depTime: '13:45', depH: 13, depPoint: 'An Nhơn (Bình Định)',
+        arrTime: '01:20', arrPoint: 'Bến xe Quận 8 (TP.HCM)',
+        duration: '11h 35m (650 Km)', seats: 9, price: 430000, oldPrice: null,
+        stops: [
+          { time: '13:45', name: 'An Nhơn', address: '02 Nguyễn Văn Linh, P.Bình Định, Tx.An Nhơn, Tỉnh Bình Định', inactive: false },
+          { time: '14:30', name: 'Chí Thạnh', address: '437 Đ. Quốc lộ 1 Cũ, Chí Thạnh, Tuy An, Phú Yên', inactive: false },
+          { time: '15:20', name: 'Bến xe Nam Tuy Hòa', address: '507 Nguyễn Văn Linh, phường Phú Lâm, TP.Tuy Hòa, Phú Yên', inactive: false },
+          { time: '00:40', name: 'Vĩnh Lộc', address: '390 Đường Số 1, KDC Vĩnh Lộc, Bình Tân, Hồ Chí Minh', inactive: false },
+          { time: '01:20', name: 'Bến xe Quận 8', address: '932B Đ. Tạ Quang Bửu, Phường 5, Quận 8, Hồ Chí Minh', inactive: false }
+        ]
+      },
+      {
+        id: 't5', busType: 'Giường nằm 34 chỗ', rating: 4.4,
+        depTime: '22:30', depH: 22, depPoint: 'An Nhơn (Bình Định)',
+        arrTime: '10:50', arrPoint: '202 Lê Hồng Phong (TP.HCM)',
+        duration: '12h 20m (650 Km)', seats: 2, price: 370000, oldPrice: null,
+        stops: [
+          { time: '22:30', name: 'An Nhơn', address: '02 Nguyễn Văn Linh, P.Bình Định, Tx.An Nhơn, Tỉnh Bình Định', inactive: false },
+          { time: '23:10', name: '207 Tây Sơn', address: '207 Tây Sơn, KV4, P.Quang Trung, TP.Quy Nhơn, Tỉnh Bình Định', inactive: false },
+          { time: '00:45', name: 'Bến xe Sông Cầu', address: 'F665+7CW, Sông Cầu, Phú Yên', inactive: false },
+          { time: '10:10', name: 'Bến Xe An Sương', address: 'Quốc Lộ 22, Ấp Đông Lân, Bà Điểm, Hóc Môn, TP Hồ Chí Minh', inactive: false },
+          { time: '10:50', name: '202 Lê Hồng Phong', address: '202 Lê Hồng Phong, P.4, Q.5, TP. Hồ Chí Minh', inactive: false }
+        ]
+      }
+    ];
+
+    let currentSort = 'time';
+    const activeTimeRanges = new Set();
+    const activeBusTypes = new Set();
+
+    function seatClass(n) { return n <= 5 ? 'low' : n <= 12 ? 'warn' : 'ok'; }
+    function seatLabel(n) { return n <= 5 ? `Sắp hết · ${n} chỗ` : `${n} chỗ trống`; }
+    function fmtVnd(n) { return n.toLocaleString('vi-VN') + 'đ'; }
+
+    function tripCardHTML(trip) {
+      return `
+        <div class="ticket-card" data-id="${trip.id}">
+          <div class="ticket-top">
+            <div class="bus-type"><i class="fa-solid fa-bus"></i> ${trip.busType}</div>
+            <div class="rating"><i class="fa-solid fa-star"></i> ${trip.rating.toFixed(1)}</div>
+          </div>
+          <div class="ticket-main">
+            <div class="timeline">
+              <div class="point"><h4>${trip.depTime}</h4><span>${trip.depPoint}</span></div>
+              <div class="travel-info">
+                <span>${trip.duration}</span>
+                <div class="travel-line"><i class="fa-solid fa-chevron-right travel-bus-icon"></i></div>
+              </div>
+              <div class="point"><h4>${trip.arrTime}</h4><span>${trip.arrPoint}</span></div>
+            </div>
+            <div class="ticket-price">
+              <div class="seat-badge ${seatClass(trip.seats)}"><i class="fa-solid fa-circle"></i> ${seatLabel(trip.seats)}</div>
+              <div>
+                ${trip.oldPrice ? `<span class="fare-old">${fmtVnd(trip.oldPrice)}</span>` : ''}
+                <span class="fare">${fmtVnd(trip.price)}</span>
+              </div>
+            </div>
+          </div>
+          <div class="ticket-footer">
+            <div class="quick-links">
+              <a href="javascript:void(0)" onclick="openScheduleModal('${trip.id}')"><i class="fa-solid fa-circle-info"></i> Lịch trình</a>
+              <a href="javascript:void(0)" onclick="showToast('Chính sách hoàn hủy vé trong 24h')"><i class="fa-solid fa-shield-halved"></i> Chính sách</a>
+            </div>
+            <button class="btn-select" onclick="showToast('Đang chuyển hướng chọn sơ đồ ghế...')">Chọn ghế</button>
+          </div>
+        </div>`;
+    }
+
+    function timeRangeOf(h) {
+      if (h >= 0 && h < 6) return '0-6';
+      if (h >= 6 && h < 12) return '6-12';
+      if (h >= 12 && h < 18) return '12-18';
+      return '18-24';
+    }
+
+    function getFilteredSortedTrips() {
+      let list = trips.filter(t => {
+        const rangeOk = activeTimeRanges.size === 0 || activeTimeRanges.has(timeRangeOf(t.depH));
+        const typeOk = activeBusTypes.size === 0 || Array.from(activeBusTypes).some(bt => t.busType.includes(bt));
+        return rangeOk && typeOk;
+      });
+      if (currentSort === 'price') list = list.slice().sort((a, b) => a.price - b.price);
+      else if (currentSort === 'seats') list = list.slice().sort((a, b) => b.seats - a.seats);
+      else list = list.slice().sort((a, b) => a.depH - b.depH);
+      return list;
+    }
+
+    function renderTrips() {
+      const list = getFilteredSortedTrips();
+      const container = document.getElementById('ticketList');
+      const empty = document.getElementById('emptyState');
+      container.innerHTML = list.map(tripCardHTML).join('');
+      empty.classList.toggle('show', list.length === 0);
+      document.getElementById('resultCount').textContent = `Thứ Ba, 29/09/2026 · ${list.length} chuyến phù hợp`;
+    }
+
+    function applySort(sortKey, el) {
+      currentSort = sortKey;
+      document.querySelectorAll('.sort-chip').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      renderTrips();
+    }
+
+    document.getElementById('timeFilters').addEventListener('change', (e) => {
+      const cb = e.target.closest('input[type="checkbox"]');
+      if (!cb) return;
+      const range = cb.dataset.range;
+      if (cb.checked) activeTimeRanges.add(range); else activeTimeRanges.delete(range);
+      renderTrips();
+    });
+
+    document.getElementById('busTypeFilters').addEventListener('click', (e) => {
+      const btn = e.target.closest('.pill-btn');
+      if (!btn) return;
+      btn.classList.toggle('active');
+      const type = btn.dataset.type;
+      if (btn.classList.contains('active')) activeBusTypes.add(type); else activeBusTypes.delete(type);
+      renderTrips();
+    });
+
+    function clearFilters() {
+      activeTimeRanges.clear();
+      activeBusTypes.clear();
+      document.querySelectorAll('#timeFilters input[type="checkbox"]').forEach(cb => cb.checked = false);
+      document.querySelectorAll('#busTypeFilters .pill-btn').forEach(b => b.classList.remove('active'));
+      renderTrips();
+      showToast('Đã xóa toàn bộ bộ lọc');
+    }
+
+    /* 1. Toggle khứ hồi */
+    function toggleReturnDate(isRoundTrip) {
+      const pillOneWay = document.getElementById('pillOneWay');
+      const pillRoundTrip = document.getElementById('pillRoundTrip');
+      const returnDateBox = document.getElementById('returnDateBox');
+      const returnDateInput = document.getElementById('returnDateInput');
+      if (isRoundTrip) {
+        pillRoundTrip.classList.add('active'); pillOneWay.classList.remove('active');
+        returnDateBox.classList.remove('disabled'); returnDateInput.removeAttribute('disabled');
+      } else {
+        pillOneWay.classList.add('active'); pillRoundTrip.classList.remove('active');
+        returnDateBox.classList.add('disabled'); returnDateInput.setAttribute('disabled', 'true');
+      }
+    }
+
+    /* 2. User dropdown */
+    function toggleUserDropdown(event) {
+      event.stopPropagation();
+      document.getElementById('userDropdown').classList.toggle('active');
+    }
+
+    /* 3. Modal địa điểm & Swap */
+    function openLocationModal(type, event) {
+      event.stopPropagation();
+      const originModal = document.getElementById('originModal');
+      const destModal = document.getElementById('destModal');
+      if (type === 'origin') {
+        destModal.classList.remove('active');
+        originModal.classList.toggle('active');
+      } else {
+        originModal.classList.remove('active');
+        destModal.classList.toggle('active');
+      }
+    }
+
+    function selectStation(type, stationName, provinceName) {
+      if (type === 'origin') {
+        document.getElementById('originText').innerText = `${provinceName} (${stationName})`;
+        document.getElementById('originModal').classList.remove('active');
+      } else {
+        document.getElementById('destText').innerText = `${provinceName} (${stationName})`;
+        document.getElementById('destModal').classList.remove('active');
+      }
+    }
+
+    function swapLocations(event) {
+      event.stopPropagation();
+      const originEl = document.getElementById('originText');
+      const destEl = document.getElementById('destText');
+      const tmp = originEl.innerText;
+      originEl.innerText = destEl.innerText;
+      destEl.innerText = tmp;
+      showToast('Đã đảo ngược điểm đi và điểm đến');
+    }
+
+    function filterStations(inputElement, listId) {
+      const filter = inputElement.value.toLowerCase();
+      const listContainer = document.getElementById(listId);
+      const groups = listContainer.getElementsByClassName('province-group');
+      let anyMatch = false;
+
+      Array.from(groups).forEach(group => {
+        const items = group.getElementsByClassName('station-item');
+        let groupMatch = false;
+        Array.from(items).forEach(item => {
+          const text = item.innerText.toLowerCase();
+          const match = text.includes(filter);
+          item.classList.toggle('no-match', !match);
+          if (match) groupMatch = true;
+        });
+        group.style.display = groupMatch ? 'block' : 'none';
+        if (groupMatch) anyMatch = true;
+      });
+      listContainer.querySelector('.no-results-msg').classList.toggle('show', !anyMatch);
+    }
+
+    /* 4. Modal Lịch trình */
+    function openScheduleModal(tripId) {
+      const trip = trips.find(t => t.id === tripId) || trips[0];
+      document.getElementById('scheduleModalSub').textContent = `${trip.depPoint} → ${trip.arrPoint}`;
+      document.getElementById('scheduleStepper').innerHTML = trip.stops.map(s => `
+        <div class="step-item ${s.inactive ? 'inactive' : ''}">
+          <div class="step-time">${s.time}</div>
+          <div class="step-dot"></div>
+          <div class="step-station-title">${s.name}${s.inactive ? ' <span class="step-badge-inactive">Ngưng hoạt động</span>' : ''}</div>
+          <div class="step-address">${s.address}</div>
+        </div>`).join('');
+      document.getElementById('scheduleModal').classList.add('active');
+    }
+    function closeScheduleModal(event) {
+      if (event && event.target !== event.currentTarget && event.type === 'click' && event.currentTarget.id !== 'scheduleModal') return;
+      document.getElementById('scheduleModal').classList.remove('active');
+    }
+
+    /* Toast */
+    let toastTimer;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    document.addEventListener('click', function () {
+      const originModal = document.getElementById('originModal');
+      const destModal = document.getElementById('destModal');
+      const userDropdown = document.getElementById('userDropdown');
+      if (originModal) originModal.classList.remove('active');
+      if (destModal) destModal.classList.remove('active');
+      if (userDropdown) userDropdown.classList.remove('active');
+    });
+
+    renderTrips();
+  </script>
+</body>
+</html>
