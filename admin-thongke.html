@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>FUTA Admin — Thống kê Doanh thu & Tỷ lệ Lấp đầy ghế</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -220,28 +220,34 @@
       gap: 12px;
       flex-wrap: wrap;
     }
-    .time-tab-group {
+    .date-range-group {
       display: flex;
-      background: #f1f5f9;
-      padding: 3px;
+      align-items: center;
+      gap: 8px;
+      background: #f8fafc;
+      border: 1.5px solid var(--border);
+      padding: 6px 12px;
       border-radius: var(--radius-full);
-      gap: 4px;
     }
-    .time-tab-btn {
-      border: none;
-      background: transparent;
-      padding: 6px 14px;
+    .date-range-group label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .date-input {
+      padding: 4px 8px;
+      border: 1px solid var(--border);
       border-radius: var(--radius-full);
       font-size: 12.5px;
       font-weight: 700;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .time-tab-btn.active {
+      color: var(--text-main);
       background: #ffffff;
-      color: var(--primary);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      cursor: pointer;
+    }
+    .date-input:focus {
+      border-color: var(--primary);
+      outline: none;
     }
     .filter-select {
       padding: 7px 12px;
@@ -377,7 +383,8 @@
       display: flex;
       flex-direction: column;
       gap: 4px;
-      width: 150px;
+      width: 100%;
+      max-width: 220px;
     }
     .occupancy-num {
       display: flex;
@@ -400,8 +407,8 @@
     .progress-fill.mid { background: #f59e0b; }
     .progress-fill.low { background: #ef4444; }
 
-    /* ACTION PILLS (ĐỀ XUẤT ĐIỀU HÀNH) */
-    .recommend-pill {
+    /* TRẠNG THÁI LẤP ĐẦY (thay cho Đề xuất điều hành) */
+    .status-pill {
       font-size: 11.5px;
       font-weight: 800;
       padding: 4px 10px;
@@ -409,17 +416,17 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
+      white-space: nowrap;
     }
-    .recommend-pill.boost {
+    .status-pill.high {
       background: #ecfdf5;
       color: #047857;
     }
-    .recommend-pill.normal {
-      background: #f8fafc;
-      color: #475569;
-      border: 1px solid var(--border);
+    .status-pill.mid {
+      background: #fffbeb;
+      color: #b45309;
     }
-    .recommend-pill.optimize {
+    .status-pill.low {
       background: #fef2f2;
       color: #b91c1c;
     }
@@ -495,11 +502,13 @@
       <!-- BỘ LỌC ĐA CHIỀU -->
       <div class="filter-card-bar">
         <div class="filter-group-left">
-          <!-- Lọc thời gian -->
-          <div class="time-tab-group">
-            <button class="time-tab-btn active" onclick="setTimeFilter('TODAY', this)">Hôm nay</button>
-            <button class="time-tab-btn" onclick="setTimeFilter('7DAYS', this)">7 Ngày qua</button>
-            <button class="time-tab-btn" onclick="setTimeFilter('MONTH', this)">Tháng này</button>
+          <!-- Lọc khoảng ngày -->
+          <div class="date-range-group">
+            <label for="dateFrom">Từ ngày</label>
+            <input type="date" class="filter-select date-input" id="dateFrom" onchange="applyFilters()">
+            <i class="fa-solid fa-arrow-right" style="color: var(--text-muted); font-size: 12px;"></i>
+            <label for="dateTo">Đến ngày</label>
+            <input type="date" class="filter-select date-input" id="dateTo" onchange="applyFilters()">
           </div>
 
           <!-- Lọc tuyến -->
@@ -508,13 +517,6 @@
             <option value="R01">Bình Định (An Nhơn) ⇄ TP.HCM (BX Miền Tây)</option>
             <option value="R02">Đà Nẵng (BX Trung Tâm) ⇄ TP.HCM (BX Miền Đông Mới)</option>
             <option value="R03">Quy Nhơn ⇄ TP.HCM</option>
-          </select>
-
-          <!-- Lọc cổng thanh toán -->
-          <select class="filter-select" id="paymentFilter" onchange="applyFilters()">
-            <option value="ALL">Tất cả thanh toán</option>
-            <option value="MOMO">Ví MoMo (Thành công)</option>
-            <option value="PENDING">Chờ thanh toán / Đã hủy</option>
           </select>
         </div>
 
@@ -575,10 +577,9 @@
               <th style="width: 100px;">Mã chuyến</th>
               <th>Tuyến xe &amp; Giờ chạy</th>
               <th>Xe &amp; Tài xế</th>
-              <th style="width: 180px;">Tỷ lệ lấp đầy ghế (Occupancy)</th>
-              <th style="width: 130px;">Vé thực bán</th>
-              <th style="width: 140px;">Doanh thu</th>
-              <th style="width: 150px; text-align: center;">Đề xuất điều hành</th>
+              <th style="width: 220px;">Tỷ lệ lấp đầy ghế (Occupancy)</th>
+              <th style="width: 110px;">Vé thực bán</th>
+              <th style="width: 150px;">Doanh thu</th>
             </tr>
           </thead>
           <tbody id="occupancyTableBody">
@@ -599,70 +600,68 @@
         code: "TRIP-102",
         routeId: "R01",
         route: "Bình Định (An Nhơn) → BX Miền Tây",
+        date: "2026-09-22",
         time: "17:30",
         vehicle: "77B-019.28",
         driver: "Vũ Sang",
         capacity: 34,
         booked: 31,
         pricePerSeat: 390000,
-        revenue: 12090000,
-        paymentStatus: "MOMO"
+        revenue: 12090000
       },
       {
         code: "TRIP-101",
         routeId: "R01",
         route: "Bình Định (An Nhơn) → BX Miền Tây",
+        date: "2026-09-22",
         time: "06:00",
         vehicle: "77B-022.68",
         driver: "Trần Văn Nam",
         capacity: 34,
         booked: 28,
         pricePerSeat: 390000,
-        revenue: 10920000,
-        paymentStatus: "MOMO"
+        revenue: 10920000
       },
       {
         code: "TRIP-103",
         routeId: "R02",
         route: "Đà Nẵng → BX Miền Đông Mới",
+        date: "2026-09-21",
         time: "09:45",
         vehicle: "43B-552.19",
         driver: "Nguyễn Hoàng Long",
         capacity: 22,
         booked: 20,
         pricePerSeat: 560000,
-        revenue: 11200000,
-        paymentStatus: "MOMO"
+        revenue: 11200000
       },
       {
         code: "TRIP-104",
         routeId: "R01",
         route: "Bình Định (An Nhơn) → BX Miền Tây",
+        date: "2026-09-20",
         time: "13:00",
         vehicle: "51B-889.12",
         driver: "Lê Thành Đạt",
         capacity: 40,
         booked: 16,
         pricePerSeat: 380000,
-        revenue: 6080000,
-        paymentStatus: "MOMO"
+        revenue: 6080000
       },
       {
         code: "TRIP-105",
         routeId: "R03",
         route: "Quy Nhơn → TP.HCM",
+        date: "2026-09-19",
         time: "21:00",
         vehicle: "77B-033.45",
         driver: "Chưa phân công",
         capacity: 34,
         booked: 13,
         pricePerSeat: 380000,
-        revenue: 2550000,
-        paymentStatus: "PENDING"
+        revenue: 2550000
       }
     ];
-
-    let currentTimeRange = "TODAY";
 
     /* RENDER BẢNG BÁO CÁO */
     function renderTable(dataList) {
@@ -680,17 +679,17 @@
         totalBooked += item.booked;
         totalCapacity += item.capacity;
 
-        // Phân loại màu sắc thanh Occupancy & Đề xuất vận hành
+        // Phân loại màu sắc thanh Occupancy & trạng thái tương ứng
         let fillClass = "low";
-        let recommendTag = '<span class="recommend-pill optimize"><i class="fa-solid fa-triangle-exclamation"></i> Nguy cơ bù lỗ (Gộp chuyến)</span>';
+        let statusTag = '<span class="status-pill low"><i class="fa-solid fa-arrow-down"></i> Thấp</span>';
 
         if (percent >= 80) {
           fillClass = "high";
           highTrips++;
-          recommendTag = '<span class="recommend-pill boost"><i class="fa-solid fa-circle-arrow-up"></i> Hiệu quả cao (Tăng chuyến)</span>';
+          statusTag = '<span class="status-pill high"><i class="fa-solid fa-arrow-up"></i> Cao</span>';
         } else if (percent >= 50) {
           fillClass = "mid";
-          recommendTag = '<span class="recommend-pill normal"><i class="fa-solid fa-check"></i> Đạt chuẩn hòa vốn</span>';
+          statusTag = '<span class="status-pill mid"><i class="fa-solid fa-minus"></i> Trung bình</span>';
         }
 
         html += `
@@ -698,7 +697,7 @@
             <td><span class="trip-code-box">${item.code}</span></td>
             <td>
               <div class="route-cell"><i class="fa-solid fa-route" style="color: var(--primary);"></i> ${item.route}</div>
-              <div style="font-size:12px; color:var(--text-muted); font-weight:600; margin-top:2px;">Khởi hành: <b>${item.time}</b></div>
+              <div style="font-size:12px; color:var(--text-muted); font-weight:600; margin-top:2px;">Khởi hành: <b>${item.time}</b> &nbsp;•&nbsp; ${formatDate(item.date)}</div>
             </td>
             <td>
               <div style="font-weight:700; color:var(--text-main);">${item.vehicle}</div>
@@ -707,7 +706,7 @@
             <td>
               <div class="occupancy-wrapper">
                 <div class="occupancy-num">
-                  <span>${percent}%</span>
+                  <span>${percent}% &nbsp;${statusTag}</span>
                   <span style="color:var(--text-muted);">${item.booked}/${item.capacity} ghế</span>
                 </div>
                 <div class="progress-bar-bg">
@@ -717,7 +716,6 @@
             </td>
             <td><b>${item.booked}</b> vé</td>
             <td><span class="revenue-cell">${item.revenue.toLocaleString('vi-VN')}₫</span></td>
-            <td style="text-align: center;">${recommendTag}</td>
           </tr>
         `;
       });
@@ -735,23 +733,17 @@
     /* BỘ LỌC ĐA CHIỀU */
     function applyFilters() {
       const selectedRoute = document.getElementById("routeFilter").value;
-      const selectedPayment = document.getElementById("paymentFilter").value;
+      const fromVal = document.getElementById("dateFrom").value;
+      const toVal = document.getElementById("dateTo").value;
 
       const filtered = analyticsData.filter(item => {
         const matchRoute = (selectedRoute === "ALL" || item.routeId === selectedRoute);
-        const matchPayment = (selectedPayment === "ALL" || item.paymentStatus === selectedPayment);
-        return matchRoute && matchPayment;
+        const matchFrom = (!fromVal || item.date >= fromVal);
+        const matchTo = (!toVal || item.date <= toVal);
+        return matchRoute && matchFrom && matchTo;
       });
 
       renderTable(filtered);
-    }
-
-    function setTimeFilter(range, btn) {
-      document.querySelectorAll(".time-tab-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      currentTimeRange = range;
-      showToast(`Đang tải dữ liệu doanh thu & lấp đầy: ${btn.textContent}`);
-      applyFilters();
     }
 
     function exportReport() {
@@ -767,7 +759,15 @@
       toastTimer = setTimeout(() => toast.classList.remove("show"), 2400);
     }
 
-    // Khởi tạo chạy ban đầu
+    function formatDate(isoStr) {
+      const [y, m, d] = isoStr.split("-");
+      return `${d}/${m}/${y}`;
+    }
+
+    // Khởi tạo chạy ban đầu: mặc định hiển thị toàn bộ khoảng ngày có dữ liệu
+    const allDates = analyticsData.map(item => item.date).sort();
+    document.getElementById("dateFrom").value = allDates[0];
+    document.getElementById("dateTo").value = allDates[allDates.length - 1];
     renderTable(analyticsData);
   </script>
 </body>
