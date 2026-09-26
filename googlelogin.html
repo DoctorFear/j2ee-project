@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Google Sign-In</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body style="font-family: sans-serif; padding: 40px;">
+  <h2>Lấy Google ID Token để test Backend</h2>
+  
+  <!-- Thay data-client_id bên dưới bằng Client ID trên Google Cloud Console nếu có, 
+       hoặc dùng Client ID demo này để test tạm -->
+  <div id="g_id_onload"
+       data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
+       data-callback="handleCredentialResponse">
+  </div>
+  <div class="g_id_signin" data-type="standard"></div>
+
+  <h3>Copy chuỗi Token bên dưới:</h3>
+  <textarea id="tokenBox" style="width: 100%; height: 180px;"></textarea>
+
+  <script>
+    function handleCredentialResponse(response) {
+      document.getElementById("tokenBox").value = response.credential;
+      alert("Đã lấy được ID Token thành công!");
+    }
+  </script>
+</body>
+</html>

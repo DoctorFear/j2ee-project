@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FUTA Dispatcher — Quản lý Tuyến & Giá vé Chặng (Full Interactive)</title>
+  <title>FUTA Dispatcher — Quản lý Tuyến & Lộ trình trạm dừng</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -13,7 +13,7 @@
       --primary: #f95721;
       --primary-hover: #e04410;
       --primary-light: #fff2ed;
-      --accent-green: #007646;
+      --accent-green: #059669;
       --green-light: #ecfdf5;
       --text-main: #0f172a;
       --text-muted: #64748b;
@@ -174,6 +174,11 @@
       font-size: 13px;
       color: var(--text-muted);
     }
+    .header-actions-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
     .route-selector-box {
       display: flex;
       align-items: center;
@@ -194,21 +199,40 @@
       background: #fff;
       outline: none;
       cursor: pointer;
+      max-width: 380px;
     }
     .select-route:focus {
       border-color: var(--primary);
+    }
+
+    .btn-create-route {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .btn-create-route:hover {
+      background: var(--primary-hover);
     }
 
     .dashboard-body {
       padding: 24px 32px 60px 32px;
     }
 
-    /* STATS SUMMARY */
+    /* STATS */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 16px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
     .stat-card {
       background: #fff;
@@ -229,34 +253,141 @@
       margin-top: 4px;
     }
 
-    /* TABS */
-    .tab-pills-row {
+    /* POLICY BAR */
+    .policy-bar {
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px 22px;
+      margin-bottom: 22px;
       display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px 32px;
+      box-shadow: var(--shadow-sm);
     }
-    .tab-trigger {
-      background: transparent;
-      border: none;
-      padding: 9px 20px;
-      border-radius: var(--radius-full);
-      font-size: 13.5px;
-      font-weight: 700;
-      color: var(--text-muted);
-      cursor: pointer;
+    .policy-item {
       display: flex;
       align-items: center;
       gap: 8px;
-      transition: all 0.15s;
     }
-    .tab-trigger.active {
+    .policy-item label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .policy-divider {
+      width: 1px;
+      height: 32px;
+      background: var(--border);
+    }
+
+    /* KHỐI GIÁ VÉ SUỐT TUYẾN */
+    .fare-control-inline {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-fare-mode {
+      border: 1px solid var(--border);
+      background: #fff;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-fare-mode:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .btn-fare-mode.active-auto {
+      background: var(--green-light);
+      border-color: #bbf7d0;
+      color: var(--accent-green);
+    }
+    .btn-fare-mode.active-manual {
       background: var(--primary-light);
+      border-color: #fed7aa;
       color: var(--primary);
     }
 
-    /* DATA PANELS */
+    /* TOOLTIP [ i ] */
+    .info-tooltip-container {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      margin-left: 2px;
+      cursor: help;
+    }
+    .info-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      color: #475569;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      font-style: italic;
+      font-family: serif;
+      transition: all 0.15s;
+    }
+    .info-tooltip-container:hover .info-icon {
+      background: var(--primary);
+      color: #fff;
+    }
+    .tooltip-box {
+      visibility: hidden;
+      opacity: 0;
+      position: absolute;
+      bottom: 130%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 500;
+      width: 280px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      z-index: 100;
+      line-height: 1.5;
+      transition: opacity 0.2s, visibility 0.2s;
+      pointer-events: none;
+    }
+    .tooltip-box::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -6px;
+      border-width: 6px;
+      border-style: solid;
+      border-color: #0f172a transparent transparent transparent;
+    }
+    .info-tooltip-container:hover .tooltip-box {
+      visibility: visible;
+      opacity: 1;
+    }
+    .tooltip-title {
+      font-weight: 800;
+      color: #f8fafc;
+      margin-bottom: 5px;
+      display: block;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 3px;
+    }
+
+    /* CARD PANEL TRẠM */
     .card-panel {
       background: var(--card-bg);
       border-radius: var(--radius-lg);
@@ -279,6 +410,7 @@
       align-items: center;
       gap: 8px;
     }
+
     .btn-action-primary {
       background: var(--primary);
       color: #fff;
@@ -295,6 +427,23 @@
     }
     .btn-action-primary:hover {
       background: var(--primary-hover);
+    }
+    .btn-save-route {
+      background: #0f172a;
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s;
+    }
+    .btn-save-route:hover {
+      background: #1e293b;
     }
 
     .custom-table {
@@ -314,7 +463,7 @@
       letter-spacing: 0.5px;
     }
     .custom-table td {
-      padding: 12px 18px;
+      padding: 14px 18px;
       border-bottom: 1px solid var(--border);
       color: var(--text-main);
       vertical-align: middle;
@@ -324,19 +473,30 @@
     }
 
     .table-input {
-      padding: 6px 10px;
+      padding: 7px 10px;
       border: 1.5px solid var(--border);
       border-radius: 6px;
-      font-size: 13px;
+      font-size: 13.5px;
       font-weight: 700;
       color: var(--text-main);
-      width: 95px;
       outline: none;
-      transition: border-color 0.15s;
+      transition: all 0.15s;
     }
     .table-input:focus {
       border-color: var(--primary);
     }
+    .table-input:disabled {
+      background: #f1f5f9;
+      color: #475569;
+      cursor: not-allowed;
+      border-color: #cbd5e1;
+    }
+    .table-input.manual-mode {
+      border-color: var(--primary);
+      background: #fff;
+      color: var(--primary);
+    }
+
     .order-badge {
       width: 26px;
       height: 26px;
@@ -360,6 +520,12 @@
       color: var(--text-muted);
     }
 
+    .table-action-btns {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+    }
     .btn-icon {
       background: none;
       border: none;
@@ -374,17 +540,21 @@
       color: var(--primary);
       background: var(--primary-light);
     }
+    .btn-icon.insert:hover {
+      color: var(--accent-green);
+      background: var(--green-light);
+    }
     .btn-icon.delete:hover {
       color: #dc2626;
       background: #fef2f2;
     }
 
-    /* MODAL POPUP THÊM TRẠM */
+    /* MODAL POPUPS & FORM GRID CHUẨN CỘT */
     .modal-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.5);
+      background: rgba(15, 23, 42, 0.55);
       z-index: 1000;
       align-items: center;
       justify-content: center;
@@ -394,18 +564,20 @@
     .modal-card {
       background: #ffffff;
       width: 100%;
-      max-width: 460px;
+      max-width: 560px;
       border-radius: var(--radius-md);
       box-shadow: var(--shadow-popup);
-      padding: 22px;
+      padding: 24px;
       animation: pop 0.2s ease;
+      max-height: 90vh;
+      overflow-y: auto;
     }
     @keyframes pop {
       from { transform: scale(0.95); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
     }
     .modal-card h3 {
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 800;
       margin-bottom: 14px;
       display: flex;
@@ -416,7 +588,7 @@
       margin-bottom: 12px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 5px;
     }
     .form-group label {
       font-size: 12px;
@@ -424,21 +596,49 @@
       color: var(--text-muted);
     }
     .form-control {
-      padding: 8px 12px;
+      padding: 9px 12px;
       border: 1.5px solid var(--border);
       border-radius: var(--radius-sm);
       font-size: 13.5px;
       outline: none;
       font-weight: 600;
+      background: #fff;
     }
     .form-control:focus {
       border-color: var(--primary);
     }
+    .form-hint {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* GRID FORM 2 CỘT THẲNG HÀNG ĐỐI XỨNG */
+    .form-grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 14px;
+      row-gap: 2px;
+      margin-bottom: 2px;
+    }
+
+    .section-divider-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin: 14px 0 8px 0;
+      padding-bottom: 4px;
+      border-bottom: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     .modal-actions {
       display: flex;
       justify-content: flex-end;
       gap: 10px;
-      margin-top: 18px;
+      margin-top: 20px;
     }
     .btn-cancel {
       padding: 8px 16px;
@@ -470,7 +670,7 @@
       align-items: center;
       gap: 8px;
     }
-    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.show { opacity: 1; }
     .toast i { color: #4ade80; }
   </style>
 </head>
@@ -487,8 +687,8 @@
     </div>
 
     <ul class="nav-list">
-      <li class="nav-item active"><a href="#"><i class="fa-solid fa-route"></i> Tuyến &amp; Bảng giá chặng</a></li>
-      <li class="nav-item"><a href="#"><i class="fa-solid fa-calendar-days"></i> Lịch chạy &amp; Phân tài xế</a></li>
+      <li class="nav-item active"><a href="admin-routes.html"><i class="fa-solid fa-route"></i> Tuyến &amp; Trạm dừng</a></li>
+      <li class="nav-item"><a href="admin-trips.html"><i class="fa-solid fa-calendar-days"></i> Lập lịch &amp; Phân tài xế</a></li>
       <li class="nav-item"><a href="#"><i class="fa-solid fa-van-shuttle"></i> Quản lý Phương tiện</a></li>
       <li class="nav-item"><a href="#"><i class="fa-solid fa-users-gear"></i> Tài khoản nội bộ</a></li>
       <li class="nav-item"><a href="#"><i class="fa-solid fa-chart-line"></i> Báo cáo doanh thu</a></li>
@@ -507,25 +707,30 @@
   <div class="main-wrapper">
     <header class="top-header">
       <div class="header-left">
-        <h1>Cấu hình Tuyến đường &amp; Giá vé chặng</h1>
-        <p>Quản lý chuỗi trạm dừng, offset thời gian di chuyển và ma trận giá vé con.</p>
+        <h1>Cấu hình Tuyến đường &amp; Lộ trình trạm dừng</h1>
+        <p>Quản lý khung mẫu lộ trình trạm dừng, cự ly lũy kế, thời gian di chuyển (Offset) và đơn giá cước.</p>
       </div>
 
-      <div class="route-selector-box">
-        <label>Chọn tuyến cấu hình:</label>
-        <select class="select-route" id="routeSelect" onchange="onSelectRouteChange()">
-          <option value="R01" selected>Tuyến 01: Bình Định (An Nhơn) ⇄ TP.HCM (BX Miền Tây)</option>
-          <option value="R02">Tuyến 02: Đà Nẵng (BX Trung Tâm) ⇄ TP.HCM (BX Miền Đông Mới)</option>
-        </select>
+      <div class="header-actions-right">
+        <div class="route-selector-box">
+          <label>Tuyến:</label>
+          <select class="select-route" id="routeSelect" onchange="onSelectRouteChange()">
+            <!-- Tự động sinh qua JavaScript -->
+          </select>
+        </div>
+        
+        <button class="btn-create-route" onclick="openCreateRouteModal()">
+          <i class="fa-solid fa-plus"></i> Thêm tuyến mới
+        </button>
       </div>
     </header>
 
     <div class="dashboard-body">
 
-      <!-- TỔNG QUAN STATS (CẬP NHẬT REALTIME QUA JS) -->
+      <!-- TỔNG QUAN STATS -->
       <div class="stats-grid">
         <div class="stat-card">
-          <span>Tổng số trạm dừng</span>
+          <span>Tổng số trạm đón / trả</span>
           <h3 id="statTotalStops">7 Trạm</h3>
         </div>
         <div class="stat-card">
@@ -533,44 +738,40 @@
           <h3 id="statTotalKm">650 Km</h3>
         </div>
         <div class="stat-card">
-          <span>Tổng thời gian hành trình</span>
+          <span>Thời gian chạy toàn trình</span>
           <h3 id="statTotalTime">12 Giờ 20 Phút</h3>
         </div>
-        <div class="stat-card">
-          <span>Số cặp chặng con sinh ra</span>
-          <h3 id="statTotalSegments" style="color: var(--primary);">21 Chặng con</h3>
-        </div>
       </div>
 
-      <!-- TABS CHUYỂN ĐỔI -->
-      <div class="tab-pills-row">
-        <button class="tab-trigger active" id="tabStopsBtn" onclick="switchAdminTab('stops')">
-          <i class="fa-solid fa-list-ol"></i> 1. Cấu hình Trạm dừng &amp; Offset thời gian (route_stops)
-        </button>
-        <button class="tab-trigger" id="tabPricingBtn" onclick="switchAdminTab('pricing')">
-          <i class="fa-solid fa-tags"></i> 2. Thiết lập Giá vé theo chặng con (origin_stop → dest_stop)
-        </button>
-      </div>
 
-      <!-- TAB 1: DANH SÁCH TRẠM DỪNG -->
-      <div id="stopsPanel" class="card-panel">
+
+      <!-- BẢNG LỘ TRÌNH TRẠM DỪNG (ĐÃ BỎ CỘT GIỜ DỰ KIẾN VÀ GIỜ GỐC) -->
+      <div class="card-panel">
         <div class="panel-header">
-          <h3><i class="fa-solid fa-map-pin" style="color: var(--primary);"></i> Chuỗi trạm dừng dọc tuyến (Giờ xuất bến gốc: 17:30)</h3>
-          <button class="btn-action-primary" onclick="openAddStopModal()">
-            <i class="fa-solid fa-plus"></i> Thêm trạm đón/trả
-          </button>
+          <h3>
+            <i class="fa-solid fa-map-pin" style="color: var(--primary);"></i> 
+            Lộ trình chuỗi trạm dừng &amp; Thời gian di chuyển tích lũy (Offset)
+          </h3>
+
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-action-primary" onclick="openAddStopModal()">
+              <i class="fa-solid fa-plus"></i> Thêm trạm dừng
+            </button>
+            <button class="btn-save-route" onclick="saveRouteConfig()">
+              <i class="fa-solid fa-floppy-disk"></i> Lưu cấu hình tuyến
+            </button>
+          </div>
         </div>
 
-        <table class="custom-table">
+        <table class="custom-table">  
           <thead>
             <tr>
               <th style="width: 70px;">Thứ tự</th>
               <th>Tên trạm dừng</th>
-              <th>Địa chỉ / Vị trí</th>
-              <th style="width: 140px;">Cự ly (Km)</th>
-              <th style="width: 160px;">Offset thời gian (Phút)</th>
-              <th style="width: 160px;">Giờ dự kiến đến</th>
-              <th style="width: 90px; text-align: right;">Xóa</th>
+              <th>Địa chỉ hành chính (Xã, Huyện, Tỉnh)</th>
+              <th style="width: 170px;">Cự ly lũy kế</th>
+              <th style="width: 190px;">Thời gian di chuyển (Offset)</th>
+              <th style="width: 110px; text-align: right;">Thao tác</th>
             </tr>
           </thead>
           <tbody id="stopsTableBody">
@@ -579,62 +780,175 @@
         </table>
       </div>
 
-      <!-- TAB 2: THIẾT LẬP GIÁ VÉ CHẶNG CON -->
-      <div id="pricingPanel" class="card-panel" style="display: none;">
-        <div class="panel-header">
-          <div>
-            <h3><i class="fa-solid fa-money-bill-transfer" style="color: var(--accent-green);"></i> Bảng giá vé theo từng cặp chặng con</h3>
-            <span style="font-size: 12px; color: var(--text-muted);">Giá vé được tính độc lập cho khách đặt giữa bất kỳ 2 điểm dừng nào dọc lộ trình.</span>
-          </div>
-          <button class="btn-action-primary" onclick="savePricingChanges()">
-            <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi giá
-          </button>
-        </div>
-
-        <table class="custom-table">
-          <thead>
-            <tr>
-              <th>Điểm đón (origin_stop)</th>
-              <th style="width: 40px;"></th>
-              <th>Điểm trả (dest_stop)</th>
-              <th>Cự ly chặng</th>
-              <th>Thời gian dự kiến</th>
-              <th style="width: 180px;">Giá vé niêm yết (VNĐ)</th>
-              <th style="width: 120px; text-align: center;">Trạng thái</th>
-            </tr>
-          </thead>
-          <tbody id="pricingTableBody">
-            <!-- Render qua Javascript -->
-          </tbody>
-        </table>
-      </div>
-
     </div>
   </div>
 
-  <!-- MODAL THÊM TRẠM DỪNG MỚI -->
+  <!-- MODAL 1: THÊM TRẠM DỪNG MỚI (FORM 2 CỘT CHUẨN ĐỐI XỨNG) -->
   <div class="modal-overlay" id="addStopModal">
     <div class="modal-card">
-      <h3><i class="fa-solid fa-map-location-dot" style="color: var(--primary);"></i> Thêm trạm dừng mới</h3>
+      <h3><i class="fa-solid fa-map-location-dot" style="color: var(--primary);"></i> Thêm trạm dừng vào tuyến</h3>
+
+      <!-- 1. VỊ TRÍ CHÈN -->
       <div class="form-group">
-        <label>Tên trạm dừng</label>
-        <input type="text" class="form-control" id="newStopName" placeholder="Ví dụ: Bến xe Nha Trang">
+        <label>Vị trí chèn trạm vào lộ trình <span style="color:#ef4444;">*</span></label>
+        <select class="form-control" id="insertPositionSelect" onchange="onPositionSelectChange()">
+          <!-- Sinh tự động danh sách vị trí chèn -->
+        </select>
+        <span class="form-hint" id="positionHintText">Trạm mới sẽ được xếp vào đúng vị trí bạn chọn.</span>
       </div>
+
+      <!-- 2. TÊN TRẠM DỪNG -->
       <div class="form-group">
-        <label>Địa chỉ cụ thể</label>
-        <input type="text" class="form-control" id="newStopAddress" placeholder="Đường, Phường/Xã, Tỉnh...">
+        <label>Tên trạm dừng (Nhập tay) <span style="color:#ef4444;">*</span></label>
+        <input type="text" class="form-control" id="newStopName" placeholder="Ví dụ: Bến xe An Nhơn, Bến xe Miền Đông...">
       </div>
-      <div class="form-group">
-        <label>Cự ly tính từ điểm xuất phát (Km)</label>
-        <input type="number" class="form-control" id="newStopKm" value="200">
+
+      <!-- 3. ĐỊA CHỈ HÀNH CHÍNH (CĂN CHUẨN 2 CỘT) -->
+      <div class="form-grid-2col">
+        <!-- Hàng 1 - Cột 1: Tỉnh/Thành -->
+        <div class="form-group">
+          <label>Tỉnh / Thành phố <span style="color:#ef4444;">*</span></label>
+          <select class="form-control" id="selectProvince" onchange="onProvinceChange()">
+            <option value="">-- Chọn Tỉnh / Thành --</option>
+          </select>
+        </div>
+        <!-- Hàng 1 - Cột 2: Quận/Huyện -->
+        <div class="form-group">
+          <label>Quận / Huyện / Thị xã <span style="color:#ef4444;">*</span></label>
+          <select class="form-control" id="selectDistrict" onchange="onDistrictChange()" disabled>
+            <option value="">-- Chọn Quận / Huyện --</option>
+          </select>
+        </div>
+
+        <!-- Hàng 2 - Cột 1: Phường/Xã (Thẳng hàng với Tỉnh/Thành) -->
+        <div class="form-group">
+          <label>Phường / Xã / Thị trấn <span style="color:#ef4444;">*</span></label>
+          <select class="form-control" id="selectWard" disabled>
+            <option value="">-- Chọn Phường / Xã --</option>
+          </select>
+        </div>
+        <!-- Hàng 2 - Cột 2: Số nhà, Tên đường (Thẳng hàng với Quận/Huyện) -->
+        <div class="form-group">
+          <label>Số nhà, Tên đường (Tùy chọn)</label>
+          <input type="text" class="form-control" id="newStreetAddress" placeholder="Ví dụ: 02 Nguyễn Văn Linh, QL1A...">
+        </div>
       </div>
-      <div class="form-group">
-        <label>Offset thời gian di chuyển (Phút tính từ giờ xuất phát)</label>
-        <input type="number" class="form-control" id="newStopOffset" value="180">
+
+      <!-- 4. CỰ LY & OFFSET -->
+      <div class="form-grid-2col">
+        <div class="form-group">
+          <label>Cự ly lũy kế (Km)</label>
+          <input type="number" class="form-control" id="newStopKm" value="200">
+        </div>
+        <div class="form-group">
+          <label>Offset thời gian (Phút từ trạm đầu)</label>
+          <input type="number" class="form-control" id="newStopOffset" value="180">
+        </div>
       </div>
+
       <div class="modal-actions">
         <button class="btn-cancel" onclick="closeAddStopModal()">Hủy</button>
-        <button class="btn-action-primary" onclick="handleAddStopSubmit()">Thêm vào tuyến</button>
+        <button class="btn-action-primary" onclick="handleAddStopSubmit()">Chèn vào tuyến</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: TẠO TUYẾN MỚI -->
+  <div class="modal-overlay" id="createRouteModal">
+    <div class="modal-card">
+      <h3><i class="fa-solid fa-route" style="color: var(--primary);"></i> Tạo tuyến đường mới</h3>
+
+      <div class="form-grid-2col">
+        <div class="form-group">
+          <label>Mã tuyến (Route Code) <span style="color:#ef4444;">*</span></label>
+          <input type="text" class="form-control" id="newRouteId" placeholder="Ví dụ: R03, RT-HUE-SG...">
+        </div>
+        <div class="form-group">
+          <label>Đơn giá cơ sở / Km (VNĐ) <span style="color:#ef4444;">*</span></label>
+          <input type="number" class="form-control" id="newRoutePriceKm" value="600" step="50">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Tên tuyến hành trình <span style="color:#ef4444;">*</span></label>
+        <input type="text" class="form-control" id="newRouteName" placeholder="Ví dụ: Tuyến 03: Huế (BX Phía Nam) ⇄ TP.HCM (BX Miền Đông Mới)">
+      </div>
+
+      <!-- KHỐI TRẠM XUẤT PHÁT GỐC (0 KM) -->
+      <div class="section-divider-title">
+        <i class="fa-solid fa-location-dot" style="color: var(--primary);"></i> 1. Trạm xuất phát ban đầu (Mốc 0 Km)
+      </div>
+      <div class="form-group">
+        <label>Tên trạm xuất phát <span style="color:#ef4444;">*</span></label>
+        <input type="text" class="form-control" id="newRouteOriginStation" placeholder="Ví dụ: Bến xe Phía Nam Huế">
+      </div>
+      <div class="form-grid-2col">
+        <div class="form-group">
+          <label>Tỉnh / Thành phố <span style="color:#ef4444;">*</span></label>
+          <select class="form-control" id="selectRouteOriginProv" onchange="onRouteChangeProv('Origin')">
+            <option value="">-- Chọn Tỉnh / Thành --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Quận / Huyện / Thị xã <span style="color:#ef4444;">*</span></label>
+          <select class="form-control" id="selectRouteOriginDist" onchange="onRouteChangeDist('Origin')" disabled>
+            <option value="">-- Chọn Quận / Huyện --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Phường / Xã / Thị trấn <span style="color:#ef4444;">*</span></label>
+          <select class="form-control" id="selectRouteOriginWard" disabled>
+            <option value="">-- Chọn Phường / Xã --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Số nhà, Tên đường</label>
+          <input type="text" class="form-control" id="newRouteOriginStreet" placeholder="Ví dụ: 97 An Dương Vương">
+        </div>
+      </div>
+
+      <!-- KHỐI TRẠM ĐÍCH CUỐI CÙNG -->
+      <div class="section-divider-title">
+        <i class="fa-solid fa-flag-checkered" style="color: var(--accent-green);"></i> 2. Trạm đích đến cuối cùng
+      </div>
+      <div class="form-grid-2col">
+        <div class="form-group">
+          <label>Tên trạm đích đến <span style="color:#ef4444;">*</span></label>
+          <input type="text" class="form-control" id="newRouteDestStation" placeholder="Ví dụ: Bến xe Miền Đông Mới">
+        </div>
+        <div class="form-group">
+          <label>Cự ly ước tính toàn tuyến (Km) <span style="color:#ef4444;">*</span></label>
+          <input type="number" class="form-control" id="newRouteDestKm" value="950">
+        </div>
+      </div>
+      <div class="form-grid-2col">
+        <div class="form-group">
+          <label>Tỉnh / Thành phố <span style="color:#ef4444;">*</span></label>
+          <select class="form-control" id="selectRouteDestProv" onchange="onRouteChangeProv('Dest')">
+            <option value="">-- Chọn Tỉnh / Thành --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Quận / Huyện / Thị xã <span style="color:#ef4444;">*</span></label>
+          <select class="form-control" id="selectRouteDestDist" onchange="onRouteChangeDist('Dest')" disabled>
+            <option value="">-- Chọn Quận / Huyện --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Phường / Xã / Thị trấn <span style="color:#ef4444;">*</span></label>
+          <select class="form-control" id="selectRouteDestWard" disabled>
+            <option value="">-- Chọn Phường / Xã --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Số nhà, Tên đường</label>
+          <input type="text" class="form-control" id="newRouteDestStreet" placeholder="Ví dụ: 501 Hoàng Hữu Nam">
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeCreateRouteModal()">Hủy</button>
+        <button class="btn-action-primary" onclick="handleCreateRouteSubmit()">Tạo &amp; Cấu hình ngay</button>
       </div>
     </div>
   </div>
@@ -642,174 +956,197 @@
   <div class="toast" id="toast"><i class="fa-solid fa-circle-check"></i><span id="toastMsg">Thành công</span></div>
 
   <script>
-    /* ---------------- DỮ LIỆU GIẢ LẬP ĐẦY ĐỦ ---------------- */
+    /* DỮ LIỆU ĐỊA GIỚI HÀNH CHÍNH MẪU (DROPDOWN 3 CẤP) */
+    const locationsData = {
+      "Bình Định": {
+        "Thị xã An Nhơn": ["Phường Bình Định", "Phường Đập Đá", "Phường Nhơn Hưng", "Xã Nhơn An"],
+        "Thành phố Quy Nhơn": ["Phường Quang Trung", "Phường Lê Hồng Phong", "Phường Ngô Mây", "Xã Nhơn Hải"],
+        "Huyện Hoài Nhơn": ["Phường Bồng Sơn", "Phường Tam Quan", "Xã Hoài Châu Bắc"]
+      },
+      "Phú Yên": {
+        "Thị xã Sông Cầu": ["Phường Xuân Yên", "Phường Xuân Phú", "Xã Xuân Hải"],
+        "Huyện Tuy An": ["Thị trấn Chí Thạnh", "Xã An Dân", "Xã An Ninh Đông"],
+        "Thành phố Tuy Hòa": ["Phường 5", "Phường 7", "Phường Phú Lâm"]
+      },
+      "Đà Nẵng": {
+        "Quận Liên Chiểu": ["Phường Hòa Minh", "Phường Hòa Khánh Bắc", "Phường Hòa Khánh Nam"],
+        "Quận Hải Châu": ["Phường Thạch Thang", "Phường Hải Châu I", "Phường Hòa Thuận Đông"],
+        "Quận Thanh Khê": ["Phường Tam Thuận", "Phường Xuân Hà", "Phường An Khê"]
+      },
+      "Quảng Ngãi": {
+        "Thành phố Quảng Ngãi": ["Phường Nghĩa Chánh", "Phường Trần Phú", "Phường Lê Hồng Phong"],
+        "Thị xã Đức Phổ": ["Phường Phổ Thạnh", "Phường Sa Huỳnh", "Phường Phổ Ninh"]
+      },
+      "Khánh Hòa": {
+        "Thành phố Nha Trang": ["Phường Vĩnh Hải", "Phường Vạn Thắng", "Phường Phước Hải"],
+        "Thành phố Cam Ranh": ["Phường Cam Nghĩa", "Phường Cam Lợi"]
+      },
+      "Thừa Thiên Huế": {
+        "Thành phố Huế": ["Phường An Đông", "Phường Vĩnh Ninh", "Phường Thuận Thành", "Phường Phú Hội"],
+        "Thị xã Hương Thủy": ["Phường Phú Bài", "Phường Thủy Dương"]
+      },
+      "TP. Hồ Chí Minh": {
+        "Thành phố Thủ Đức": ["Phường Hiệp Bình Phước", "Phường Linh Trung", "Phường Long Thạnh Mỹ"],
+        "Quận Bình Tân": ["Phường An Lạc", "Phường Bình Trị Đông", "Phường Tân Tạo"],
+        "Quận 5": ["Phường 9", "Phường 12"]
+      }
+    };
+
+    /* DỮ LIỆU CÁC TUYẾN MẪU (THUẦN TÚY TEMPLATE) */
     const routesData = {
       R01: {
-        name: "Bình Định (An Nhơn) ⇄ TP.HCM (BX Miền Tây)",
-        startTime: "17:30",
-        baseHour: 17,
-        baseMin: 30,
+        name: "Tuyến 01: Bình Định (An Nhơn) ⇄ TP.HCM (BX Miền Tây)",
+        pricePerKm: 600,
+        fareMode: "AUTO",
+        manualFare: null,
         stops: [
-          { id: 1, name: "Bến xe An Nhơn", address: "02 Nguyễn Văn Linh, Tx. An Nhơn, Bình Định", km: 0, offset: 0 },
-          { id: 2, name: "207 Tây Sơn (Quy Nhơn)", address: "207 Tây Sơn, P. Quang Trung, TP. Quy Nhơn", km: 25, offset: 40 },
-          { id: 3, name: "Chí Thạnh (Tuy An)", address: "437 Đ. QL1A Cũ, Chí Thạnh, Phú Yên", km: 65, offset: 75 },
-          { id: 4, name: "Bến xe Sông Cầu", address: "QL1A, Tx. Sông Cầu, Phú Yên", km: 90, offset: 95 },
-          { id: 5, name: "Bến xe Nam Tuy Hòa", address: "507 Nguyễn Văn Linh, Tuy Hòa, Phú Yên", km: 140, offset: 150 },
-          { id: 6, name: "Ngã tư Bình Phước", address: "QL1A, P. Hiệp Bình Phước, TP. Thủ Đức, TP.HCM", km: 635, offset: 675 },
-          { id: 7, name: "Bến xe Miền Tây", address: "395 Kinh Dương Vương, Bình Tân, TP.HCM", km: 650, offset: 740 }
-        ],
-        prices: {
-          "1-7": 390000,
-          "1-6": 380000,
-          "1-5": 140000,
-          "2-7": 380000,
-          "4-7": 360000,
-          "5-7": 340000
-        }
+          { id: 1, name: "Bến xe An Nhơn", address: "02 Nguyễn Văn Linh, Phường Bình Định, Thị xã An Nhơn, Bình Định", km: 0, offset: 0 },
+          { id: 2, name: "207 Tây Sơn (Quy Nhơn)", address: "207 Tây Sơn, Phường Quang Trung, Thành phố Quy Nhơn, Bình Định", km: 25, offset: 40 },
+          { id: 3, name: "Chí Thạnh (Tuy An)", address: "437 Đ. QL1A Cũ, Thị trấn Chí Thạnh, Huyện Tuy An, Phú Yên", km: 65, offset: 75 },
+          { id: 4, name: "Bến xe Sông Cầu", address: "QL1A, Phường Xuân Yên, Thị xã Sông Cầu, Phú Yên", km: 90, offset: 95 },
+          { id: 5, name: "Bến xe Nam Tuy Hòa", address: "507 Nguyễn Văn Linh, Phường Phú Lâm, Thành phố Tuy Hòa, Phú Yên", km: 140, offset: 150 },
+          { id: 6, name: "Ngã tư Bình Phước", address: "QL1A, Phường Hiệp Bình Phước, Thành phố Thủ Đức, TP. Hồ Chí Minh", km: 635, offset: 675 },
+          { id: 7, name: "Bến xe Miền Tây", address: "395 Kinh Dương Vương, Phường An Lạc, Quận Bình Tân, TP. Hồ Chí Minh", km: 650, offset: 740 }
+        ]
       },
       R02: {
-        name: "Đà Nẵng (BX Trung Tâm) ⇄ TP.HCM (BX Miền Đông Mới)",
-        startTime: "09:45",
-        baseHour: 9,
-        baseMin: 45,
+        name: "Tuyến 02: Đà Nẵng (BX Trung Tâm) ⇄ TP.HCM (BX Miền Đông Mới)",
+        pricePerKm: 620,
+        fareMode: "MANUAL",
+        manualFare: 560000,
         stops: [
-          { id: 1, name: "Bến xe Trung Tâm Đà Nẵng", address: "Tôn Đức Thắng, Liên Chiểu, Đà Nẵng", km: 0, offset: 0 },
-          { id: 2, name: "Bến xe Quảng Ngãi", address: "02 Trần Khánh Dư, Quảng Ngãi", km: 130, offset: 150 },
-          { id: 3, name: "Bến xe Quy Nhơn", address: "71 Tây Sơn, Quy Nhơn", km: 300, offset: 360 },
-          { id: 4, name: "Bến xe Miền Đông Mới", address: "501 Hoàng Hữu Nam, Thủ Đức, TP.HCM", km: 927, offset: 1215 }
-        ],
-        prices: {
-          "1-4": 560000,
-          "1-2": 180000,
-          "2-4": 420000,
-          "3-4": 380000
-        }
+          { id: 1, name: "Bến xe Trung Tâm Đà Nẵng", address: "Tôn Đức Thắng, Phường Hòa Minh, Quận Liên Chiểu, Đà Nẵng", km: 0, offset: 0 },
+          { id: 2, name: "Bến xe Quảng Ngãi", address: "02 Trần Khánh Dư, Phường Nghĩa Chánh, Thành phố Quảng Ngãi, Quảng Ngãi", km: 130, offset: 150 },
+          { id: 3, name: "Bến xe Quy Nhơn", address: "71 Tây Sơn, Phường Quang Trung, Thành phố Quy Nhơn, Bình Định", km: 300, offset: 360 },
+          { id: 4, name: "Bến xe Miền Đông Mới", address: "501 Hoàng Hữu Nam, Phường Long Thạnh Mỹ, Thành phố Thủ Đức, TP. Hồ Chí Minh", km: 927, offset: 1215 }
+        ]
       }
     };
 
     let activeRouteId = "R01";
 
-    /* TÍNH TOÁN GIỜ DỰ KIẾN (BASE TIME + OFFSET MINUTES) */
-    function calcEstimatedTime(baseH, baseM, offsetM) {
-      if (offsetM === 0) return `${pad(baseH)}:${pad(baseM)} (Xuất bến)`;
-      let totalMinutes = baseH * 60 + baseM + offsetM;
-      let days = Math.floor(totalMinutes / (24 * 60));
-      let remainM = totalMinutes % (24 * 60);
-      let h = Math.floor(remainM / 60);
-      let m = remainM % 60;
-      let dayText = days > 0 ? ` (+${days}N)` : "";
-      return `<b>${pad(h)}:${pad(m)}</b>${dayText}`;
+    function roundTo10k(num) {
+      return Math.round(num / 10000) * 10000;
     }
 
-    function pad(n) { return (n < 10 ? "0" : "") + n; }
-
-    /* RENDER BẢNG TRẠM DỪNG (TAB 1) */
-    function renderStopsTable() {
-      const route = routesData[activeRouteId];
-      const tbody = document.getElementById("stopsTableBody");
+    /* RENDER DROPDOWN DANH SÁCH TUYẾN */
+    function renderRouteSelectOptions() {
+      const select = document.getElementById("routeSelect");
       let html = "";
-
-      route.stops.forEach((s, idx) => {
-        const estTime = calcEstimatedTime(route.baseHour, route.baseMin, s.offset);
-        const isFirst = idx === 0;
-
-        html += `
-          <tr>
-            <td><span class="order-badge">${idx + 1}</span></td>
-            <td><span class="station-name-bold">${s.name}</span></td>
-            <td><span class="station-address-sub">${s.address}</span></td>
-            <td>${s.km} km</td>
-            <td>
-              <input type="number" 
-                     class="table-input" 
-                     value="${s.offset}" 
-                     ${isFirst ? 'disabled' : ''} 
-                     onchange="updateStopOffset(${idx}, this.value)">
-            </td>
-            <td>${estTime}</td>
-            <td style="text-align: right;">
-              ${!isFirst ? `<button class="btn-icon delete" title="Xóa trạm" onclick="deleteStop(${idx})"><i class="fa-solid fa-trash-can"></i></button>` : ''}
-            </td>
-          </tr>
-        `;
-      });
-
-      tbody.innerHTML = html;
-      updateStatsUI();
-    }
-
-    /* RENDER BẢNG GIÁ VÉ CHẶNG CON (TAB 2) */
-    function renderPricingTable() {
-      const route = routesData[activeRouteId];
-      const tbody = document.getElementById("pricingTableBody");
-      let html = "";
-
-      // Sinh ma trận cặp chặng con (origin -> dest)
-      for (let i = 0; i < route.stops.length; i++) {
-        for (let j = i + 1; j < route.stops.length; j++) {
-          const origin = route.stops[i];
-          const dest = route.stops[j];
-          const pairKey = `${origin.id}-${dest.id}`;
-          const distance = dest.km - origin.km;
-          const durationMin = dest.offset - origin.offset;
-          const durationHours = Math.floor(durationMin / 60);
-          const durationRemainMin = durationMin % 60;
-          const durationStr = `${durationHours}h ${durationRemainMin}m`;
-
-          // Giá mặc định tính theo cự ly (~600đ/km) nếu chưa gán
-          const currentPrice = route.prices[pairKey] || Math.round((distance * 600) / 10000) * 10000;
-
-          html += `
-            <tr>
-              <td><b>${origin.name}</b></td>
-              <td style="color: var(--primary); text-align: center;"><i class="fa-solid fa-arrow-right"></i></td>
-              <td><b>${dest.name}</b></td>
-              <td>${distance} Km</td>
-              <td>${durationStr}</td>
-              <td>
-                <input type="number" 
-                       class="table-input" 
-                       style="width: 140px; color: var(--primary);" 
-                       value="${currentPrice}" 
-                       data-pair="${pairKey}" 
-                       onchange="updatePairPrice('${pairKey}', this.value)">
-              </td>
-              <td style="text-align: center;">
-                <span style="color: #16a34a; font-weight: 700; font-size: 12px;"><i class="fa-solid fa-circle-check"></i> Đang bán</span>
-              </td>
-            </tr>
-          `;
-        }
+      for (let key in routesData) {
+        html += `<option value="${key}" ${key === activeRouteId ? 'selected' : ''}>${routesData[key].name}</option>`;
       }
-
-      tbody.innerHTML = html;
+      select.innerHTML = html;
     }
 
-    /* CẬP NHẬT THỐNG KÊ REALTIME */
-    function updateStatsUI() {
+    /* RENDER TOÀN BỘ GIAO DIỆN TUYẾN */
+/* RENDER TOÀN BỘ GIAO DIỆN TUYẾN */
+function renderRouteView() {
+  renderRouteSelectOptions();
+  const route = routesData[activeRouteId];
+  const tbody = document.getElementById("stopsTableBody");
+
+  const totalStops = route.stops.length;
+  const lastStop = route.stops[totalStops - 1];
+  const totalKm = lastStop ? lastStop.km : 0;
+
+  // Render danh sách trạm dừng
+  let html = "";
+  route.stops.forEach((s, idx) => {
+    const isFirst = idx === 0;
+
+    html += `
+      <tr>
+        <td><span class="order-badge">${idx + 1}</span></td>
+        <td><span class="station-name-bold">${s.name}</span></td>
+        <td><span class="station-address-sub">${s.address}</span></td>
+        <td>
+          <input type="number" 
+                 class="table-input" 
+                 style="width: 90px;"
+                 value="${s.km}" 
+                 ${isFirst ? 'disabled' : ''} 
+                 onchange="updateStopKm(${idx}, this.value)"> km
+        </td>
+        <td>
+          <input type="number" 
+                 class="table-input" 
+                 style="width: 90px;"
+                 value="${s.offset}" 
+                 ${isFirst ? 'disabled' : ''} 
+                 onchange="updateStopOffset(${idx}, this.value)"> phút
+        </td>
+        <td style="text-align: right;">
+          <div class="table-action-btns">
+            <button class="btn-icon insert" title="Chèn trạm dừng ngay sau trạm này" onclick="openAddStopModal(${idx})">
+              <i class="fa-solid fa-square-plus"></i>
+            </button>
+            ${!isFirst ? `<button class="btn-icon delete" title="Xóa trạm" onclick="deleteStop(${idx})"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
+  updateStatsUI(totalStops, totalKm, lastStop ? lastStop.offset : 0);
+}
+
+    /* CHẾ ĐỘ GIÁ TOÀN TUYẾN */
+    function setTotalFareMode(mode) {
       const route = routesData[activeRouteId];
-      const totalStops = route.stops.length;
-      const lastStop = route.stops[totalStops - 1];
+      route.fareMode = mode;
 
-      document.getElementById("statTotalStops").textContent = `${totalStops} Trạm`;
-      document.getElementById("statTotalKm").textContent = `${lastStop.km} Km`;
-
-      const h = Math.floor(lastStop.offset / 60);
-      const m = lastStop.offset % 60;
-      document.getElementById("statTotalTime").textContent = `${h} Giờ ${m} Phút`;
-
-      // Công thức tổ hợp n*(n-1)/2
-      const segmentsCount = (totalStops * (totalStops - 1)) / 2;
-      document.getElementById("statTotalSegments").textContent = `${segmentsCount} Chặng con`;
+      if (mode === "AUTO") {
+        route.manualFare = null;
+        renderRouteView();
+        showToast("Đã kích hoạt chế độ Tự động: Giá vé = Cự ly × Đơn giá/km!");
+      } else {
+        const fareInput = document.getElementById("inputTotalFare");
+        fareInput.disabled = false;
+        fareInput.classList.add("manual-mode");
+        fareInput.focus();
+        fareInput.select();
+        route.manualFare = parseInt(fareInput.value) || 0;
+        document.getElementById("btnFareAuto").className = "btn-fare-mode";
+        document.getElementById("btnFareManual").className = "btn-fare-mode active-manual";
+        showToast("Đã mở khóa: Bạn có thể tự do nhập số tiền!");
+      }
     }
 
-    /* XỬ LÝ SỰ KIỆN */
+    function onTotalFareManualChange(val) {
+      const route = routesData[activeRouteId];
+      route.manualFare = parseInt(val) || 0;
+      renderRouteView();
+    }
+
+    function onPolicyParamChange() {
+      const route = routesData[activeRouteId];
+      route.pricePerKm = parseInt(document.getElementById("inputPricePerKm").value) || 600;
+      renderRouteView();
+      showToast("Đã cập nhật đơn giá / km và tính lại giá vé!");
+    }
+
+    function updateStatsUI(totalStops, totalKm, totalOffset) {
+      document.getElementById("statTotalStops").textContent = `${totalStops} Trạm`;
+      document.getElementById("statTotalKm").textContent = `${totalKm} Km`;
+      const h = Math.floor(totalOffset / 60);
+      const m = totalOffset % 60;
+      document.getElementById("statTotalTime").textContent = `${h} Giờ ${m} Phút`;
+    }
+
+    function updateStopKm(index, val) {
+      const route = routesData[activeRouteId];
+      route.stops[index].km = parseInt(val) || 0;
+      renderRouteView();
+      showToast(`Đã cập nhật cự ly km trạm ${route.stops[index].name}!`);
+    }
+
     function updateStopOffset(index, val) {
       const route = routesData[activeRouteId];
       route.stops[index].offset = parseInt(val) || 0;
-      renderStopsTable();
-      renderPricingTable();
-      showToast(`Đã cập nhật offset trạm ${route.stops[index].name} thành ${val} phút`);
+      renderRouteView();
+      showToast(`Đã cập nhật offset trạm ${route.stops[index].name}!`);
     }
 
     function deleteStop(index) {
@@ -817,80 +1154,310 @@
       const name = route.stops[index].name;
       if (confirm(`Bạn có chắc muốn xóa trạm "${name}" khỏi lộ trình không?`)) {
         route.stops.splice(index, 1);
-        renderStopsTable();
-        renderPricingTable();
-        showToast(`Đã xóa trạm "${name}" khỏi tuyến`);
+        renderRouteView();
+        showToast(`Đã xóa trạm "${name}" khỏi tuyến!`);
       }
     }
 
-    function updatePairPrice(pairKey, newPrice) {
-      routesData[activeRouteId].prices[pairKey] = parseInt(newPrice) || 0;
-    }
-
-    function savePricingChanges() {
-      showToast("Đã lưu toàn bộ thay đổi bảng giá vé vào Database!");
+    function saveRouteConfig() {
+      showToast("Đã lưu cấu hình tuyến và lộ trình vào Database!");
     }
 
     function onSelectRouteChange() {
       activeRouteId = document.getElementById("routeSelect").value;
-      renderStopsTable();
-      renderPricingTable();
-      showToast(`Đã tải dữ liệu ${routesData[activeRouteId].name}`);
+      renderRouteView();
+      showToast(`Đã chuyển sang ${routesData[activeRouteId].name}`);
     }
 
-    /* MODAL THÊM TRẠM */
-    function openAddStopModal() {
-      document.getElementById("addStopModal").classList.add("active");
+    /* ---------------- SETUP DROPDOWN ĐỊA HÀNH CHÍNH 3 CẤP (MODAL THÊM TRẠM) ---------------- */
+    function populateProvinceDropdown(selectId = "selectProvince") {
+      const provSelect = document.getElementById(selectId);
+      let html = `<option value="">-- Chọn Tỉnh / Thành --</option>`;
+      for (let prov in locationsData) {
+        html += `<option value="${prov}">${prov}</option>`;
+      }
+      provSelect.innerHTML = html;
     }
-    function closeAddStopModal() {
-      document.getElementById("addStopModal").classList.remove("active");
-    }
-    function handleAddStopSubmit() {
-      const name = document.getElementById("newStopName").value.trim();
-      const address = document.getElementById("newStopAddress").value.trim();
-      const km = parseInt(document.getElementById("newStopKm").value) || 0;
-      const offset = parseInt(document.getElementById("newStopOffset").value) || 0;
 
-      if (!name || !address) {
-        alert("Vui lòng nhập tên trạm và địa chỉ!");
+    function onProvinceChange() {
+      const prov = document.getElementById("selectProvince").value;
+      const distSelect = document.getElementById("selectDistrict");
+      const wardSelect = document.getElementById("selectWard");
+
+      distSelect.innerHTML = `<option value="">-- Chọn Quận / Huyện --</option>`;
+      wardSelect.innerHTML = `<option value="">-- Chọn Phường / Xã --</option>`;
+      wardSelect.disabled = true;
+
+      if (!prov || !locationsData[prov]) {
+        distSelect.disabled = true;
         return;
       }
 
-      const route = routesData[activeRouteId];
-      const newId = Date.now();
-      route.stops.push({ id: newId, name, address, km, offset });
+      distSelect.disabled = false;
+      let html = `<option value="">-- Chọn Quận / Huyện --</option>`;
+      for (let dist in locationsData[prov]) {
+        html += `<option value="${dist}">${dist}</option>`;
+      }
+      distSelect.innerHTML = html;
+    }
 
-      // Sắp xếp lại theo khoảng cách / offset
+    function onDistrictChange() {
+      const prov = document.getElementById("selectProvince").value;
+      const dist = document.getElementById("selectDistrict").value;
+      const wardSelect = document.getElementById("selectWard");
+
+      wardSelect.innerHTML = `<option value="">-- Chọn Phường / Xã --</option>`;
+
+      if (!dist || !locationsData[prov] || !locationsData[prov][dist]) {
+        wardSelect.disabled = true;
+        return;
+      }
+
+      wardSelect.disabled = false;
+      let html = `<option value="">-- Chọn Phường / Xã --</option>`;
+      locationsData[prov][dist].forEach(w => {
+        html += `<option value="${w}">${w}</option>`;
+      });
+      wardSelect.innerHTML = html;
+    }
+
+    /* ---------------- SETUP THÊM TRẠM DỪNG (CHÈN VÀO GIỮA HOẶC VÀO CUỐI) ---------------- */
+    function openAddStopModal(insertAfterIdx = null) {
+      const route = routesData[activeRouteId];
+      const posSelect = document.getElementById("insertPositionSelect");
+      let html = "";
+
+      html += `<option value="END">Chèn vào cuối tuyến (sau trạm cuối cùng)</option>`;
+
+      route.stops.forEach((s, idx) => {
+        const isSelected = insertAfterIdx !== null && insertAfterIdx === idx;
+        html += `<option value="${idx}" ${isSelected ? 'selected' : ''}>Chèn sau trạm ${idx + 1}: ${s.name} (${s.km} km)</option>`;
+      });
+
+      html += `<option value="START">Chèn vào đầu tuyến (Làm trạm xuất phát mới)</option>`;
+
+      posSelect.innerHTML = html;
+
+      if (insertAfterIdx !== null) {
+        posSelect.value = insertAfterIdx.toString();
+      }
+
+      populateProvinceDropdown("selectProvince");
+      document.getElementById("selectProvince").value = "";
+      document.getElementById("selectDistrict").innerHTML = `<option value="">-- Chọn Quận / Huyện --</option>`;
+      document.getElementById("selectDistrict").disabled = true;
+      document.getElementById("selectWard").innerHTML = `<option value="">-- Chọn Phường / Xã --</option>`;
+      document.getElementById("selectWard").disabled = true;
+      document.getElementById("newStreetAddress").value = "";
+      document.getElementById("newStopName").value = "";
+
+      onPositionSelectChange();
+      document.getElementById("addStopModal").classList.add("active");
+    }
+
+    function closeAddStopModal() {
+      document.getElementById("addStopModal").classList.remove("active");
+    }
+
+    function onPositionSelectChange() {
+      const route = routesData[activeRouteId];
+      const pos = document.getElementById("insertPositionSelect").value;
+      const kmInput = document.getElementById("newStopKm");
+      const offsetInput = document.getElementById("newStopOffset");
+      const hintText = document.getElementById("positionHintText");
+
+      if (pos === "END") {
+        const last = route.stops[route.stops.length - 1];
+        kmInput.value = last ? last.km + 50 : 50;
+        offsetInput.value = last ? last.offset + 60 : 60;
+        hintText.textContent = "Trạm mới sẽ nằm ở vị trí cuối cùng của hành trình.";
+      } else if (pos === "START") {
+        kmInput.value = 0;
+        offsetInput.value = 0;
+        hintText.textContent = "Trạm mới sẽ làm điểm bắt đầu (0 Km), các trạm sau sẽ được dịch thứ tự.";
+      } else {
+        const idx = parseInt(pos);
+        const curr = route.stops[idx];
+        const next = route.stops[idx + 1];
+
+        if (next) {
+          kmInput.value = Math.round((curr.km + next.km) / 2);
+          offsetInput.value = Math.round((curr.offset + next.offset) / 2);
+          hintText.textContent = `Chèn vào giữa: "${curr.name}" (${curr.km}km) và "${next.name}" (${next.km}km).`;
+        } else {
+          kmInput.value = curr.km + 40;
+          offsetInput.value = curr.offset + 50;
+          hintText.textContent = `Chèn tiếp nối sau trạm cuối "${curr.name}".`;
+        }
+      }
+    }
+
+    function handleAddStopSubmit() {
+      const name = document.getElementById("newStopName").value.trim();
+      const prov = document.getElementById("selectProvince").value;
+      const dist = document.getElementById("selectDistrict").value;
+      const ward = document.getElementById("selectWard").value;
+      const street = document.getElementById("newStreetAddress").value.trim();
+      const km = parseInt(document.getElementById("newStopKm").value) || 0;
+      const offset = parseInt(document.getElementById("newStopOffset").value) || 0;
+      const pos = document.getElementById("insertPositionSelect").value;
+
+      if (!name) {
+        alert("Vui lòng nhập tên trạm dừng!");
+        return;
+      }
+      if (!prov || !dist || !ward) {
+        alert("Vui lòng chọn đầy đủ Tỉnh/Thành, Quận/Huyện và Phường/Xã!");
+        return;
+      }
+
+      const fullAddress = street ? `${street}, ${ward}, ${dist}, ${prov}` : `${ward}, ${dist}, ${prov}`;
+
+      const route = routesData[activeRouteId];
+      const newStop = { id: Date.now(), name, address: fullAddress, km, offset };
+
+      if (pos === "END") {
+        route.stops.push(newStop);
+      } else if (pos === "START") {
+        route.stops.unshift(newStop);
+      } else {
+        const idx = parseInt(pos);
+        route.stops.splice(idx + 1, 0, newStop);
+      }
+
       route.stops.sort((a, b) => a.km - b.km);
 
       closeAddStopModal();
-      renderStopsTable();
-      renderPricingTable();
-      showToast(`Đã thêm trạm "${name}" vào tuyến`);
-
-      // Reset form
-      document.getElementById("newStopName").value = "";
-      document.getElementById("newStopAddress").value = "";
+      renderRouteView();
+      showToast(`Đã chèn trạm "${name}" vào lộ trình thành công!`);
     }
 
-    /* TAB SWITCHER */
-    function switchAdminTab(tab) {
-      const stopsBtn = document.getElementById("tabStopsBtn");
-      const pricingBtn = document.getElementById("tabPricingBtn");
-      const stopsPanel = document.getElementById("stopsPanel");
-      const pricingPanel = document.getElementById("pricingPanel");
+    /* ---------------- TẠO TUYẾN ĐƯỜNG MỚI ---------------- */
+    function openCreateRouteModal() {
+      populateProvinceDropdown("selectRouteOriginProv");
+      populateProvinceDropdown("selectRouteDestProv");
 
-      if (tab === "stops") {
-        stopsBtn.classList.add("active");
-        pricingBtn.classList.remove("active");
-        stopsPanel.style.display = "block";
-        pricingPanel.style.display = "none";
-      } else {
-        pricingBtn.classList.add("active");
-        stopsBtn.classList.remove("active");
-        pricingPanel.style.display = "block";
-        stopsPanel.style.display = "none";
+      document.getElementById("selectRouteOriginProv").value = "";
+      document.getElementById("selectRouteOriginDist").innerHTML = `<option value="">-- Chọn Quận / Huyện --</option>`;
+      document.getElementById("selectRouteOriginDist").disabled = true;
+      document.getElementById("selectRouteOriginWard").innerHTML = `<option value="">-- Chọn Phường / Xã --</option>`;
+      document.getElementById("selectRouteOriginWard").disabled = true;
+
+      document.getElementById("selectRouteDestProv").value = "";
+      document.getElementById("selectRouteDestDist").innerHTML = `<option value="">-- Chọn Quận / Huyện --</option>`;
+      document.getElementById("selectRouteDestDist").disabled = true;
+      document.getElementById("selectRouteDestWard").innerHTML = `<option value="">-- Chọn Phường / Xã --</option>`;
+      document.getElementById("selectRouteDestWard").disabled = true;
+
+      document.getElementById("createRouteModal").classList.add("active");
+    }
+
+    function closeCreateRouteModal() {
+      document.getElementById("createRouteModal").classList.remove("active");
+    }
+
+    function onRouteChangeProv(type) {
+      const prov = document.getElementById(`selectRoute${type}Prov`).value;
+      const distSelect = document.getElementById(`selectRoute${type}Dist`);
+      const wardSelect = document.getElementById(`selectRoute${type}Ward`);
+
+      distSelect.innerHTML = `<option value="">-- Chọn Quận / Huyện --</option>`;
+      wardSelect.innerHTML = `<option value="">-- Chọn Phường / Xã --</option>`;
+      wardSelect.disabled = true;
+
+      if (!prov || !locationsData[prov]) {
+        distSelect.disabled = true;
+        return;
       }
+
+      distSelect.disabled = false;
+      let html = `<option value="">-- Chọn Quận / Huyện --</option>`;
+      for (let dist in locationsData[prov]) {
+        html += `<option value="${dist}">${dist}</option>`;
+      }
+      distSelect.innerHTML = html;
+    }
+
+    function onRouteChangeDist(type) {
+      const prov = document.getElementById(`selectRoute${type}Prov`).value;
+      const dist = document.getElementById(`selectRoute${type}Dist`).value;
+      const wardSelect = document.getElementById(`selectRoute${type}Ward`);
+
+      wardSelect.innerHTML = `<option value="">-- Chọn Phường / Xã --</option>`;
+
+      if (!dist || !locationsData[prov] || !locationsData[prov][dist]) {
+        wardSelect.disabled = true;
+        return;
+      }
+
+      wardSelect.disabled = false;
+      let html = `<option value="">-- Chọn Phường / Xã --</option>`;
+      locationsData[prov][dist].forEach(w => {
+        html += `<option value="${w}">${w}</option>`;
+      });
+      wardSelect.innerHTML = html;
+    }
+
+    function handleCreateRouteSubmit() {
+      const rId = document.getElementById("newRouteId").value.trim().toUpperCase();
+      const rName = document.getElementById("newRouteName").value.trim();
+      const priceKm = parseInt(document.getElementById("newRoutePriceKm").value) || 600;
+
+      // Trạm xuất phát
+      const originName = document.getElementById("newRouteOriginStation").value.trim();
+      const originProv = document.getElementById("selectRouteOriginProv").value;
+      const originDist = document.getElementById("selectRouteOriginDist").value;
+      const originWard = document.getElementById("selectRouteOriginWard").value;
+      const originStreet = document.getElementById("newRouteOriginStreet").value.trim();
+
+      // Trạm đích
+      const destName = document.getElementById("newRouteDestStation").value.trim();
+      const destKm = parseInt(document.getElementById("newRouteDestKm").value) || 500;
+      const destProv = document.getElementById("selectRouteDestProv").value;
+      const destDist = document.getElementById("selectRouteDestDist").value;
+      const destWard = document.getElementById("selectRouteDestWard").value;
+      const destStreet = document.getElementById("newRouteDestStreet").value.trim();
+
+      if (!rId || !rName) {
+        alert("Vui lòng nhập mã tuyến và tên tuyến!");
+        return;
+      }
+      if (routesData[rId]) {
+        alert(`Mã tuyến ${rId} đã tồn tại! Vui lòng chọn mã khác.`);
+        return;
+      }
+      if (!originName || !originProv || !originDist || !originWard) {
+        alert("Vui lòng nhập tên và chọn đầy đủ địa chỉ cho Trạm xuất phát!");
+        return;
+      }
+      if (!destName || !destProv || !destDist || !destWard) {
+        alert("Vui lòng nhập tên và chọn đầy đủ địa chỉ cho Trạm đích!");
+        return;
+      }
+
+      const originAddr = originStreet ? `${originStreet}, ${originWard}, ${originDist}, ${originProv}` : `${originWard}, ${originDist}, ${originProv}`;
+      const destAddr = destStreet ? `${destStreet}, ${destWard}, ${destDist}, ${destProv}` : `${destWard}, ${destDist}, ${destProv}`;
+
+      const estOffset = Math.round(destKm * 1.3);
+
+      routesData[rId] = {
+        name: rName,
+        pricePerKm: priceKm,
+        fareMode: "AUTO",
+        manualFare: null,
+        stops: [
+          { id: Date.now(), name: originName, address: originAddr, km: 0, offset: 0 },
+          { id: Date.now() + 1, name: destName, address: destAddr, km: destKm, offset: estOffset }
+        ]
+      };
+
+      activeRouteId = rId;
+      closeCreateRouteModal();
+      renderRouteView();
+      showToast(`Đã tạo tuyến mới "${rName}" thành công!`);
+
+      document.getElementById("newRouteId").value = "";
+      document.getElementById("newRouteName").value = "";
     }
 
     let toastTimer;
@@ -902,9 +1469,8 @@
       toastTimer = setTimeout(() => toast.classList.remove("show"), 2400);
     }
 
-    // Khởi tạo chạy ban đầu
-    renderStopsTable();
-    renderPricingTable();
+    // Khởi chạy khi load trang
+    renderRouteView();
   </script>
 </body>
 </html>

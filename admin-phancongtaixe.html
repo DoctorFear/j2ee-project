@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FUTA Dispatcher — Lập lịch & Điều phối Tài nguyên (Fleet & Driver)</title>
+  <title>FUTA Dispatcher — Lập lịch & Điều phối Tài nguyên</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -13,7 +13,7 @@
       --primary: #f95721;
       --primary-hover: #e04410;
       --primary-light: #fff2ed;
-      --accent-green: #007646;
+      --accent-green: #059669;
       --green-light: #ecfdf5;
       --text-main: #0f172a;
       --text-muted: #64748b;
@@ -30,500 +30,195 @@
       --shadow-popup: 0 20px 40px rgba(15, 23, 42, 0.2);
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: "Plus Jakarta Sans", sans-serif;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    body {
-      background-color: var(--bg-page);
-      color: var(--text-main);
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Plus Jakarta Sans", sans-serif; -webkit-font-smoothing: antialiased; }
+    body { background-color: var(--bg-page); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
 
     /* 1. SIDEBAR */
-    .sidebar {
-      width: 260px;
-      background: var(--sidebar-bg);
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-      border-right: 1px solid #1e293b;
-    }
-    .sidebar-brand {
-      padding: 22px 20px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      border-bottom: 1px solid #1e293b;
-    }
-    .brand-icon {
-      width: 36px;
-      height: 36px;
-      background: var(--primary);
-      color: #fff;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-    }
-    .brand-title h3 {
-      font-size: 16px;
-      font-weight: 800;
-      color: #f8fafc;
-    }
-    .brand-title span {
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--primary);
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-    }
+    .sidebar { width: 260px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; border-right: 1px solid #1e293b; }
+    .sidebar-brand { padding: 22px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #1e293b; }
+    .brand-icon { width: 36px; height: 36px; background: var(--primary); color: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .brand-title h3 { font-size: 16px; font-weight: 800; color: #f8fafc; }
+    .brand-title span { font-size: 10px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.6px; }
 
-    .nav-list {
-      list-style: none;
-      padding: 16px 12px;
+    .nav-list { list-style: none; padding: 16px 12px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+    .nav-item a { display: flex; align-items: center; gap: 12px; padding: 11px 14px; color: #94a3b8; text-decoration: none; font-size: 13.5px; font-weight: 600; border-radius: var(--radius-sm); transition: all 0.15s; }
+    .nav-item a:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
+    .nav-item.active a { background: var(--primary); color: #fff; font-weight: 700; }
+
+    .sidebar-user { padding: 16px 20px; border-top: 1px solid #1e293b; display: flex; align-items: center; gap: 12px; }
+    .user-avatar { width: 38px; height: 38px; border-radius: 50%; background: #334155; color: #38bdf8; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; }
+    .user-meta h4 { font-size: 13.5px; font-weight: 700; color: #f1f5f9; }
+    .user-meta span { font-size: 11px; color: #94a3b8; }
+
+    /* 2. MAIN CONTAINER */
+    .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+    .top-header { background: #ffffff; border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 20; }
+    .header-left h1 { font-size: 20px; font-weight: 800; color: var(--text-main); }
+    .header-left p { font-size: 13px; color: var(--text-muted); }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .date-picker-input { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-weight: 700; outline: none; }
+    
+    .btn-header { padding: 8px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; border: none; transition: all 0.15s; }
+    .btn-auto-assign { background: #eff6ff; color: #1d4ed8; border: 1.5px solid #bfdbfe; }
+    .btn-auto-assign:hover { background: #dbeafe; }
+    .btn-create-trip { background: var(--primary); color: #fff; }
+    .btn-create-trip:hover { background: var(--primary-hover); }
+
+    .dashboard-body { padding: 24px 32px 60px 32px; }
+
+    /* STATS */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 22px; }
+    .stat-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; box-shadow: var(--shadow-sm); }
+    .stat-card span { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+    .stat-card h3 { font-size: 20px; font-weight: 800; color: var(--text-main); margin-top: 4px; }
+
+    /* FILTER BAR */
+    .filter-card-bar { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 18px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .filter-pills { display: flex; gap: 8px; }
+    .f-pill { background: #f8fafc; border: 1px solid var(--border); padding: 6px 14px; border-radius: var(--radius-full); font-size: 12.5px; font-weight: 700; color: var(--text-muted); cursor: pointer; }
+    .f-pill.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+
+    /* TABLE */
+    .card-panel { background: var(--card-bg); border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-card); overflow: hidden; }
+    .custom-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+    .custom-table th { background: #f8fafc; padding: 12px 14px; font-weight: 700; color: var(--text-muted); border-bottom: 1px solid var(--border); text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+    .custom-table td { padding: 13px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .custom-table tbody tr:hover { background: #fcfdfe; }
+
+    .trip-code-text { font-weight: 800; color: var(--text-main); background: #f1f5f9; padding: 3px 8px; border-radius: 4px; font-size: 12px; }
+    .route-bold { font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 6px; }
+    .time-slot { font-weight: 800; color: var(--primary); font-size: 14px; }
+
+    .vehicle-tag { display: inline-flex; align-items: center; gap: 6px; background: #fef08a; border: 1px solid #eab308; color: #854d0e; padding: 3px 8px; border-radius: 6px; font-weight: 800; font-size: 12px; }
+    .driver-tag { display: inline-flex; align-items: center; gap: 6px; background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 3px 8px; border-radius: var(--radius-full); font-weight: 700; font-size: 12px; }
+    .driver-unassigned-tag { display: inline-flex; align-items: center; gap: 5px; background: #fee2e2; border: 1px solid #fca5a5; color: #dc2626; padding: 3px 8px; border-radius: var(--radius-full); font-weight: 700; font-size: 11.5px; }
+    .unassigned-tag { display: inline-flex; align-items: center; gap: 5px; background: #fee2e2; border: 1px solid #fca5a5; color: #dc2626; padding: 3px 8px; border-radius: var(--radius-full); font-weight: 700; font-size: 11.5px; }
+
+    /* STATUS & PRICE BADGES */
+    .status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; }
+    .status-badge.active { background: #dcfce7; color: #15803d; }
+    .status-badge.paused { background: #fee2e2; color: #b91c1c; }
+
+    .sale-badge { display: inline-flex; align-items: center; gap: 4px; font-weight: 800; font-size: 11px; padding: 3px 8px; border-radius: 6px; }
+    .sale-badge.percent { background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
+    .sale-badge.manual { background: #fdf4ff; color: #9333ea; border: 1px solid #f0abfc; }
+
+    /* ACTION BUTTONS */
+    .action-flex { display: flex; align-items: center; justify-content: flex-end; gap: 4px; flex-wrap: wrap; }
+    .btn-action-sm { background: #ffffff; border: 1px solid var(--border); padding: 5px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 700; color: var(--text-main); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.15s; }
+    .btn-action-sm:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+    .btn-action-sm.price-btn { color: #ea580c; border-color: #fdba74; }
+    .btn-action-sm.price-btn:hover { background: #fff7ed; }
+    .btn-action-sm.pause-btn { color: #d97706; border-color: #fde68a; }
+    .btn-action-sm.pause-btn:hover { background: #fef3c7; }
+    .btn-action-sm.delete-btn { color: #dc2626; border-color: #fecaca; }
+    .btn-action-sm.delete-btn:hover { background: #fee2e2; }
+
+    /* MODAL */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+    .modal-overlay.active { display: flex; }
+    .modal-card { background: #ffffff; width: 100%; max-width: 660px; border-radius: var(--radius-md); box-shadow: var(--shadow-popup); padding: 24px; max-height: 92vh; overflow-y: auto; }
+    .modal-card h3 { font-size: 17px; font-weight: 800; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    .modal-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+    
+    .form-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px; }
+    .form-group label { font-size: 12px; font-weight: 700; color: var(--text-muted); }
+    .form-control { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 13.5px; outline: none; font-weight: 600; }
+    .form-control:focus { border-color: var(--primary); }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+    .btn-cancel { padding: 8px 16px; background: #f1f5f9; border: none; border-radius: var(--radius-sm); font-weight: 700; cursor: pointer; color: var(--text-muted); }
+
+    /* KHỐI ĐIỀU CHỈNH THỜI GIAN & DELAY TRONG MODAL LỘ TRÌNH */
+    .time-adjust-card {
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      margin-bottom: 18px;
+      border: 1.5px solid;
+    }
+    .time-adjust-card.no-passenger {
+      background: #f0fdf4;
+      border-color: #86efac;
+    }
+    .time-adjust-card.has-passenger {
+      background: #fffbeb;
+      border-color: #fde68a;
+    }
+    .delay-pills-row {
       display: flex;
-      flex-direction: column;
       gap: 6px;
-      flex: 1;
+      margin-top: 6px;
     }
-    .nav-item a {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 11px 14px;
-      color: #94a3b8;
-      text-decoration: none;
-      font-size: 13.5px;
-      font-weight: 600;
-      border-radius: var(--radius-sm);
-      transition: all 0.15s;
-    }
-    .nav-item a:hover {
-      background: rgba(255, 255, 255, 0.05);
-      color: #fff;
-    }
-    .nav-item.active a {
-      background: var(--primary);
-      color: #fff;
-      font-weight: 700;
-    }
-
-    .sidebar-user {
-      padding: 16px 20px;
-      border-top: 1px solid #1e293b;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .user-avatar {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      background: #334155;
-      color: #38bdf8;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 14px;
-    }
-    .user-meta h4 {
-      font-size: 13.5px;
-      font-weight: 700;
-      color: #f1f5f9;
-    }
-    .user-meta span {
-      font-size: 11px;
-      color: #94a3b8;
-    }
-
-    /* 2. MAIN VIEW */
-    .main-wrapper {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow-y: auto;
-    }
-    .top-header {
+    .btn-delay-quick {
       background: #ffffff;
-      border-bottom: 1px solid var(--border);
-      padding: 16px 32px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 20;
-    }
-    .header-left h1 {
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--text-main);
-    }
-    .header-left p {
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .date-picker-input {
-      padding: 8px 12px;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-sm);
-      font-size: 13px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 12px;
       font-weight: 700;
-      color: var(--text-main);
-      outline: none;
+      cursor: pointer;
+      color: #334155;
     }
-    .btn-header {
+    .btn-delay-quick:hover {
+      background: #f1f5f9;
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .btn-send-notify {
+      background: #ea580c;
+      color: #fff;
+      border: none;
       padding: 8px 16px;
       border-radius: var(--radius-sm);
       font-size: 13px;
       font-weight: 700;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      border: none;
-      transition: all 0.15s;
-    }
-    .btn-auto-gen {
-      background: #f0fdf4;
-      color: var(--accent-green);
-      border: 1.5px solid #bbf7d0;
-    }
-    .btn-auto-gen:hover {
-      background: #dcfce7;
-    }
-    .btn-create-trip {
-      background: var(--primary);
-      color: #fff;
-    }
-    .btn-create-trip:hover {
-      background: var(--primary-hover);
-    }
-
-    .dashboard-body {
-      padding: 24px 32px 60px 32px;
-    }
-
-    /* STATS SUMMARY */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin-bottom: 22px;
-    }
-    .stat-card {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 16px;
-      box-shadow: var(--shadow-sm);
-    }
-    .stat-card span {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-muted);
-    }
-    .stat-card h3 {
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--text-main);
-      margin-top: 4px;
-    }
-
-    /* FILTER BAR */
-    .filter-card-bar {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 12px 18px;
-      margin-bottom: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .filter-pills {
-      display: flex;
-      gap: 8px;
-    }
-    .f-pill {
-      background: #f8fafc;
-      border: 1px solid var(--border);
-      padding: 6px 14px;
-      border-radius: var(--radius-full);
-      font-size: 12.5px;
-      font-weight: 700;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .f-pill.active {
-      background: var(--primary-light);
-      border-color: var(--primary);
-      color: var(--primary);
-    }
-
-    /* TRIP LIST TABLE */
-    .card-panel {
-      background: var(--card-bg);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow-card);
-      overflow: hidden;
-    }
-    .custom-table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-      font-size: 13px;
-    }
-    .custom-table th {
-      background: #f8fafc;
-      padding: 12px 18px;
-      font-weight: 700;
-      color: var(--text-muted);
-      border-bottom: 1px solid var(--border);
-      text-transform: uppercase;
-      font-size: 11px;
-      letter-spacing: 0.5px;
-    }
-    .custom-table td {
-      padding: 14px 18px;
-      border-bottom: 1px solid var(--border);
-      vertical-align: middle;
-    }
-    .custom-table tbody tr:hover {
-      background: #fcfdfe;
-    }
-
-    .trip-code-text {
-      font-weight: 800;
-      color: var(--text-main);
-      background: #f1f5f9;
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      display: inline-block;
-    }
-    .route-bold {
-      font-weight: 800;
-      color: var(--text-main);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .time-slot {
-      font-weight: 800;
-      color: var(--primary);
-      font-size: 14px;
-    }
-
-    /* TAGS XE & TÀI XẾ */
-    .vehicle-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: #fef08a;
-      border: 1px solid #eab308;
-      color: #854d0e;
-      padding: 3px 10px;
-      border-radius: 6px;
-      font-weight: 800;
-      font-size: 12px;
-    }
-    .driver-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
-      color: #166534;
-      padding: 3px 10px;
-      border-radius: var(--radius-full);
-      font-weight: 700;
-      font-size: 12px;
-    }
-    .unassigned-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: #fee2e2;
-      border: 1px solid #fca5a5;
-      color: #dc2626;
-      padding: 3px 10px;
-      border-radius: var(--radius-full);
-      font-weight: 700;
-      font-size: 11.5px;
-    }
-
-    .btn-action-group {
-      display: flex;
-      justify-content: flex-end;
-      gap: 6px;
-    }
-    .btn-assign {
-      background: #ffffff;
-      border: 1.5px solid var(--border);
-      padding: 6px 12px;
-      border-radius: var(--radius-sm);
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text-main);
-      cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 6px;
       transition: all 0.15s;
     }
-    .btn-assign:hover {
-      border-color: var(--primary);
-      color: var(--primary);
-      background: var(--primary-light);
-    }
-    .btn-delete-trip {
-      background: #ffffff;
-      border: 1.5px solid var(--border);
-      padding: 6px 10px;
-      border-radius: var(--radius-sm);
-      color: #dc2626;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .btn-delete-trip:hover {
-      background: #fee2e2;
-      border-color: #fca5a5;
+    .btn-send-notify:hover {
+      background: #c2410c;
     }
 
-    /* MODAL ĐIỀU PHỐI (XE NHẬP TAY) */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.55);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(2px);
-    }
-    .modal-overlay.active { display: flex; }
-    .modal-card {
-      background: #ffffff;
-      width: 100%;
-      max-width: 520px;
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-popup);
-      padding: 24px;
-      animation: pop 0.2s ease;
-    }
-    @keyframes pop {
-      from { transform: scale(0.95); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-    .modal-card h3 {
-      font-size: 17px;
-      font-weight: 800;
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .modal-sub-info {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-bottom: 18px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid var(--border);
-    }
-    .form-group {
-      margin-bottom: 15px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .form-group label {
-      font-size: 12.5px;
-      font-weight: 700;
-      color: var(--text-main);
-    }
-    .form-select, .form-input {
-      padding: 9px 12px;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-sm);
-      font-size: 13.5px;
-      outline: none;
-      font-weight: 600;
-      background: #fff;
-    }
-    .form-select:focus, .form-input:focus {
-      border-color: var(--primary);
-    }
-    .conflict-warning {
-      display: none;
-      background: #fef2f2;
-      border-left: 3px solid #ef4444;
-      padding: 8px 12px;
-      border-radius: var(--radius-sm);
-      font-size: 12px;
-      color: #991b1b;
-      margin-bottom: 12px;
-    }
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 20px;
-    }
-    .btn-cancel {
-      padding: 9px 18px;
-      background: #f1f5f9;
-      border: none;
-      border-radius: var(--radius-sm);
-      font-weight: 700;
-      cursor: pointer;
-      color: var(--text-muted);
-    }
+    /* MODAL SALE BOXES */
+    .sale-mode-box { border: 1.5px solid var(--border); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 10px; cursor: pointer; transition: all 0.15s; }
+    .sale-mode-box.selected { border-color: var(--primary); background: var(--primary-light); }
+    .sale-mode-box label { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+
+    /* TOOLTIP [ i ] */
+    .info-tooltip-container { position: relative; display: inline-flex; align-items: center; margin-left: 4px; cursor: help; }
+    .info-icon { width: 17px; height: 17px; border-radius: 50%; background: #e2e8f0; color: #475569; display: inline-flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 800; font-style: italic; font-family: serif; }
+    .info-tooltip-container:hover .info-icon { background: var(--primary); color: #fff; }
+    .tooltip-box { visibility: hidden; opacity: 0; position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%); background: #0f172a; color: #fff; padding: 8px 12px; border-radius: var(--radius-sm); font-size: 11.5px; font-weight: 500; width: 260px; box-shadow: 0 10px 25px rgba(0,0,0,0.25); z-index: 100; line-height: 1.5; transition: opacity 0.2s, visibility 0.2s; pointer-events: none; }
+    .tooltip-box::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px; border-width: 5px; border-style: solid; border-color: #0f172a transparent transparent transparent; }
+    .info-tooltip-container:hover .tooltip-box { visibility: visible; opacity: 1; }
+
+    /* SƠ ĐỒ GHẾ GỘP CHUNG */
+    .seat-map-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; background: #f8fafc; padding: 14px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--border); }
+    .deck-title { font-size: 11.5px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; text-align: center; }
+    .seat-layout { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; justify-items: center; }
+    .seat-box { width: 34px; height: 34px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 800; border: 1.5px solid; }
+    .seat-box.empty { background: #f0fdf4; border-color: #86efac; color: #166534; }
+    .seat-box.booked { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+
+    /* TIMELINE LỘ TRÌNH */
+    .timeline-container { position: relative; padding-left: 20px; border-left: 2px solid var(--primary); margin-left: 10px; margin-top: 10px; }
+    .timeline-item { position: relative; margin-bottom: 16px; padding-left: 14px; }
+    .timeline-item::before { content: ""; position: absolute; left: -26px; top: 3px; width: 10px; height: 10px; border-radius: 50%; background: var(--primary); border: 2px solid #fff; }
+    .timeline-time { font-size: 13.5px; font-weight: 800; color: var(--primary); }
+    .timeline-name { font-size: 13.5px; font-weight: 700; color: var(--text-main); }
+    .timeline-desc { font-size: 11.5px; color: var(--text-muted); }
 
     /* TOAST */
-    .toast {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: #0f172a;
-      color: #fff;
-      padding: 12px 20px;
-      border-radius: var(--radius-md);
-      font-size: 13.5px;
-      font-weight: 600;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-      opacity: 0;
-      pointer-events: none;
-      transition: all 0.2s;
-      z-index: 2000;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #0f172a; color: #fff; padding: 12px 20px; border-radius: var(--radius-md); font-size: 13.5px; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.25); opacity: 0; pointer-events: none; transition: all 0.2s; z-index: 2000; display: flex; align-items: center; gap: 8px; }
+    .toast.show { opacity: 1; }
     .toast i { color: #4ade80; }
   </style>
 </head>
 <body>
 
-  <!-- 1. SIDEBAR NỘI BỘ -->
+  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="brand-icon"><i class="fa-solid fa-bus"></i></div>
@@ -532,37 +227,33 @@
         <span>Trung tâm điều hành</span>
       </div>
     </div>
-
     <ul class="nav-list">
-      <li class="nav-item"><a href="#"><i class="fa-solid fa-route"></i> Tuyến &amp; Bảng giá chặng</a></li>
-      <li class="nav-item active"><a href="#"><i class="fa-solid fa-calendar-days"></i> Lập lịch &amp; Phân tài xế</a></li>
+      <li class="nav-item"><a href="admin-routes.html"><i class="fa-solid fa-route"></i> Tuyến &amp; Trạm dừng</a></li>
+      <li class="nav-item active"><a href="admin-trips.html"><i class="fa-solid fa-calendar-days"></i> Lập lịch &amp; Phân tài xế</a></li>
       <li class="nav-item"><a href="#"><i class="fa-solid fa-van-shuttle"></i> Quản lý Phương tiện</a></li>
       <li class="nav-item"><a href="#"><i class="fa-solid fa-users-gear"></i> Tài khoản nội bộ</a></li>
       <li class="nav-item"><a href="#"><i class="fa-solid fa-chart-line"></i> Báo cáo doanh thu</a></li>
     </ul>
-
     <div class="sidebar-user">
       <div class="user-avatar">VT</div>
-      <div class="user-meta">
-        <h4>VĂN THUẬT</h4>
-        <span>Dispatcher / Điều hành</span>
-      </div>
+      <div class="user-meta"><h4>VĂN THUẬT</h4><span>Dispatcher / Điều hành</span></div>
     </div>
   </aside>
 
-  <!-- 2. MAIN AREA -->
+  <!-- MAIN AREA -->
   <div class="main-wrapper">
     <header class="top-header">
       <div class="header-left">
         <h1>Lập lịch chuyến xe &amp; Điều phối tài nguyên</h1>
-        <p>Sinh chuyến chạy tự động từ mẫu tuyến, nhập tay biển số xe và phân công tài xế.</p>
+        <p>Quản lý tài xế, phương tiện, giám sát ghế thực tế và lộ trình đón trả khách.</p>
       </div>
-
       <div class="header-actions">
-        <input type="date" class="date-picker-input" id="dispatchDate" value="2026-09-22" onchange="filterTrips()">
-        <button class="btn-header btn-auto-gen" onclick="autoGenerateTrips()">
-          <i class="fa-solid fa-wand-magic-sparkles"></i> Sinh chuyến tự động
+        <input type="date" class="date-picker-input" id="dispatchDate" value="2026-09-25" onchange="filterTrips()">
+        
+        <button class="btn-header btn-auto-assign" onclick="autoAssignPendingDrivers()" title="Tự động gán tài xế rảnh cho các chuyến dưới 6 tiếng chưa chốt">
+          <i class="fa-solid fa-user-clock"></i> Tự động gán tài xế (&lt;6h)
         </button>
+        
         <button class="btn-header btn-create-trip" onclick="openCreateTripModal()">
           <i class="fa-solid fa-plus"></i> Tạo chuyến mới
         </button>
@@ -571,35 +262,23 @@
 
     <div class="dashboard-body">
 
-      <!-- STATS THỐNG KÊ NHANH -->
+      <!-- STATS -->
       <div class="stats-grid">
-        <div class="stat-card">
-          <span>Tổng số chuyến trong ngày</span>
-          <h3 id="statTotalTrips">5 Chuyến</h3>
-        </div>
-        <div class="stat-card">
-          <span>Đã đủ xe &amp; Tài xế</span>
-          <h3 id="statAssigned" style="color: var(--accent-green);">3 Chuyến</h3>
-        </div>
-        <div class="stat-card">
-          <span>Chưa gán xe / tài xế</span>
-          <h3 id="statUnassigned" style="color: #dc2626;">2 Chuyến</h3>
-        </div>
-        <div class="stat-card">
-          <span>Tài xế đang sẵn sàng</span>
-          <h3 id="statAvailDrivers">4 Tài xế</h3>
-        </div>
+        <div class="stat-card"><span>Tổng số chuyến trong ngày</span><h3 id="statTotalTrips">5 Chuyến</h3></div>
+        <div class="stat-card"><span>Đã chốt Tài xế &amp; Xe</span><h3 id="statAssigned" style="color: var(--accent-green);">3 Chuyến</h3></div>
+        <div class="stat-card"><span>Chưa có tài xế</span><h3 id="statPending" style="color: #dc2626;">2 Chuyến</h3></div>
+        <div class="stat-card"><span>Tài xế đang sẵn sàng</span><h3 id="statAvailDrivers">4 Tài xế</h3></div>
       </div>
 
       <!-- FILTER BAR -->
       <div class="filter-card-bar">
         <div class="filter-pills">
           <div class="f-pill active" onclick="filterByStatus('ALL', this)">Tất cả (<span id="countAll">5</span>)</div>
-          <div class="f-pill" onclick="filterByStatus('ASSIGNED', this)">Đã điều phối (<span id="countAssigned">3</span>)</div>
-          <div class="f-pill" onclick="filterByStatus('UNASSIGNED', this)">Cần gán tài nguyên (<span id="countPending">2</span>)</div>
+          <div class="f-pill" onclick="filterByStatus('ASSIGNED', this)">Đã có tài xế (<span id="countAssigned">3</span>)</div>
+          <div class="f-pill" onclick="filterByStatus('PENDING', this)">Chưa có tài xế (<span id="countPending">2</span>)</div>
         </div>
-        <div style="font-size: 12.5px; color: var(--text-muted); font-weight: 600;">
-          <i class="fa-solid fa-circle-info"></i> Bấm "Phân công" để nhập biển số xe và chọn tài xế
+        <div style="font-size: 12px; color: var(--text-muted); font-weight: 600;">
+          <i class="fa-solid fa-circle-info"></i> Bấm "Lộ trình" để điều chỉnh giờ xuất bến hoặc xử lý Delay gửi thông báo email đến hành khách.
         </div>
       </div>
 
@@ -608,101 +287,212 @@
         <table class="custom-table">
           <thead>
             <tr>
-              <th style="width: 100px;">Mã chuyến</th>
-              <th>Tuyến lộ trình</th>
-              <th style="width: 120px;">Giờ xuất bến</th>
-              <th>Phương tiện (Biển số xe &amp; Loại xe)</th>
+              <th style="width: 85px;">Mã chuyến</th>
+              <th>Tuyến hành trình</th>
+              <th style="width: 85px;">Giờ chạy</th>
+              <th>Biển số xe</th>
               <th>Tài xế phụ trách</th>
-              <th style="width: 130px; text-align: center;">Trạng thái</th>
-              <th style="width: 180px; text-align: right;">Hành động</th>
+              <th style="width: 90px;">Chỗ đặt</th>
+              <th style="width: 145px;">Giá vé bán ra</th>
+              <th style="width: 95px;">Trạng thái</th>
+              <th style="text-align: right; width: 330px;">Hành động điều độ</th>
             </tr>
           </thead>
-          <tbody id="tripsTableBody">
-            <!-- Render qua JavaScript -->
-          </tbody>
+          <tbody id="tripsTableBody"></tbody>
         </table>
       </div>
 
     </div>
   </div>
 
-  <!-- MODAL ĐIỀU PHỐI (NHẬP TAY BIỂN SỐ XE & CHỌN TÀI XẾ) -->
-  <div class="modal-overlay" id="assignModal">
+  <!-- MODAL 1: LỘ TRÌNH ĐÓN TRẢ, CHỈNH GIỜ XUẤT BẾN & XỬ LÝ DELAY (GỬI EMAIL) -->
+  <div class="modal-overlay" id="routeModal">
     <div class="modal-card">
-      <h3><i class="fa-solid fa-id-card-clip" style="color: var(--primary);"></i> Phân công Xe &amp; Tài xế</h3>
-      <div class="modal-sub-info" id="assignModalSub">Chuyến TRIP-102 • An Nhơn ⇄ BX Miền Tây (17:30)</div>
+      <h3><i class="fa-solid fa-route" style="color: var(--primary);"></i> Lộ trình đón trả &amp; Giờ ghé trạm thực tế</h3>
+      <div class="modal-sub" id="routeModalSub">Chuyến TRIP-101</div>
 
-      <div class="conflict-warning" id="conflictAlert">
-        <i class="fa-solid fa-triangle-exclamation"></i> Cảnh báo: Biển số xe hoặc tài xế đã được phân công cho chuyến khác trùng khung giờ!
+      <div id="timeAdjustContainer"></div>
+
+      <div style="font-size:12.5px; font-weight:800; color:var(--text-main); margin-top:14px;">
+        <i class="fa-solid fa-clock-rotate-left"></i> Giờ dự kiến đón/trả khách tại từng trạm (đã tính theo giờ xuất bến):
       </div>
+      <div class="timeline-container" id="routeTimelineBody"></div>
 
-      <!-- Nhập tay biển số xe -->
-      <div class="form-group">
-        <label>Biển số xe (Nhập tay trực tiếp) <span style="color:#ef4444;">*</span></label>
-        <input type="text" class="form-input" id="inputVehiclePlate" placeholder="Ví dụ: 77B - 019.28, 51B - 889.12..." oninput="checkConflict()">
-      </div>
-
-      <!-- Chọn loại xe / sơ đồ ghế tương ứng -->
-      <div class="form-group">
-        <label>Loại xe &amp; Quy chuẩn số ghế <span style="color:#ef4444;">*</span></label>
-        <select class="form-select" id="selectBusType">
-          <option value="Limousine 34 Giường VIP">Limousine 34 Giường VIP (34 Ghế - A01-A17, B01-B17)</option>
-          <option value="Limousine 22 Phòng VIP">Limousine 22 Phòng VIP (22 Cabin riêng biệt)</option>
-          <option value="Giường nằm 40 Chỗ">Giường nằm 40 Chỗ (40 Chỗ tiêu chuẩn)</option>
-        </select>
-      </div>
-
-      <!-- Chọn tài xế nội bộ -->
-      <div class="form-group">
-        <label>Phân công Tài xế phụ trách <span style="color:#ef4444;">*</span></label>
-        <select class="form-select" id="selectDriver" onchange="checkConflict()">
-          <option value="">-- Chọn tài xế sẵn sàng --</option>
-          <option value="Vũ Sang">Vũ Sang (MSNV: TX-5829 • Bằng E)</option>
-          <option value="Trần Văn Nam">Trần Văn Nam (MSNV: TX-4412 • Bằng E)</option>
-          <option value="Nguyễn Hoàng Long">Nguyễn Hoàng Long (MSNV: TX-3108 • Bằng E)</option>
-          <option value="Lê Thành Đạt">Lê Thành Đạt (MSNV: TX-6671 • Bằng E)</option>
-        </select>
-      </div>
-
-      <div class="modal-actions">
-        <button class="btn-cancel" onclick="closeAssignModal()">Đóng</button>
-        <button class="btn-header btn-create-trip" id="btnSaveAssign" onclick="saveAssignment()">Lưu phân công</button>
+      <div class="modal-actions" id="routeModalActions">
+        <button class="btn-cancel" onclick="closeRouteModal()">Đóng</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL TẠO CHUYẾN MỚI THỦ CÔNG (CHO PHÉP NHẬP XE TRỰC TIẾP HOẶC ĐỂ TRỐNG) -->
+  <!-- MODAL 2: GỘP SƠ ĐỒ GHẾ VÀ DANH SÁCH HÀNH KHÁCH ĐẶT VÉ -->
+  <div class="modal-overlay" id="passengerSeatModal">
+    <div class="modal-card" style="max-width: 760px;">
+      <h3><i class="fa-solid fa-users-viewfinder" style="color: var(--primary);"></i> Sơ đồ vị trí ghế &amp; Danh sách hành khách</h3>
+      <div class="modal-sub" id="passengerSeatModalSub">Chuyến TRIP-101</div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="font-size:12.5px; font-weight:800; color:var(--text-main);"><i class="fa-solid fa-couch"></i> Tình trạng chiếm chỗ trên xe:</span>
+        <div style="display:flex; gap:12px; font-size:11.5px; font-weight:700;">
+          <span style="display:flex; align-items:center; gap:4px;"><span class="seat-box empty" style="width:16px; height:16px;"></span> Ghế trống</span>
+          <span style="display:flex; align-items:center; gap:4px;"><span class="seat-box booked" style="width:16px; height:16px;"></span> Đã có khách</span>
+        </div>
+      </div>
+
+      <div class="seat-map-grid">
+        <div>
+          <div class="deck-title">Tầng Dưới (Dãy A)</div>
+          <div class="seat-layout" id="deckALayout"></div>
+        </div>
+        <div>
+          <div class="deck-title">Tầng Trên (Dãy B)</div>
+          <div class="seat-layout" id="deckBLayout"></div>
+        </div>
+      </div>
+
+      <div style="font-size:12.5px; font-weight:800; color:var(--text-main); margin-bottom:8px;">
+        <i class="fa-solid fa-list-check"></i> Danh sách hành khách chi tiết (<span id="passengerCountText">0</span> khách):
+      </div>
+
+      <table class="custom-table" style="font-size: 12px;">
+        <thead>
+          <tr>
+            <th>Mã vé</th>
+            <th>Hành khách</th>
+            <th>Email</th>
+            <th>Ghế</th>
+            <th>Chặng đón - trả</th>
+            <th style="text-align: right;">Giá vé</th>
+          </tr>
+        </thead>
+        <tbody id="passengerTableBody"></tbody>
+      </table>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closePassengerSeatModal()">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: CẤU HÌNH GIÁ VÉ & FLASH SALE -->
+  <div class="modal-overlay" id="saleModal">
+    <div class="modal-card">
+      <h3><i class="fa-solid fa-tags" style="color: var(--primary);"></i> Cấu hình Giá vé &amp; Khuyến mãi Chuyến xe</h3>
+      <div class="modal-sub" id="saleModalSub">Chuyến TRIP-101</div>
+
+      <div class="sale-mode-box" id="boxModeBase" onclick="selectSaleMode('BASE')">
+        <label>
+          <input type="radio" name="saleMode" value="BASE"> 
+          1. Bán đúng giá niêm yết của tuyến
+        </label>
+        <div style="margin-left: 24px; margin-top: 6px; font-size: 12.5px; color: var(--text-main); line-height: 1.6;">
+          <div>• Đơn giá cơ sở / Km: <b id="lblPriceKm">600</b> VNĐ/km</div>
+          <div style="display:flex; align-items:center;">
+            • Giá vé toàn tuyến: <b id="lblTotalFare" style="color:var(--primary); margin:0 4px;">390.000</b> VNĐ
+            <div class="info-tooltip-container">
+              <span class="info-icon">i</span>
+              <div class="tooltip-box" id="lblTooltipFormula">
+                Công thức: Tổng cự ly tuyến × Đơn giá/km
+              </div>
+            </div>
+          </div>
+          <span style="font-size: 11.5px; color: var(--text-muted); font-style: italic; display:block; margin-top:3px;">
+            Áp dụng bảng giá cơ sở chuẩn của tuyến, không giảm giá.
+          </span>
+        </div>
+      </div>
+
+      <div class="sale-mode-box" id="boxModePercent" onclick="selectSaleMode('PERCENT')">
+        <label>
+          <input type="radio" name="saleMode" value="PERCENT"> 
+          2. Bật Flash Sale xả vé theo % (Sale 1)
+        </label>
+        <div style="margin-left: 24px; margin-top: 6px; display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 12.5px; font-weight:600;">Mức giảm:</span>
+          <input type="number" class="form-control" id="inputSalePercent" value="20" min="5" max="50" step="5" style="width: 85px; padding: 5px 8px;" oninput="updatePercentPreview()">
+          <span style="font-size: 12.5px; font-weight:700;">%</span>
+          <span id="previewPercentPrice" style="font-size: 12.5px; color: var(--primary); font-weight: 800; margin-left: 8px;"></span>
+        </div>
+      </div>
+
+      <div class="sale-mode-box" id="boxModeManual" onclick="selectSaleMode('MANUAL')">
+        <label>
+          <input type="radio" name="saleMode" value="MANUAL"> 
+          3. Tự nhập tay thẳng giá bán (Sale 2)
+        </label>
+        <div style="margin-left: 24px; margin-top: 6px; display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 12.5px; font-weight:600;">Giá bán thẳng:</span>
+          <input type="number" class="form-control" id="inputManualPrice" placeholder="Ví dụ: 300000" step="10000" style="width: 140px; padding: 5px 8px;">
+          <span style="font-size: 12.5px; font-weight:700;">VNĐ</span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeSaleModal()">Hủy</button>
+        <button class="btn-header btn-create-trip" onclick="saveSaleSettings()">Áp dụng giá</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: PHÂN CÔNG TÀI XẾ & XE -->
+  <div class="modal-overlay" id="assignModal">
+    <div class="modal-card">
+      <h3><i class="fa-solid fa-id-card-clip" style="color: var(--primary);"></i> Phân công Xe &amp; Tài xế</h3>
+      <div class="modal-sub" id="assignModalSub">Chuyến TRIP-101</div>
+
+      <div class="form-group">
+        <label>Biển số xe (Nhập tay trực tiếp) <span style="color:#ef4444;">*</span></label>
+        <input type="text" class="form-control" id="inputVehiclePlate" placeholder="Ví dụ: 77B - 019.28">
+      </div>
+
+      <div class="form-group">
+        <label>Tài xế phụ trách</label>
+        <select class="form-control" id="selectDriver">
+          <option value="">-- Chưa có tài xế (Gán sau) --</option>
+          <option value="Trần Văn Nam">Trần Văn Nam (MSNV: TX-4412 • Bằng E - Sẵn sàng)</option>
+          <option value="Vũ Sang">Vũ Sang (MSNV: TX-5829 • Bằng E - Sẵn sàng)</option>
+          <option value="Nguyễn Hoàng Long">Nguyễn Hoàng Long (MSNV: TX-3108 • Bằng E - Sẵn sàng)</option>
+          <option value="Lê Thành Đạt">Lê Thành Đạt (MSNV: TX-6671 • Bằng E - Sẵn sàng)</option>
+        </select>
+        <span style="font-size: 11.5px; color: var(--text-muted); margin-top: 3px;">
+          * Nếu trước giờ chạy 6 tiếng chưa có tài xế, hệ thống sẽ tự động gán tài xế rảnh đầu tiên trong ca trực.
+        </span>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeAssignModal()">Đóng</button>
+        <button class="btn-header btn-create-trip" onclick="saveAssignment()">Lưu điều phối</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 5: TẠO CHUYẾN MỚI -->
   <div class="modal-overlay" id="createTripModal">
     <div class="modal-card">
       <h3><i class="fa-solid fa-plus" style="color: var(--primary);"></i> Tạo chuyến xe mới</h3>
-      <div class="modal-sub-info">Nhập thông tin lịch trình và tài nguyên cho chuyến xe mới</div>
+      <div class="modal-sub">Lên lịch chuyến chạy gắn với mẫu tuyến</div>
 
       <div class="form-group">
         <label>Tuyến đường</label>
-        <select class="form-select" id="newTripRoute">
-          <option value="Bình Định (An Nhơn) → BX Miền Tây">Bình Định (An Nhơn) → BX Miền Tây</option>
-          <option value="Đà Nẵng → BX Miền Đông Mới">Đà Nẵng → BX Miền Đông Mới</option>
-          <option value="Quy Nhơn → TP.HCM">Quy Nhơn → TP.HCM</option>
-          <option value="BX Miền Tây → Bình Định (An Nhơn)">BX Miền Tây → Bình Định (An Nhơn)</option>
+        <select class="form-control" id="newTripRoute">
+          <option value="R01">Tuyến 01: Bình Định (An Nhơn) ⇄ TP.HCM (BX Miền Tây)</option>
+          <option value="R02">Tuyến 02: Đà Nẵng ⇄ TP.HCM (BX Miền Đông Mới)</option>
         </select>
       </div>
-
       <div class="form-group">
         <label>Giờ xuất bến</label>
-        <input type="time" class="form-input" id="newTripTime" value="20:00">
+        <input type="time" class="form-control" id="newTripTime" value="20:00">
       </div>
-
       <div class="form-group">
-        <label>Biển số xe (Tùy chọn - có thể nhập sau)</label>
-        <input type="text" class="form-input" id="newTripVehicle" placeholder="Ví dụ: 77B - 033.45">
+        <label>Biển số xe (Tùy chọn - có thể gán sau)</label>
+        <input type="text" class="form-control" id="newTripVehicle" placeholder="Ví dụ: 77B - 088.12">
       </div>
-
       <div class="form-group">
-        <label>Loại xe</label>
-        <select class="form-select" id="newTripBusType">
-          <option value="Limousine 34 Giường VIP">Limousine 34 Giường VIP (34 Ghế)</option>
-          <option value="Limousine 22 Phòng VIP">Limousine 22 Phòng VIP (22 Ghế)</option>
-          <option value="Giường nằm 40 Chỗ">Giường nằm 40 Chỗ (40 Ghế)</option>
+        <label>Tài xế phụ trách</label>
+        <select class="form-control" id="newTripDriver">
+          <option value="">-- Chưa có tài xế --</option>
+          <option value="Trần Văn Nam">Trần Văn Nam</option>
+          <option value="Vũ Sang">Vũ Sang</option>
+          <option value="Nguyễn Hoàng Long">Nguyễn Hoàng Long</option>
         </select>
       </div>
 
@@ -716,95 +506,181 @@
   <div class="toast" id="toast"><i class="fa-solid fa-circle-check"></i><span id="toastMsg">Thành công</span></div>
 
   <script>
-    /* DỮ LIỆU CÁC CHUYẾN XE MẪU */
+    /* DỮ LIỆU LỘ TRÌNH MẪU */
+    const routeTemplates = {
+      R01: {
+        name: "Bình Định (An Nhơn) ⇄ BX Miền Tây",
+        totalKm: 650,
+        pricePerKm: 600,
+        baseTotalFare: 390000,
+        stops: [
+          { name: "Bến xe An Nhơn", km: 0, offset: 0, addr: "Tx. An Nhơn, Bình Định" },
+          { name: "207 Tây Sơn (Quy Nhơn)", km: 25, offset: 40, addr: "TP. Quy Nhơn, Bình Định" },
+          { name: "Chí Thạnh (Tuy An)", km: 65, offset: 75, addr: "H. Tuy An, Phú Yên" },
+          { name: "Bến xe Sông Cầu", km: 90, offset: 95, addr: "Tx. Sông Cầu, Phú Yên" },
+          { name: "Bến xe Nam Tuy Hòa", km: 140, offset: 150, addr: "TP. Tuy Hòa, Phú Yên" },
+          { name: "Ngã tư Bình Phước", km: 635, offset: 675, addr: "TP. Thủ Đức, TP.HCM" },
+          { name: "Bến xe Miền Tây", km: 650, offset: 740, addr: "Q. Bình Tân, TP.HCM" }
+        ]
+      },
+      R02: {
+        name: "Đà Nẵng ⇄ BX Miền Đông Mới",
+        totalKm: 927,
+        pricePerKm: 620,
+        baseTotalFare: 560000,
+        stops: [
+          { name: "Bến xe Trung Tâm Đà Nẵng", km: 0, offset: 0, addr: "Liên Chiểu, Đà Nẵng" },
+          { name: "Bến xe Quảng Ngãi", km: 130, offset: 150, addr: "TP. Quảng Ngãi" },
+          { name: "Bến xe Quy Nhơn", km: 300, offset: 360, addr: "TP. Quy Nhơn, Bình Định" },
+          { name: "Bến xe Miền Đông Mới", km: 927, offset: 1215, addr: "TP. Thủ Đức, TP.HCM" }
+        ]
+      }
+    };
+
+    /* DANH SÁCH CHUYẾN XE VẬN HÀNH */
     let tripsList = [
       {
-        code: "TRIP-101",
-        route: "Bình Định (An Nhơn) → BX Miền Tây",
-        time: "06:00",
-        vehicle: "77B - 022.68",
-        vehicleType: "Limousine 34 Giường VIP",
-        driver: "Trần Văn Nam",
-        status: "ASSIGNED"
-      },
-      {
-        code: "TRIP-102",
-        route: "Bình Định (An Nhơn) → BX Miền Tây",
-        time: "17:30",
+        code: "TRP-101",
+        routeId: "R01",
+        routeName: "Bình Định (An Nhơn) → BX Miền Tây",
+        time: "13:00",
         vehicle: "77B - 019.28",
-        vehicleType: "Limousine 34 Giường VIP",
-        driver: "Vũ Sang",
-        status: "ASSIGNED"
+        driver: "Trần Văn Nam",
+        bookedSeats: 4,
+        totalSeats: 34,
+        isPaused: false,
+        saleType: "PERCENT",
+        salePercent: 20,
+        manualPrice: null,
+        passengers: [
+          { ticketCode: "TK-0811", name: "Nguyễn Văn Hùng", email: "hung.nv@gmail.com", seat: "A01", pickup: "BX An Nhơn", drop: "BX Miền Tây", fare: 312000 },
+          { ticketCode: "TK-0812", name: "Lê Thị Bích", email: "bich.le@outlook.com", seat: "A02", pickup: "BX An Nhơn", drop: "BX Miền Tây", fare: 312000 },
+          { ticketCode: "TK-0820", name: "Đặng Văn Lâm", email: "lam.dv@gmail.com", seat: "B04", pickup: "207 Tây Sơn (Quy Nhơn)", drop: "Ngã tư Bình Phước", fare: 304000 },
+          { ticketCode: "TK-0833", name: "Trần Mai Anh", email: "maianh.tran@yahoo.com", seat: "B05", pickup: "BX Sông Cầu", drop: "BX Miền Tây", fare: 288000 }
+        ]
       },
       {
-        code: "TRIP-103",
-        route: "Đà Nẵng → BX Miền Đông Mới",
+        code: "TRP-102",
+        routeId: "R01",
+        routeName: "Bình Định (An Nhơn) → BX Miền Tây",
+        time: "17:30",
+        vehicle: "77B - 088.12",
+        driver: null, // Chưa có tài xế
+        bookedSeats: 1,
+        totalSeats: 34,
+        isPaused: false,
+        saleType: "BASE",
+        salePercent: 0,
+        manualPrice: null,
+        passengers: [
+          { ticketCode: "TK-1101", name: "Phạm Quốc Toàn", email: "toan.pq@gmail.com", seat: "A03", pickup: "BX An Nhơn", drop: "BX Miền Tây", fare: 390000 }
+        ]
+      },
+      {
+        code: "TRP-103",
+        routeId: "R02",
+        routeName: "Đà Nẵng → BX Miền Đông Mới",
         time: "09:45",
         vehicle: "43B - 552.19",
-        vehicleType: "Limousine 22 Phòng VIP",
         driver: "Nguyễn Hoàng Long",
-        status: "ASSIGNED"
+        bookedSeats: 0,
+        totalSeats: 34,
+        isPaused: false,
+        saleType: "MANUAL",
+        salePercent: 0,
+        manualPrice: 500000,
+        passengers: []
       },
       {
-        code: "TRIP-104",
-        route: "Bình Định (An Nhơn) → BX Miền Tây",
-        time: "13:00",
+        code: "TRP-104",
+        routeId: "R01",
+        routeName: "Bình Định (An Nhơn) → BX Miền Tây",
+        time: "20:00",
         vehicle: null,
-        vehicleType: null,
-        driver: null,
-        status: "UNASSIGNED"
-      },
-      {
-        code: "TRIP-105",
-        route: "Quy Nhơn → TP.HCM",
-        time: "21:00",
-        vehicle: null,
-        vehicleType: null,
-        driver: null,
-        status: "UNASSIGNED"
+        driver: null, // Chưa có tài xế
+        bookedSeats: 0,
+        totalSeats: 34,
+        isPaused: false,
+        saleType: "BASE",
+        salePercent: 0,
+        manualPrice: null,
+        passengers: []
       }
     ];
 
     let currentFilter = "ALL";
     let editingTripCode = null;
+    let selectedSaleMode = "BASE";
 
     /* 1. RENDER BẢNG CHUYẾN XE */
     function renderTripsTable() {
       const tbody = document.getElementById("tripsTableBody");
-      let filtered = tripsList.filter(t => currentFilter === "ALL" || t.status === currentFilter);
-      let html = "";
+      let filtered = tripsList.filter(t => {
+        if (currentFilter === "ASSIGNED") return t.driver !== null && t.driver !== "";
+        if (currentFilter === "PENDING") return t.driver === null || t.driver === "";
+        return true;
+      });
 
+      let html = "";
       filtered.forEach((t) => {
-        const isAssigned = t.status === "ASSIGNED";
+        const hasPassenger = t.bookedSeats > 0;
+        const isDriverAssigned = t.driver !== null && t.driver !== "";
+        const route = routeTemplates[t.routeId] || routeTemplates["R01"];
+
+        let priceHtml = "";
+        if (t.saleType === "PERCENT") {
+          const finalPrice = Math.round(route.baseTotalFare * (1 - t.salePercent / 100));
+          priceHtml = `
+            <div><b style="color:var(--primary); font-size:13.5px;">${finalPrice.toLocaleString()}đ</b></div>
+            <span class="sale-badge percent"><i class="fa-solid fa-fire"></i> SALE ${t.salePercent}%</span>
+          `;
+        } else if (t.saleType === "MANUAL") {
+          priceHtml = `
+            <div><b style="color:#9333ea; font-size:13.5px;">${t.manualPrice.toLocaleString()}đ</b></div>
+            <span class="sale-badge manual"><i class="fa-solid fa-tag"></i> BÁN THẲNG</span>
+          `;
+        } else {
+          priceHtml = `
+            <div><b style="color:var(--text-main); font-size:13.5px;">${route.baseTotalFare.toLocaleString()}đ</b></div>
+            <span style="font-size:11px; color:var(--text-muted);">Giá niêm yết</span>
+          `;
+        }
 
         html += `
-          <tr>
+          <tr style="${t.isPaused ? 'opacity: 0.65; background: #fff1f2;' : ''}">
             <td><span class="trip-code-text">${t.code}</span></td>
-            <td><span class="route-bold"><i class="fa-solid fa-route" style="color: var(--primary);"></i> ${t.route}</span></td>
+            <td><span class="route-bold"><i class="fa-solid fa-route" style="color: var(--primary);"></i> ${t.routeName}</span></td>
             <td><span class="time-slot">${t.time}</span></td>
             <td>
-              ${isAssigned 
-                ? `<span class="vehicle-tag"><i class="fa-solid fa-van-shuttle"></i> ${t.vehicle}</span> <span style="font-size:11.5px; color:var(--text-muted);">(${t.vehicleType})</span>` 
-                : `<span class="unassigned-tag"><i class="fa-solid fa-circle-exclamation"></i> Chưa gán xe</span>`}
+              ${t.vehicle ? `<span class="vehicle-tag"><i class="fa-solid fa-van-shuttle"></i> ${t.vehicle}</span>` : `<span class="unassigned-tag">Chưa có xe</span>`}
             </td>
             <td>
-              ${isAssigned 
+              ${isDriverAssigned 
                 ? `<span class="driver-tag"><i class="fa-solid fa-user-check"></i> ${t.driver}</span>` 
-                : `<span class="unassigned-tag"><i class="fa-solid fa-user-xmark"></i> Chưa có tài xế</span>`}
+                : `<span class="driver-unassigned-tag"><i class="fa-solid fa-user-xmark"></i> Chưa có tài xế</span>`}
             </td>
-            <td style="text-align: center;">
-              ${isAssigned 
-                ? `<span style="color: #16a34a; font-weight:800; font-size:12px;"><i class="fa-solid fa-circle-check"></i> Sẵn sàng</span>` 
-                : `<span style="color: #dc2626; font-weight:800; font-size:12px;"><i class="fa-solid fa-clock"></i> Chờ điều phối</span>`}
+            <td><b>${t.bookedSeats}/${t.totalSeats}</b></td>
+            <td>${priceHtml}</td>
+            <td>
+              ${t.isPaused 
+                ? `<span class="status-badge paused"><i class="fa-solid fa-pause"></i> Tạm dừng</span>` 
+                : `<span class="status-badge active"><i class="fa-solid fa-circle-check"></i> Mở bán</span>`}
             </td>
             <td style="text-align: right;">
-              <div class="btn-action-group">
-                <button class="btn-assign" onclick="openAssignModal('${t.code}')">
-                  <i class="fa-solid fa-sliders"></i> ${isAssigned ? 'Đổi tài nguyên' : 'Phân công'}
-                </button>
-                <button class="btn-delete-trip" title="Xóa chuyến" onclick="deleteTrip('${t.code}')">
-                  <i class="fa-solid fa-trash-can"></i>
-                </button>
+              <div class="action-flex">
+                <button class="btn-action-sm" onclick="openRouteModal('${t.code}')" title="Xem lộ trình, đổi giờ & hoãn chuyến"><i class="fa-solid fa-timeline"></i> Lộ trình</button>
+                <button class="btn-action-sm" onclick="openPassengerSeatModal('${t.code}')" title="Xem sơ đồ ghế & danh sách khách"><i class="fa-solid fa-users"></i> Khách &amp; Ghế</button>
+                <button class="btn-action-sm price-btn" onclick="openSaleModal('${t.code}')" title="Cấu hình giá bán"><i class="fa-solid fa-tags"></i> Chỉnh giá</button>
+                <button class="btn-action-sm" onclick="openAssignModal('${t.code}')" title="Phân công tài xế & xe"><i class="fa-solid fa-user-pen"></i> Phân công</button>
+                
+                ${hasPassenger 
+                  ? `<button class="btn-action-sm pause-btn" onclick="togglePauseTrip('${t.code}')" title="Có khách: Chỉ được tạm dừng bán vé">
+                      <i class="fa-solid ${t.isPaused ? 'fa-play' : 'fa-pause'}"></i> ${t.isPaused ? 'Mở lại' : 'Tạm dừng'}
+                     </button>`
+                  : `<button class="btn-action-sm delete-btn" onclick="deleteTrip('${t.code}')" title="Chưa có khách: Được phép xóa hẳn">
+                      <i class="fa-solid fa-trash-can"></i> Xóa
+                     </button>`
+                }
               </div>
             </td>
           </tr>
@@ -815,181 +691,445 @@
       updateStats();
     }
 
-    /* 2. CẬP NHẬT CHỈ SỐ THỐNG KÊ */
     function updateStats() {
       const total = tripsList.length;
-      const assigned = tripsList.filter(t => t.status === "ASSIGNED").length;
-      const unassigned = total - assigned;
+      const assigned = tripsList.filter(t => t.driver !== null && t.driver !== "").length;
+      const pending = total - assigned;
 
       document.getElementById("statTotalTrips").textContent = `${total} Chuyến`;
       document.getElementById("statAssigned").textContent = `${assigned} Chuyến`;
-      document.getElementById("statUnassigned").textContent = `${unassigned} Chuyến`;
+      document.getElementById("statPending").textContent = `${pending} Chuyến`;
 
       document.getElementById("countAll").textContent = total;
       document.getElementById("countAssigned").textContent = assigned;
-      document.getElementById("countPending").textContent = unassigned;
+      document.getElementById("countPending").textContent = pending;
     }
 
-    /* 3. SINH CHUYẾN TỰ ĐỘNG TỪ MẪU TUYẾN */
-    function autoGenerateTrips() {
-      const defaultSlots = ["08:00", "11:30", "15:00", "19:30"];
-      const startId = tripsList.length + 101;
-
-      defaultSlots.forEach((slot, i) => {
-        tripsList.push({
-          code: `TRIP-${startId + i}`,
-          route: "Bình Định (An Nhơn) → BX Miền Tây",
-          time: slot,
-          vehicle: null,
-          vehicleType: null,
-          driver: null,
-          status: "UNASSIGNED"
-        });
-      });
-
-      renderTripsTable();
-      showToast("Đã tự động sinh thêm 4 chuyến chạy mẫu cho ngày đã chọn!");
-    }
-
-    /* 4. MODAL PHÂN CÔNG (GÁN XE VÀ TÀI XẾ) */
-    function openAssignModal(tripCode) {
+    /* 2. MODAL LỘ TRÌNH ĐÓN TRẢ */
+    function openRouteModal(tripCode) {
       editingTripCode = tripCode;
       const trip = tripsList.find(t => t.code === tripCode);
-      document.getElementById("assignModalSub").textContent = `Chuyến ${trip.code} • ${trip.route} (Xuất bến: ${trip.time})`;
-      document.getElementById("conflictAlert").style.display = "none";
+      const hasPassenger = trip.bookedSeats > 0;
 
-      // Đổ lại dữ liệu cũ nếu đã gán trước đó
-      document.getElementById("inputVehiclePlate").value = trip.vehicle || "";
-      document.getElementById("selectBusType").value = trip.vehicleType || "Limousine 34 Giường VIP";
-      document.getElementById("selectDriver").value = trip.driver || "";
+      document.getElementById("routeModalSub").innerHTML = `
+        Chuyến: <b>${trip.code}</b> • Tuyến: <b>${trip.routeName}</b> | Đang có: <b>${trip.bookedSeats} vé đặt</b>
+      `;
 
-      document.getElementById("assignModal").classList.add("active");
-    }
+      const container = document.getElementById("timeAdjustContainer");
+      const actions = document.getElementById("routeModalActions");
 
-    function closeAssignModal() {
-      document.getElementById("assignModal").classList.remove("active");
-    }
-
-    /* THUẬT TOÁN KIỂM TRA XUNG ĐỘT TÀI XẾ / BIỂN SỐ XE */
-    function checkConflict() {
-      const plate = document.getElementById("inputVehiclePlate").value.trim().toUpperCase();
-      const driver = document.getElementById("selectDriver").value;
-      const alertBox = document.getElementById("conflictAlert");
-      const currentTrip = tripsList.find(t => t.code === editingTripCode);
-
-      let conflictMsg = "";
-
-      // Kiểm tra trùng lặp trên các chuyến xe khác
-      for (let t of tripsList) {
-        if (t.code === editingTripCode) continue;
-
-        // Trùng biển số xe cùng mốc giờ
-        if (plate && t.vehicle && t.vehicle.toUpperCase().replace(/\s/g, '') === plate.replace(/\s/g, '')) {
-          if (t.time === currentTrip.time) {
-            conflictMsg = `Xe ${plate} đã được gán cho chuyến ${t.code} xuất bến cùng lúc ${t.time}!`;
-            break;
-          }
-        }
-
-        // Trùng tài xế cùng mốc giờ
-        if (driver && t.driver === driver) {
-          if (t.time === currentTrip.time) {
-            conflictMsg = `Tài xế ${driver} đang lái chuyến ${t.code} lúc ${t.time}! Không thể chạy 2 chuyến cùng lúc.`;
-            break;
-          }
-        }
-      }
-
-      if (conflictMsg) {
-        alertBox.style.display = "block";
-        alertBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Cảnh báo: ${conflictMsg}`;
-        document.getElementById("btnSaveAssign").disabled = true;
+      if (!hasPassenger) {
+        container.innerHTML = `
+          <div class="time-adjust-card no-passenger">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <b style="color:var(--accent-green); font-size:13.5px;"><i class="fa-solid fa-unlock"></i> Chuyến chưa có khách đặt vé:</b>
+                <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">
+                  Bạn được phép sửa đổi giờ xuất bến gốc tự do bất kỳ lúc nào mà không ảnh hưởng khách.
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <label style="font-size:12.5px; font-weight:700;">Giờ xuất bến mới:</label>
+                <input type="time" class="form-control" id="inputFreeTime" value="${trip.time}" style="width:110px; font-weight:800; color:var(--primary);" onchange="onFreeTimeChange(this.value)">
+              </div>
+            </div>
+          </div>
+        `;
+        actions.innerHTML = `
+          <button class="btn-cancel" onclick="closeRouteModal()">Đóng</button>
+        `;
       } else {
-        alertBox.style.display = "none";
-        document.getElementById("btnSaveAssign").disabled = false;
+        container.innerHTML = `
+          <div class="time-adjust-card has-passenger">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+              <span style="background:#dc2626; color:#fff; border-radius:4px; padding:2px 6px; font-size:10px; font-weight:800;">CẢNH BÁO SỰ CỐ</span>
+              <b style="font-size:13px; color:#991b1b;">Chuyến xe đã có ${trip.bookedSeats} hành khách đặt vé!</b>
+            </div>
+            <div style="font-size:12px; color:#475569; margin-bottom:10px;">
+              Theo quy định vận hành, việc thay đổi giờ lúc này bắt buộc phải chọn 1 trong 3 lý do bất khả kháng và kích hoạt thông báo email delay đến tất cả hành khách.
+            </div>
+
+            <div class="form-group" style="margin-bottom:8px;">
+              <label style="font-weight:700;">Lý do phát sinh hoãn chuyến (Delay) <span style="color:#ef4444;">*</span>:</label>
+              <select class="form-control" id="selectDelayReason" style="font-size:12.5px;">
+                <option value="1">1. Xe gặp sự cố kỹ thuật đột xuất (hỏng máy, nổ lốp, kẹt xe cao tốc về trễ)</option>
+                <option value="2">2. Yếu tố khách quan (sạt lở đèo, bão lũ, ngập lụt, cấm đường)</option>
+                <option value="3">3. Sức khỏe tài xế không đảm bảo (đang chờ tài xế dự phòng đến thay)</option>
+              </select>
+            </div>
+
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-top:8px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <label style="font-weight:700; font-size:12.5px;">Số phút Delay:</label>
+                <input type="number" class="form-control" id="inputDelayMinutes" value="30" min="5" max="360" step="5" style="width:85px; font-weight:800; color:#dc2626;" oninput="onDelayMinutesChange(this.value)">
+                <span style="font-weight:700; font-size:12.5px;">phút</span>
+              </div>
+
+              <div class="delay-pills-row">
+                <button type="button" class="btn-delay-quick" onclick="setQuickDelay(15)">+15'</button>
+                <button type="button" class="btn-delay-quick" onclick="setQuickDelay(30)">+30'</button>
+                <button type="button" class="btn-delay-quick" onclick="setQuickDelay(45)">+45'</button>
+                <button type="button" class="btn-delay-quick" onclick="setQuickDelay(60)">+60'</button>
+              </div>
+            </div>
+
+            <div style="margin-top:10px; padding-top:8px; border-top:1px dashed #fcd34d; font-size:12.5px; display:flex; justify-content:space-between; align-items:center;">
+              <span>Giờ xuất bến cũ: <b>${trip.time}</b></span>
+              <span>➔ Dự kiến giờ mới: <b id="previewNewTime" style="color:#ea580c; font-size:14px;">...</b></span>
+            </div>
+          </div>
+        `;
+
+        actions.innerHTML = `
+          <button class="btn-cancel" onclick="closeRouteModal()">Hủy bỏ</button>
+          <button class="btn-send-notify" onclick="applyDelayAndNotify()">
+            <i class="fa-solid fa-envelope-circle-check"></i> Áp dụng &amp; Gửi Email Thông Báo (${trip.passengers.length} Khách)
+          </button>
+        `;
+
+        onDelayMinutesChange(30);
       }
+
+      renderTimeline(trip.time);
+      document.getElementById("routeModal").classList.add("active");
     }
 
-    function saveAssignment() {
-      const plate = document.getElementById("inputVehiclePlate").value.trim().toUpperCase();
-      const busType = document.getElementById("selectBusType").value;
-      const driver = document.getElementById("selectDriver").value;
+    function closeRouteModal() {
+      document.getElementById("routeModal").classList.remove("active");
+      editingTripCode = null;
+    }
 
-      if (!plate) {
-        alert("Vui lòng nhập biển số xe!");
-        return;
-      }
-      if (!driver) {
-        alert("Vui lòng chọn tài xế phụ trách!");
-        return;
-      }
-
+    function renderTimeline(startTimeStr) {
       const trip = tripsList.find(t => t.code === editingTripCode);
-      trip.vehicle = plate;
-      trip.vehicleType = busType;
-      trip.driver = driver;
-      trip.status = "ASSIGNED";
+      if (!trip) return;
+      const template = routeTemplates[trip.routeId] || routeTemplates["R01"];
+      const [baseH, baseM] = startTimeStr.split(":").map(Number);
 
-      closeAssignModal();
-      renderTripsTable();
-      showToast(`Đã điều phối xe ${plate} & tài xế ${driver} cho chuyến ${trip.code}!`);
-    }
+      let html = "";
+      template.stops.forEach((s, idx) => {
+        let totalMinutes = baseH * 60 + baseM + s.offset;
+        let days = Math.floor(totalMinutes / (24 * 60));
+        let remainM = totalMinutes % (24 * 60);
+        let h = Math.floor(remainM / 60);
+        let m = remainM % 60;
+        let dayText = days > 0 ? ` (+${days} ngày)` : "";
+        let timeFormatted = `${pad(h)}:${pad(m)}${dayText}`;
 
-    /* 5. TẠO CHUYẾN MỚI THỦ CÔNG */
-    function openCreateTripModal() {
-      document.getElementById("createTripModal").classList.add("active");
-    }
-    function closeCreateTripModal() {
-      document.getElementById("createTripModal").classList.remove("active");
-    }
-    function submitCreateTrip() {
-      const route = document.getElementById("newTripRoute").value;
-      const time = document.getElementById("newTripTime").value;
-      const vehicle = document.getElementById("newTripVehicle").value.trim().toUpperCase();
-      const busType = document.getElementById("newTripBusType").value;
-
-      const newCode = `TRIP-${Math.floor(100 + Math.random() * 900)}`;
-      const isAssigned = vehicle.length > 0;
-
-      tripsList.unshift({
-        code: newCode,
-        route: route,
-        time: time,
-        vehicle: isAssigned ? vehicle : null,
-        vehicleType: isAssigned ? busType : null,
-        driver: null,
-        status: "UNASSIGNED"
+        html += `
+          <div class="timeline-item">
+            <div class="timeline-time">${timeFormatted} ${idx === 0 ? '(Xuất bến)' : ''}</div>
+            <div class="timeline-name">${s.name} (${s.km} km)</div>
+            <div class="timeline-desc">${s.addr}</div>
+          </div>
+        `;
       });
 
-      closeCreateTripModal();
-      renderTripsTable();
-      showToast(`Đã tạo chuyến mới ${newCode} lúc ${time}!`);
-
-      // Reset form
-      document.getElementById("newTripVehicle").value = "";
+      document.getElementById("routeTimelineBody").innerHTML = html;
     }
 
-    /* 6. XÓA CHUYẾN XE */
+    function onFreeTimeChange(newTime) {
+      const trip = tripsList.find(t => t.code === editingTripCode);
+      if (!trip || !newTime) return;
+      trip.time = newTime;
+      renderTimeline(newTime);
+      renderTripsTable();
+      showToast(`Đã cập nhật giờ xuất bến chuyến ${trip.code} thành ${newTime}!`);
+    }
+
+    function setQuickDelay(mins) {
+      document.getElementById("inputDelayMinutes").value = mins;
+      onDelayMinutesChange(mins);
+    }
+
+    function calculateDelayedTime(baseTimeStr, delayMinutes) {
+      const [h, m] = baseTimeStr.split(":").map(Number);
+      let totalMinutes = h * 60 + m + parseInt(delayMinutes || 0);
+      let days = Math.floor(totalMinutes / (24 * 60));
+      let remainM = totalMinutes % (24 * 60);
+      let newH = Math.floor(remainM / 60);
+      let newM = remainM % 60;
+      let dayText = days > 0 ? ` (+${days}N)` : "";
+      return `${pad(newH)}:${pad(newM)}${dayText}`;
+    }
+
+    function onDelayMinutesChange(val) {
+      const trip = tripsList.find(t => t.code === editingTripCode);
+      if (!trip) return;
+      const mins = parseInt(val) || 0;
+      const newTimeFormatted = calculateDelayedTime(trip.time, mins);
+      
+      const previewElem = document.getElementById("previewNewTime");
+      if (previewElem) previewElem.textContent = newTimeFormatted;
+
+      const [h, m] = trip.time.split(":").map(Number);
+      let totalMinutes = h * 60 + m + mins;
+      let remainM = totalMinutes % (24 * 60);
+      let pureNewTime = `${pad(Math.floor(remainM / 60))}:${pad(remainM % 60)}`;
+      renderTimeline(pureNewTime);
+    }
+
+    function applyDelayAndNotify() {
+      const trip = tripsList.find(t => t.code === editingTripCode);
+      if (!trip) return;
+
+      const mins = parseInt(document.getElementById("inputDelayMinutes").value) || 0;
+      const reasonSelect = document.getElementById("selectDelayReason");
+      const reasonText = reasonSelect.options[reasonSelect.selectedIndex].text;
+
+      const [h, m] = trip.time.split(":").map(Number);
+      let totalMinutes = h * 60 + m + mins;
+      let remainM = totalMinutes % (24 * 60);
+      const newTime = `${pad(Math.floor(remainM / 60))}:${pad(remainM % 60)}`;
+
+      const oldTime = trip.time;
+      trip.time = newTime;
+
+      const emailsList = trip.passengers.map(p => p.email).join(", ");
+
+      closeRouteModal();
+      renderTripsTable();
+
+      alert(
+        `✅ ĐÃ CẬP NHẬT HOÃN CHUYẾN THÀNH CÔNG!\n\n` +
+        `• Mã chuyến: ${trip.code}\n` +
+        `• Giờ cũ: ${oldTime} ➔ Giờ mới: ${newTime} (Hoãn ${mins} phút)\n` +
+        `• Lý do: ${reasonText}\n\n` +
+        `📧 HỆ THỐNG ĐÃ TỰ ĐỘNG GỬI EMAIL THÔNG BÁO ĐẾN ${trip.passengers.length} HÀNH KHÁCH:\n${emailsList}`
+      );
+
+      showToast(`Đã dời giờ và gửi email thông báo delay cho ${trip.passengers.length} khách!`);
+    }
+
+    /* 3. MODAL GỘP: SƠ ĐỒ GHẾ VÀ DANH SÁCH HÀNH KHÁCH */
+    function openPassengerSeatModal(tripCode) {
+      const trip = tripsList.find(t => t.code === tripCode);
+      document.getElementById("passengerSeatModalSub").innerHTML = `Chuyến <b>${trip.code}</b> • Tuyến: ${trip.routeName} | Xe: <b>${trip.vehicle || 'Chưa gán'}</b>`;
+      document.getElementById("passengerCountText").textContent = trip.passengers.length;
+
+      const bookedSeatList = trip.passengers.map(p => p.seat);
+      let aHtml = "", bHtml = "";
+      for (let i = 1; i <= 17; i++) {
+        let sA = `A${pad(i)}`;
+        let sB = `B${pad(i)}`;
+        let statusA = bookedSeatList.includes(sA) ? "booked" : "empty";
+        let statusB = bookedSeatList.includes(sB) ? "booked" : "empty";
+
+        aHtml += `<div class="seat-box ${statusA}">${sA}</div>`;
+        bHtml += `<div class="seat-box ${statusB}">${sB}</div>`;
+      }
+      document.getElementById("deckALayout").innerHTML = aHtml;
+      document.getElementById("deckBLayout").innerHTML = bHtml;
+
+      let pTableHtml = "";
+      if (trip.passengers.length === 0) {
+        pTableHtml = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:16px;">Chuyến xe hiện chưa có hành khách nào đặt vé.</td></tr>`;
+      } else {
+        trip.passengers.forEach(p => {
+          pTableHtml += `
+            <tr>
+              <td><b>${p.ticketCode}</b></td>
+              <td><b>${p.name}</b></td>
+              <td style="color:#2563eb;">${p.email}</td>
+              <td><span class="seat-box booked" style="width:26px; height:24px; font-size:10px; display:inline-flex;">${p.seat}</span></td>
+              <td>${p.pickup} ➔ ${p.drop}</td>
+              <td style="text-align:right; font-weight:800; color:var(--primary);">${p.fare.toLocaleString()}đ</td>
+            </tr>
+          `;
+        });
+      }
+      document.getElementById("passengerTableBody").innerHTML = pTableHtml;
+      document.getElementById("passengerSeatModal").classList.add("active");
+    }
+
+    function closePassengerSeatModal() {
+      document.getElementById("passengerSeatModal").classList.remove("active");
+    }
+
+    /* 4. MODAL CẤU HÌNH GIÁ VÉ & FLASH SALE */
+    function openSaleModal(tripCode) {
+      editingTripCode = tripCode;
+      const trip = tripsList.find(t => t.code === tripCode);
+      const route = routeTemplates[trip.routeId] || routeTemplates["R01"];
+
+      document.getElementById("saleModalSub").innerHTML = `Chuyến <b>${trip.code}</b> • Tuyến: ${trip.routeName} (Xuất bến: ${trip.time})`;
+      
+      document.getElementById("lblPriceKm").textContent = route.pricePerKm.toLocaleString();
+      document.getElementById("lblTotalFare").textContent = route.baseTotalFare.toLocaleString();
+      document.getElementById("lblTooltipFormula").textContent = `Công thức: ${route.totalKm} km × ${route.pricePerKm.toLocaleString()}đ = ${route.baseTotalFare.toLocaleString()}đ`;
+
+      selectedSaleMode = trip.saleType || "BASE";
+      document.getElementById("inputSalePercent").value = trip.salePercent || 20;
+      document.getElementById("inputManualPrice").value = trip.manualPrice || "";
+
+      updateSaleModeUI();
+      document.getElementById("saleModal").classList.add("active");
+    }
+
+    function selectSaleMode(mode) {
+      selectedSaleMode = mode;
+      updateSaleModeUI();
+    }
+
+    function updateSaleModeUI() {
+      const trip = tripsList.find(t => t.code === editingTripCode);
+      ["BASE", "PERCENT", "MANUAL"].forEach(m => {
+        const box = document.getElementById("boxMode" + m.charAt(0) + m.slice(1).toLowerCase());
+        const radio = box.querySelector("input[type=radio]");
+        if (m === selectedSaleMode) {
+          box.classList.add("selected");
+          radio.checked = true;
+        } else {
+          box.classList.remove("selected");
+          radio.checked = false;
+        }
+      });
+      updatePercentPreview();
+    }
+
+    function updatePercentPreview() {
+      const trip = tripsList.find(t => t.code === editingTripCode);
+      if (!trip) return;
+      const route = routeTemplates[trip.routeId] || routeTemplates["R01"];
+      const percentVal = parseInt(document.getElementById("inputSalePercent").value) || 0;
+      const calcPrice = Math.round(route.baseTotalFare * (1 - percentVal / 100));
+      document.getElementById("previewPercentPrice").textContent = `→ Giá bán: ${calcPrice.toLocaleString()}đ`;
+    }
+
+    function closeSaleModal() {
+      document.getElementById("saleModal").classList.remove("active");
+    }
+
+    function saveSaleSettings() {
+      const trip = tripsList.find(t => t.code === editingTripCode);
+      trip.saleType = selectedSaleMode;
+
+      if (selectedSaleMode === "PERCENT") {
+        trip.salePercent = parseInt(document.getElementById("inputSalePercent").value) || 20;
+        trip.manualPrice = null;
+        showToast(`Đã bật Flash Sale ${trip.salePercent}% cho chuyến ${trip.code}!`);
+      } else if (selectedSaleMode === "MANUAL") {
+        const val = parseInt(document.getElementById("inputManualPrice").value);
+        if (!val || val <= 0) {
+          alert("Vui lòng nhập giá bán thẳng hợp lệ!");
+          return;
+        }
+        trip.manualPrice = val;
+        trip.salePercent = 0;
+        showToast(`Đã đè giá bán thẳng ${val.toLocaleString()}đ cho chuyến ${trip.code}!`);
+      } else {
+        trip.salePercent = 0;
+        trip.manualPrice = null;
+        showToast(`Chuyến ${trip.code} đã quay về bán đúng giá niêm yết!`);
+      }
+
+      closeSaleModal();
+      renderTripsTable();
+    }
+
+    /* 5. TỰ ĐỘNG GÁN TÀI XẾ RẢNH CHO CHUYẾN < 6 TIẾNG */
+    function autoAssignPendingDrivers() {
+      const availablePool = ["Vũ Sang", "Trần Văn Nam", "Nguyễn Hoàng Long", "Lê Thành Đạt"];
+      let assignedCount = 0;
+
+      tripsList.forEach(t => {
+        if (!t.driver) {
+          t.driver = availablePool[assignedCount % availablePool.length];
+          assignedCount++;
+        }
+      });
+
+      renderTripsTable();
+      showToast(`Hệ thống đã tự động gán tài xế sẵn sàng cho ${assignedCount} chuyến chưa có tài xế!`);
+    }
+
+    /* 6. TẠM DỪNG BÁN VÉ / XÓA */
+    function togglePauseTrip(tripCode) {
+      const trip = tripsList.find(t => t.code === tripCode);
+      if (!trip) return;
+      trip.isPaused = !trip.isPaused;
+      renderTripsTable();
+      showToast(`Chuyến ${tripCode} đã ${trip.isPaused ? 'TẠM DỪNG BÁN VÉ' : 'MỞ BÁN TRỞ LẠI'}!`);
+    }
+
     function deleteTrip(tripCode) {
-      if (confirm(`Bạn có chắc chắn muốn xóa chuyến ${tripCode} không?`)) {
+      const trip = tripsList.find(t => t.code === tripCode);
+      if (!trip) return;
+      if (trip.bookedSeats > 0) {
+        alert("Chuyến xe này ĐÃ CÓ KHÁCH ĐẶT VÉ! Bạn chỉ có thể Tạm dừng bán vé, không được phép xóa.");
+        return;
+      }
+      if (confirm(`Chuyến ${tripCode} chưa có khách nào. Bạn có chắc muốn xóa vĩnh viễn?`)) {
         tripsList = tripsList.filter(t => t.code !== tripCode);
         renderTripsTable();
         showToast(`Đã xóa chuyến ${tripCode}!`);
       }
     }
 
-    /* 7. BỘ LỌC VÀ TIỆN ÍCH */
+    /* 7. PHÂN CÔNG TÀI XẾ & XE */
+    function openAssignModal(tripCode) {
+      editingTripCode = tripCode;
+      const trip = tripsList.find(t => t.code === tripCode);
+      document.getElementById("assignModalSub").innerHTML = `Chuyến <b>${trip.code}</b> • ${trip.routeName} (${trip.time})`;
+      document.getElementById("inputVehiclePlate").value = trip.vehicle || "";
+      document.getElementById("selectDriver").value = trip.driver || "";
+      document.getElementById("assignModal").classList.add("active");
+    }
+    function closeAssignModal() { document.getElementById("assignModal").classList.remove("active"); }
+    function saveAssignment() {
+      const plate = document.getElementById("inputVehiclePlate").value.trim().toUpperCase();
+      const driver = document.getElementById("selectDriver").value;
+
+      if (!plate) { alert("Vui lòng nhập biển số xe!"); return; }
+
+      const trip = tripsList.find(t => t.code === editingTripCode);
+      trip.vehicle = plate;
+      trip.driver = driver ? driver : null;
+
+      closeAssignModal();
+      renderTripsTable();
+      showToast(`Đã cập nhật phân công cho chuyến ${trip.code}!`);
+    }
+
+    /* 8. TẠO CHUYẾN MỚI */
+    function openCreateTripModal() { document.getElementById("createTripModal").classList.add("active"); }
+    function closeCreateTripModal() { document.getElementById("createTripModal").classList.remove("active"); }
+    function submitCreateTrip() {
+      const routeId = document.getElementById("newTripRoute").value;
+      const time = document.getElementById("newTripTime").value;
+      const vehicle = document.getElementById("newTripVehicle").value.trim().toUpperCase();
+      const driver = document.getElementById("newTripDriver").value;
+
+      const newCode = `TRP-${Math.floor(100 + Math.random() * 900)}`;
+
+      tripsList.unshift({
+        code: newCode,
+        routeId: routeId,
+        routeName: routeTemplates[routeId].name,
+        time: time,
+        vehicle: vehicle || null,
+        driver: driver || null,
+        bookedSeats: 0,
+        totalSeats: 34,
+        isPaused: false,
+        saleType: "BASE",
+        salePercent: 0,
+        manualPrice: null,
+        passengers: []
+      });
+
+      closeCreateTripModal();
+      renderTripsTable();
+      showToast(`Đã tạo chuyến mới ${newCode} lúc ${time}!`);
+    }
+
     function filterByStatus(status, pill) {
       currentFilter = status;
       document.querySelectorAll(".f-pill").forEach(p => p.classList.remove("active"));
       pill.classList.add("active");
       renderTripsTable();
     }
-
-    function filterTrips() {
-      const d = document.getElementById("dispatchDate").value;
-      showToast(`Đã cập nhật danh sách điều phối ngày: ${d}`);
-    }
+    function filterTrips() { showToast("Đã tải lại danh sách điều phối theo ngày chọn!"); }
+    function pad(n) { return (n < 10 ? "0" : "") + n; }
 
     let toastTimer;
     function showToast(msg) {
@@ -1000,7 +1140,6 @@
       toastTimer = setTimeout(() => toast.classList.remove("show"), 2400);
     }
 
-    // Khởi chạy ban đầu
     renderTripsTable();
   </script>
 </body>
