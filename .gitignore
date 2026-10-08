@@ -8,6 +8,7 @@ appsettings.Development.json
 *.pem
 .npm-cache/
 screenshots/
+.vite/
 
 # Cấu hình IDE trên máy cá nhân
 .idea/
