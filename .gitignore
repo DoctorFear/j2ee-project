@@ -16,3 +16,6 @@ screenshots/
 **/*.test.*
 **/*.spec.*
 frontend/scripts/check-ui.mjs
+
+# Cache của Vite
+.vite/
