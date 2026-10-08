@@ -1,0 +1,18 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.env.local
+.env.development
+application-local.yml
+appsettings.Development.json
+*.pem
+.npm-cache/
+screenshots/
+
+# Cấu hình IDE trên máy cá nhân
+.idea/
+
+# Kiểm tra tự động chỉ lưu trên máy cá nhân
+**/*.test.*
+**/*.spec.*
+frontend/scripts/check-ui.mjs
