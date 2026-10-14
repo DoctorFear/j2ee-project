@@ -1,0 +1,14 @@
+    ### 1. Kiểm tra trạng thái Gateway (Health Check)
+GET http://localhost:8080/actuator/health
+
+### 2. Kiểm tra định tuyến Đăng nhập (Auth Service .NET qua Gateway)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "Admin@123"
+}
+
+### 3. Kiểm tra bảo mật: Chặn truy cập API nội bộ (Kỳ vọng trả về 403 Forbidden hoặc 404)
+GET http://localhost:8080/internal/users

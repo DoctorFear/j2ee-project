@@ -1,0 +1,51 @@
+frontend/
+├── .env                                # Cấu hình URL backend (VITE_API_BASE_URL=http://localhost:5001)
+└── src/
+    ├── types/
+    │   └── user.ts                     # Toàn bộ DTOs và Interfaces:
+    │                                   # - Auth: LoginRequestDto, LoginResponseDto, RegisterRequestDto,
+    │                                   #   RegisterResponseDto, ForgotPasswordRequestDto, ResetPasswordRequestDto
+    │                                   # - Profile: UserProfileResponseDto, UpdateProfileRequestDto,
+    │                                   #   ChangePasswordRequestDto
+    │                                   # - Chung: UserInfo, UserRole ("Member" | "Admin"), ApiResponse<T>
+    │
+    ├── services/
+    │   ├── apiClient.ts                # Core HTTP client: đính kèm Bearer token, bóc tách ApiResponse.
+    │   │                               # Tự động Silent Auto-Refresh Token khi gặp mã 401 Unauthorized
+    │   │                               # (sử dụng Singleton Promise chống race-condition)
+    │   ├── authService.ts              # Gọi API /api/auth: login, register, logout, refreshToken,
+    │   │                               # forgotPassword, resetPassword
+    │   └── userService.ts              # Gọi API /api/user: getProfile, updateProfile, changePassword
+    │
+    ├── context/
+    │   └── UserContext.tsx             # Global State: Quản lý user, token, isAuthenticated, loading;
+    │                                   # Cung cấp loginSuccess, logoutClient, updateUser, refreshUserProfile;
+    │                                   # Tự động nạp profile từ token lưu trong localStorage khi F5/reload
+    │
+    ├── hooks/
+    │   ├── useToastNotifications.ts    # Hook quản lý hàng đợi thông báo Toast (success, error, info)
+    │   └── useAuthAction.ts            # Hook điều phối luồng nghiệp vụ Auth: submit form, bắt lỗi,
+    │                                   # bật Toast thông báo và tự động điều hướng Router theo Role
+    │
+    ├── components/
+    │   └── common/
+    │       ├── ProtectedRoute.tsx      # Route Guard: Bảo vệ route yêu cầu đăng nhập và phân quyền Role
+    │       └── ToastNotification.tsx   # UI component hiển thị popup Toast nổi theo màu chuẩn Futa
+    │
+    ├── pages/
+    │   ├── LoginPage.tsx               # Màn hình Đăng nhập (tích hợp phím tắt điền demo admin / Admin@123)
+    │   ├── RegisterPage.tsx            # Màn hình Đăng ký thành viên FutaBus (Validate SĐT 10 số VN)
+    │   ├── ForgotPasswordPage.tsx      # Màn hình Quên mật khẩu (gửi email xác nhận token)
+    │   ├── ResetPasswordPage.tsx       # Màn hình Đặt lại mật khẩu mới (nhận token từ URL param ?token=...)
+    │   ├── LoginPage.module.css        # Stylesheet dùng chung cho các màn hình Auth (Cam/Xanh FUTA)
+    │   ├── ProfilePage.tsx             # Màn hình Hồ sơ cá nhân: Gồm 2 tab (Thông tin cá nhân & Đổi mật khẩu)
+    │   └── ProfilePage.module.css      # Stylesheet cho trang Hồ sơ cá nhân (Grid 2 cột đối xứng chuẩn FUTA)
+    │
+    ├── layouts/
+    │   └── CustomerHeader.tsx          # Thanh Header chung: Kết nối UserContext hiển thị avatar/tên thật,
+    │                                   # dropdown cá nhân (profile, danh sách vé, admin) hoặc nút Đăng nhập/Đăng ký
+    │
+    └── App.tsx                         # Khai báo Routes toàn hệ thống:
+                                        # - Bọc toàn bộ ứng dụng trong <UserProvider>
+                                        # - Public: /, /login, /register, /forgot-password, /reset-password
+                                        # - Protected: /my-tickets, /profile bọc trong <ProtectedRoute>

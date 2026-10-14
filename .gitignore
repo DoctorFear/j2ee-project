@@ -1,21 +1,45 @@
+# Node & Frontend dependencies & build
 node_modules/
 dist/
 *.tsbuildinfo
+.npm-cache/
+.vite/
+
+# Environment files
+.env
 .env.local
 .env.development
+.env.test
+.env.production
+.env.*.local
+!.env.example
+
+# .NET / C# build artifacts & settings
+bin/
+obj/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+appsettings.json
+appsettings.*.json
+!appsettings.example.json
+
+# Java / Maven build artifacts
+target/
+*.class
+
+# Spring Boot local configs & Secret keys
 application-local.yml
-appsettings.Development.json
 *.pem
-.npm-cache/
-screenshots/
 
-# Cấu hình IDE trên máy cá nhân
+# IDE & Editor settings
 .idea/
+.vscode/
 
-# Kiểm tra tự động chỉ lưu trên máy cá nhân
+# Testing & Screenshots
+screenshots/
 **/*.test.*
 **/*.spec.*
 frontend/scripts/check-ui.mjs
-
-# Cache của Vite
-.vite/

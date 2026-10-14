@@ -1,22 +1,27 @@
-// Thanh đầu trang khách hàng
+// Thanh đầu trang khách hàng tích hợp UserContext của FutaBus
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   BusFront,
   ChevronDown,
   ContactRound,
   LogOut,
+  Search,
   ShieldCheck,
   Ticket,
+  User,
 } from "lucide-react";
-import { demoContact } from "../data/customer";
+import { useUser } from "../context/UserContext";
+import "./CustomerHeader.css";
 
-// Hiển thị menu tài khoản và huy hiệu thanh toán
+// Hiển thị menu tài khoản hoặc nút đăng nhập/đăng ký
 export default function CustomerHeader({
   booking = false,
 }: {
   booking?: boolean;
 }) {
+  const { user, isAuthenticated, logoutClient } = useUser();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -35,6 +40,16 @@ export default function CustomerHeader({
       document.removeEventListener("keydown", escape);
     };
   }, []);
+
+  const handleLogout = async () => {
+    setOpen(false);
+    await logoutClient();
+    navigate("/login");
+  };
+
+  const displayName = user?.fullName || user?.username || "Khách hàng";
+  const initialLetter = displayName.split(" ").filter(Boolean).pop()?.charAt(0).toUpperCase() || "U";
+
   return (
     <header className="app-header">
       <Link to="/" className="brand-logo">
@@ -46,12 +61,13 @@ export default function CustomerHeader({
           <span>{booking ? "Đặt vé trực tuyến" : "Hệ thống vé đường dài"}</span>
         </div>
       </Link>
+
       {booking ? (
         <div className="header-badge">
           <ShieldCheck size={14} />
           <span>Thanh toán an toàn MoMo</span>
         </div>
-      ) : (
+      ) : isAuthenticated && user ? (
         <div className="user-menu-container" ref={ref}>
           <button
             className="user-pill"
@@ -59,29 +75,77 @@ export default function CustomerHeader({
             aria-controls="customer-menu"
             onClick={() => setOpen(!open)}
           >
-            <div className="user-avatar">
-              {demoContact.name.split(" ").at(-1)![0]}
-            </div>
-            <span>{demoContact.name}</span>
+            <div className="user-avatar">{initialLetter}</div>
+            <span>{displayName}</span>
             <ChevronDown size={12} />
           </button>
+
           <div
             id="customer-menu"
             className={`user-dropdown ${open ? "active" : ""}`}
           >
-            <Link to="/profile" onClick={() => setOpen(false)}>
-              <ContactRound size={16} />
-              Thông tin cá nhân
+            <Link to="/" onClick={() => setOpen(false)}>
+              <Search size={16} />
+              Tìm chuyến xe
             </Link>
+
             <Link to="/my-tickets" onClick={() => setOpen(false)}>
               <Ticket size={16} />
-              Danh sách vé
+              Danh sách vé đã đặt
             </Link>
-            <Link to="/login" className="logout" onClick={() => setOpen(false)}>
+
+            <Link to="/profile" onClick={() => setOpen(false)}>
+              <ContactRound size={16} />
+              Hồ sơ cá nhân
+            </Link>
+
+            <button
+              type="button"
+              className="logout"
+              onClick={handleLogout}
+            >
               <LogOut size={16} />
-              Đăng xuất
-            </Link>
+              <span>Đăng xuất</span>
+            </button>
           </div>
+        </div>
+      ) : (
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <Link
+            to="/login"
+            style={{
+              padding: "7px 16px",
+              fontSize: "13px",
+              fontWeight: 700,
+              color: "var(--primary)",
+              background: "var(--primary-light)",
+              borderRadius: "var(--radius-full)",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              textDecoration: "none",
+              transition: "all 0.2s ease",
+            }}
+          >
+            <User size={15} />
+            <span>Đăng nhập</span>
+          </Link>
+          <Link
+            to="/register"
+            style={{
+              padding: "7px 16px",
+              fontSize: "13px",
+              fontWeight: 700,
+              color: "#ffffff",
+              background: "linear-gradient(135deg, var(--primary), var(--primary-hover))",
+              borderRadius: "var(--radius-full)",
+              boxShadow: "0 4px 12px rgba(249, 87, 33, 0.25)",
+              textDecoration: "none",
+              transition: "all 0.2s ease",
+            }}
+          >
+            Đăng ký
+          </Link>
         </div>
       )}
     </header>

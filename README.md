@@ -10,10 +10,10 @@ Tài liệu này giới thiệu kiến trúc, phân công công việc, tổ ch�
 | --- | --- | --- | --- |
 | Frontend | React, TypeScript, Vite, React Router | Giao diện cho khách hàng, quản trị/điều phối và tài xế | 5173 |
 | API Gateway | Spring Cloud Gateway | Cổng API chung, định tuyến, CORS, xác minh JWT | 8080 |
-| Auth Service | .NET 8, ASP.NET Core Web API, Entity Framework Core, MySQL | Tài khoản, vai trò, đăng nhập, đăng ký và token | 5001 |
+| Auth Service | .NET (ASP.NET Core Web API), Entity Framework Core, SQL Server | Tài khoản, vai trò, đăng nhập, đăng ký và token | 5001 |
 | Trip Service | Spring Boot, Spring Security, JPA, Flyway | Tuyến, trạm, chuyến, xe, tài xế, giá vé và điều phối | 8081 |
 | Booking Service | Spring Boot, Spring Security, JPA, Flyway | Đơn đặt, giữ ghế, thanh toán, vé điện tử và soát vé | 8082 |
-| Database | MySQL | Ba database riêng cho Auth, Trip và Booking | 3306 |
+| Database | SQL Server (Auth) & MySQL (Trip, Booking) | Phân tách database theo từng microservice độc lập | 1433 / 3306 |
 
 Các service chạy trực tiếp trên môi trường local, không sử dụng Docker hoặc RabbitMQ. Giao tiếp giữa các service qua HTTP. Frontend gọi API qua Gateway; các service kiểm tra JWT và quyền truy cập tại backend.
 
@@ -26,9 +26,9 @@ Frontend React :5173
         |
         v
 Gateway :8080
-        |-- /api/auth/** --------------------> Auth :5001 --> auth_db
-        |-- API tuyến, chuyến, điều phối ----> Trip :8081 --> trip_db
-        |-- API ghế, đơn, vé, thanh toán ----> Booking :8082 --> booking_db
+        |-- /api/auth/** --------------------> Auth :5001 ----> SQL Server (FutaBus_AuthDb)
+        |-- API tuyến, chuyến, điều phối ----> Trip :8081 ----> MySQL (trip_db)
+        |-- API ghế, đơn, vé, thanh toán ----> Booking :8082 -> MySQL (booking_db)
 
 Trip <---- HTTP nội bộ ----> Booking
 Trip ------ HTTP nội bộ ---> Auth
@@ -41,21 +41,28 @@ Trip ------ HTTP nội bộ ---> Auth
 | Mai Phương | Khách hàng và đặt vé | Tìm chuyến theo chặng, lọc nâng cao, chọn ghế, giữ chỗ, thông tin đón/trả, thanh toán, danh sách vé, vé điện tử và yêu cầu hủy/hoàn theo chính sách |
 | Văn Thuật | Quản trị và điều phối | Quản lý tuyến/trạm, giá vé, lập lịch chuyến, gán xe/tài xế, doanh thu và tỷ lệ lấp đầy |
 | Vũ Sang | Tài xế và soát vé | Lịch chuyến được phân công, danh sách khách theo trạm, gọi khách, quét QR, cập nhật lên/xuống xe và nhật ký chuyến |
-| Sơn | Xác thực và dữ liệu tuyến | Auth bằng .NET, tài khoản/vai trò, hồ sơ, đổi mật khẩu, tài khoản nội bộ và chuẩn hóa dữ liệu khoảng 50 tuyến |
+| Sơn | Xác thực và phân quyền (Auth) | Auth Service bằng .NET, phân quyền 3 vai trò (Member/Admin/Driver), Google OAuth 2.0, bảo mật JWT & Refresh Token, hồ sơ cá nhân và tích hợp Auth Frontend |
 
 Việc chia theo người dùng không đồng nghĩa mỗi thành viên sở hữu riêng một service. Booking cung cấp dữ liệu vé/hành khách cho khách hàng, quản trị và tài xế; Trip cung cấp dữ liệu chuyến/lộ trình cho cả ba phân hệ. Các thay đổi hợp đồng dữ liệu và API cần được thống nhất giữa các phần sử dụng.
 
-Công nghệ và kiến trúc tuân theo tài liệu `cau_truc_thu_muc_FUTA.docx`. Cả ba nhóm người dùng đăng nhập chung tại `/login`; chỉ khách hàng tự đăng ký tại `/register`. Tính năng đăng nhập Google và quy trình đổi mật khẩu lần đầu cần thống nhất với phần Auth trước khi tích hợp.
+Công nghệ và kiến trúc tuân theo tài liệu `cau_truc_thu_muc_FUTA.docx`. Cả ba nhóm người dùng đăng nhập chung tại `/login`; chỉ khách hàng tự đăng ký tại `/register`. Đăng nhập Google OAuth 2.0 chính thức được tích hợp cho khách hàng (`Member`), liên kết tài khoản tự động và hỗ trợ quy trình tạo/đổi mật khẩu linh hoạt trên trang hồ sơ cá nhân.
 
 ## 3. Chức năng và phân quyền
 
 ### Xác thực và tài khoản
-
-- Đăng ký khách hàng; máy chủ tự gán vai trò `CUSTOMER`, không nhận role từ biểu mẫu đăng ký.
-- Đăng nhập bằng tài khoản, cấp JWT và refresh token, làm mới phiên và đăng xuất.
-- Xem/cập nhật hồ sơ, đổi mật khẩu; tạo Admin đầu tiên qua seed, Điều phối viên qua Admin và tài xế qua hồ sơ nhân sự.
-- Chuyển trang theo role; giữ đường dẫn đang truy cập để quay lại sau đăng nhập khi phù hợp quyền.
-- Auth ký JWT bằng RSA; Gateway và Spring services xác minh qua khóa công khai/JWKS. Frontend không thay thế kiểm tra quyền ở backend.
+- Phân hệ gồm 3 vai trò: `Member` (Khách hàng), `Admin` (Quản trị viên) và `Driver` (Tài xế / Soát vé).
+- Đăng ký khách hàng: Máy chủ tự gán vai trò `Member`, không nhận role từ biểu mẫu đăng ký, validate chuẩn định dạng SĐT (10 số VN) và kiểm tra email duy nhất (`IX_users_Email`).
+- Đăng nhập hệ thống: Cấp Access Token JWT (15 phút) và Refresh Token (3 ngày). Tự động điều hướng theo quyền (`Admin` vào `/admin/routes`, `Driver` vào `/driver/trips`, `Member` về trang chủ `/`).
+- Đăng nhập Google OAuth 2.0: Tích hợp `@react-oauth/google` và endpoint backend `POST /api/auth/google-login` xác minh token với Google API; tự động liên kết tài khoản qua email và sinh username tự động không trùng lặp (`GenerateUniqueUsernameAsync`).
+- Chính sách bảo mật đăng nhập Google: Chỉ áp dụng cho vai trò `Member`. Tài khoản `Admin` và `Driver` bắt buộc phải đăng nhập bằng thông tin tài khoản nội bộ để đảm bảo an ninh vận hành.
+- Cơ chế Silent Refresh Token tự động tại Frontend: Tự động gia hạn ngầm khi access token hết hạn mà không làm gián đoạn người dùng.
+- Quên mật khẩu & Đặt lại mật khẩu: Gửi liên kết xác thực qua Email có thời hạn 15 phút.
+- Hồ sơ cá nhân & Mật khẩu linh hoạt (`/profile`):
+  - Dành riêng cho `Member` với layout và CSS cô lập (`CustomerHeader.css`).
+  - Tự động nhận diện tài khoản Google chưa có mật khẩu (`hasPassword: false`) để hiển thị form **"Tạo mật khẩu"** (2 trường: mật khẩu mới và xác nhận).
+  - Đối với tài khoản đã có mật khẩu (`hasPassword: true`), hiển thị form **"Đổi mật khẩu"** chuẩn (3 trường: mật khẩu hiện tại, mật khẩu mới và xác nhận).
+- Tự động seed sẵn 15 tài khoản thử nghiệm khi khởi động: 5 Admin (`Admin@123`), 5 Member (`Member@123`), 5 Driver (`Driver@123`).
+- Chi tiết kỹ thuật xem tại: `auth-service/readmeAuth.MD`.
 
 ### Khách hàng
 
@@ -87,18 +94,20 @@ Công nghệ và kiến trúc tuân theo tài liệu `cau_truc_thu_muc_FUTA.docx
 
 | Route | Vai trò | Nội dung |
 | --- | --- | --- |
-| `/login`, `/register` | Công khai | Đăng nhập chung, đăng ký khách hàng |
-| `/` | Công khai | Tìm chuyến; đặt vé yêu cầu đăng nhập |
-| `/trips/:code/book` | CUSTOMER | Chọn ghế và thanh toán |
-| `/my-tickets`, `/profile` | CUSTOMER | Quản lý vé và hồ sơ |
-| `/admin/routes` | ADMIN, DISPATCHER | Tuyến và trạm |
-| `/admin/trips` | ADMIN, DISPATCHER | Lịch chuyến và phân công |
-| `/admin/reports` | ADMIN, DISPATCHER | Báo cáo |
-| `/admin/drivers`, `/admin/vehicles` | ADMIN, DISPATCHER theo quyền API | Nhân sự và phương tiện |
-| `/driver/trips` | DRIVER | Lịch chuyến |
-| `/driver/trips/:code/passengers` | DRIVER | Danh sách đón/trả |
-| `/driver/trips/:code/scan`, `/driver/trips/:code/log` | DRIVER | Soát vé và nhật ký |
-| `/403` | Người dùng đăng nhập | Không đủ quyền |
+| `/login`, `/register` | Công khai | Đăng nhập chung (Form + Google OAuth), đăng ký khách hàng |
+| `/forgot-password`, `/reset-password` | Công khai | Quên và đặt lại mật khẩu qua email xác thực |
+| `/` | Công khai / Member | Tìm chuyến; đặt vé yêu cầu đăng nhập |
+| `/trips/:code/book` | Member | Chọn ghế và thanh toán |
+| `/my-tickets`, `/profile` | Member | Quản lý vé và hồ sơ cá nhân khách hàng |
+| `/admin/routes` | Admin | Quản lý tuyến đường và trạm dừng |
+| `/admin/trips` | Admin | Lịch chuyến, phân công xe và tài xế |
+| `/admin/reports` | Admin | Báo cáo doanh thu và tỷ lệ lấp đầy |
+| `/admin/drivers`, `/admin/vehicles` | Admin | Danh sách nhân sự tài xế và phương tiện |
+| `/driver/trips` | Driver | Lịch các chuyến xe được phân công |
+| `/driver/trips/:code/passengers` | Driver | Danh sách hành khách theo điểm đón/trả |
+| `/driver/trips/:code/scan`, `/driver/trips/:code/log` | Driver | Quét mã QR soát vé và nhật ký chuyến đi |
+
+> **Cơ chế điều hướng bảo vệ (`ProtectedRoute`)**: Không sử dụng trang 403 trung gian gây gián đoạn trải nghiệm người dùng. Khi truy cập vào route không thuộc quyền hạn, hệ thống tự động nhận diện vai trò và điều hướng thẳng về khu vực tương ứng của người dùng (`/admin/routes` cho Admin, `/driver/trips` cho Driver, hoặc `/` cho Member). Nếu chưa đăng nhập, tự động chuyển về `/login` kèm lưu lại trang đang truy cập để quay lại sau khi đăng nhập thành công.
 
 ## 4. Cấu trúc thư mục
 
@@ -198,11 +207,13 @@ Kiểu riêng cho khách hàng nằm tại `frontend/src/features/customer/types
 
 ## 5. Database và quy tắc dữ liệu
 
-| Database | Service sở hữu | Nhóm dữ liệu |
-| --- | --- | --- |
-| `auth_db` | Auth | Tài khoản, vai trò và refresh token |
-| `trip_db` | Trip | Địa chỉ, trạm, tuyến, chuyến, xe, tài xế, delay và thông báo |
-| `booking_db` | Booking | Đơn đặt, giữ ghế, thanh toán và vé |
+| Database | Service sở hữu | Hệ quản trị CSDL | Nhóm dữ liệu |
+| --- | --- | --- | --- |
+| `FutaBus_AuthDb` | Auth | SQL Server | Tài khoản `users`, vai trò và refresh token |
+| `trip_db` | Trip | MySQL | Địa chỉ, trạm, tuyến, chuyến, xe, tài xế, delay và thông báo |
+| `booking_db` | Booking | MySQL | Đơn đặt, giữ ghế, thanh toán và vé |
+
+> **Ghi chú kiến trúc**: Áp dụng nguyên lý **Polyglot Persistence** trong Microservices, Auth Service sử dụng CSDL SQL Server độc lập, Trip và Booking sử dụng MySQL. Các service giao tiếp với nhau qua HTTP API và xác thực token JWT, hoàn toàn không phụ thuộc chéo vào hệ quản trị cơ sở dữ liệu của nhau.
 
 Tổng số bảng được thiết kế theo phạm vi khoảng 15–20 bảng của đồ án; số lượng cụ thể phải thống nhất với mô hình dữ liệu và migrations. Không tạo FK chéo database. Các service liên kết bằng mã/ID như `user_id`, `trip_code`, `station_id`.
 
@@ -246,7 +257,7 @@ mysql --version
 | Thành phần | Tệp cấu hình | Giá trị cần khai báo |
 | --- | --- | --- |
 | Frontend | `frontend/.env.development` | `VITE_API_BASE_URL=http://localhost:8080` |
-| Auth | `auth-service/src/AuthService.Api/appsettings.Development.json` | Kết nối `auth_db`, issuer/audience/TTL token, đường dẫn khóa RSA, khóa nội bộ, tài khoản Admin seed |
+| Auth | `auth-service/src/AuthService.Api/appsettings.json` | Kết nối `FutaBus_AuthDb` (SQL Server), JWT Secret, SMTP Gmail, URL Frontend |
 | Trip | `trip-service/src/main/resources/application-local.yml` | Cổng 8081, kết nối `trip_db`, JWKS/issuer/audience, URL Auth/Booking và khóa nội bộ |
 | Booking | `booking-service/src/main/resources/application-local.yml` | Cổng 8082, kết nối `booking_db`, JWKS/issuer/audience, URL Trip, khóa nội bộ, MoMo và SMTP |
 | Gateway | `gateway/src/main/resources/application-local.yml` | Cổng 8080, route service, JWKS/issuer/audience và origin CORS `http://localhost:5173` |
@@ -259,13 +270,13 @@ Tạo cấu hình frontend từ thư mục gốc:
 Copy-Item frontend/.env.example frontend/.env.development
 ```
 
-Tạo database trong MySQL:
+Tạo database trong MySQL (dành cho Trip Service và Booking Service):
 
 ```sql
-CREATE DATABASE IF NOT EXISTS auth_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS trip_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS booking_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
+*(Lưu ý: Database `FutaBus_AuthDb` của Auth Service trên SQL Server sẽ tự động được tạo khi chạy lệnh `dotnet ef database update` hoặc chạy `AuthService.sln`).*
 
 Cấp quyền theo database cho tài khoản service tương ứng và khai báo kết nối trong cấu hình local. SQL khởi tạo/seed dùng chung đặt tại `infra/mysql/`; thay đổi schema của từng service quản lý qua migration của service đó.
 
@@ -280,17 +291,18 @@ Auth dùng khóa riêng để ký token và công bố khóa công khai tại `/
 
 ## 8. Chạy toàn hệ thống
 
-Thứ tự: **MySQL → Auth → Trip và Booking → Gateway → Frontend**. Chạy các service ở terminal riêng. Các đường dẫn trong các lệnh này tính từ thư mục gốc repository.
+Thứ tự: **Database (SQL Server & MySQL) → Auth → Trip và Booking → Gateway → Frontend**. Chạy các service ở terminal riêng. Các đường dẫn trong các lệnh này tính từ thư mục gốc repository.
 
-### Auth Service
+### Auth Service (.NET - Cổng 5001)
 
+Có 2 cách chạy:
+- **Cách 1 (Bằng Visual Studio - Khuyên dùng)**: Mở tệp `auth-service/AuthService.sln` bằng Visual Studio và nhấn nút **Play (http)** hoặc `Ctrl + F5`. Trình duyệt sẽ tự động mở Swagger UI tại `http://localhost:5001/swagger`.
+- **Cách 2 (Bằng Terminal)**:
 ```powershell
-dotnet restore auth-service/src/AuthService.Api
-dotnet ef database update --project auth-service/src/AuthService.Api --startup-project auth-service/src/AuthService.Api -- --environment Development
-dotnet run --project auth-service/src/AuthService.Api --no-launch-profile --environment Development --urls http://localhost:5001
+dotnet ef database update --project auth-service/src/AuthService.Api
+dotnet run --project auth-service/src/AuthService.Api --urls "http://localhost:5001"
 ```
-
-Lệnh EF yêu cầu công cụ `dotnet-ef` và package EF Design tương thích .NET 8, cùng cấu hình provider MySQL. Roles và Admin đầu tiên được tạo từ seed của Auth; thông tin đăng nhập lấy từ cấu hình.
+*(Chi tiết cấu trúc, danh sách DTOs, endpoint Google Auth, câu lệnh CLI và 15 tài khoản seed sẵn cho 3 vai trò xem tại: `auth-service/readmeAuth.MD`).*
 
 ### Trip Service
 
@@ -308,13 +320,22 @@ mvn -f booking-service/pom.xml spring-boot:run "-Dspring-boot.run.profiles=local
 
 Flyway chạy migrations của Booking. Khai báo thời gian giữ ghế, kết nối Trip, thông tin MoMo và SMTP. Endpoint giả lập kết quả thanh toán chỉ được bật ở profile phát triển.
 
-### API Gateway
+### API Gateway (Cổng 8080)
 
+Có thể chạy trực tiếp bằng script PowerShell tiện lợi:
+```powershell
+.\run-gateway.ps1
+```
+Hoặc qua lệnh Maven:
 ```powershell
 mvn -f gateway/pom.xml spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
-Gateway phải định tuyến API hành khách/soát vé và `/api/trips/*/seats` tới Booking trước route tổng quát `/api/admin/**`, `/api/driver/**`, `/api/trips/**` tới Trip. Không công khai `/internal/**` qua Gateway.
+Gateway tích hợp:
+- Bộ lọc `InternalPathBlockFilter` tự động chặn mọi truy cập từ bên ngoài vào `/internal/**` với mã `403 Forbidden`.
+- Bộ lọc CORS deduplication `DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST` ngăn trùng lặp header CORS giữa Gateway và microservices.
+- Định tuyến API hành khách/soát vé và `/api/trips/*/seats` tới Booking trước route tổng quát `/api/admin/**`, `/api/driver/**`, `/api/trips/**` tới Trip.
+*(Chi tiết cấu hình Gateway xem tại: `gateway/readmeGATEWAY.MD`).*
 
 ### Frontend
 

@@ -12,7 +12,11 @@ Copy-Item .env.example .env.development
 npm run dev
 ```
 
-Truy cập http://localhost:5173. `VITE_API_BASE_URL` trỏ tới Gateway tại http://localhost:8080. Khởi động lại Vite khi đổi biến môi trường.
+Truy cập http://localhost:5173. Các biến môi trường trong `.env` / `.env.development`:
+- `VITE_API_BASE_URL=http://localhost:8080` (trỏ tới Spring Cloud Gateway)
+- `VITE_GOOGLE_CLIENT_ID=1069494819691-vkr5q46np5ebdn76q3nl68s7q7lm7cij.apps.googleusercontent.com` (Google OAuth 2.0 Client ID)
+
+Khởi động lại máy chủ phát triển Vite sau khi thay đổi biến môi trường. Chi tiết kiến trúc Auth, Google Sign-In và các trang xem tại: [readmeFE.MD](readmeFE.MD).
 
 ## Tổ chức mã nguồn
 
