@@ -11,9 +11,9 @@ Tài liệu này giới thiệu kiến trúc, phân công công việc, tổ ch�
 | Frontend | React, TypeScript, Vite, React Router | Giao diện cho khách hàng, quản trị/điều phối và tài xế | 5173 |
 | API Gateway | Spring Cloud Gateway | Cổng API chung, định tuyến, CORS, xác minh JWT | 8080 |
 | Auth Service | .NET (ASP.NET Core Web API), Entity Framework Core, SQL Server | Tài khoản, vai trò, đăng nhập, đăng ký và token | 5001 |
-| Trip Service | Spring Boot, Spring Security, JPA, Flyway | Tuyến, trạm, chuyến, xe, tài xế, giá vé và điều phối | 8081 |
+| Trip Service | Spring Boot, JPA, PostgreSQL (hiện có Station API) | Tuyến, trạm, chuyến, xe, tài xế, giá vé và điều phối | 8081 |
 | Booking Service | Spring Boot, Spring Security, JPA, Flyway | Đơn đặt, giữ ghế, thanh toán, vé điện tử và soát vé | 8082 |
-| Database | SQL Server (Auth) & MySQL (Trip, Booking) | Phân tách database theo từng microservice độc lập | 1433 / 3306 |
+| Database | SQL Server (Auth), PostgreSQL (Trip), MySQL (Booking) | Phân tách database theo từng microservice độc lập | 1433 / 5432 / 3306 |
 
 Các service chạy trực tiếp trên môi trường local, không sử dụng Docker hoặc RabbitMQ. Giao tiếp giữa các service qua HTTP. Frontend gọi API qua Gateway; các service kiểm tra JWT và quyền truy cập tại backend.
 
@@ -27,7 +27,7 @@ Frontend React :5173
         v
 Gateway :8080
         |-- /api/auth/** --------------------> Auth :5001 ----> SQL Server (FutaBus_AuthDb)
-        |-- API tuyến, chuyến, điều phối ----> Trip :8081 ----> MySQL (trip_db)
+        |-- API tuyến, chuyến, điều phối ----> Trip :8081 ----> PostgreSQL (trip_db)
         |-- API ghế, đơn, vé, thanh toán ----> Booking :8082 -> MySQL (booking_db)
 
 Trip <---- HTTP nội bộ ----> Booking
@@ -156,18 +156,15 @@ j2ee-project/
 │       └── Keys/               Khóa RSA của Auth
 ├── trip-service/
 │   └── src/main/
-│       ├── java/com/futa/trip/
-│       │   ├── controller/     API tuyến, chuyến, xe, tài xế và báo cáo
-│       │   ├── service/        Logic vận tải, giá và điều phối
+│       ├── java/futabus/trip_service/
+│       │   ├── controller/     Station API và xử lý lỗi HTTP
+│       │   ├── service/        Logic Station
 │       │   ├── repository/     Truy cập dữ liệu Trip
 │       │   ├── entity/         Thực thể vận tải
 │       │   ├── dto/            request/ và response/
-│       │   ├── client/         Gọi Auth và Booking
-│       │   ├── config/         Cấu hình ứng dụng
-│       │   ├── security/       JWT và xác thực nội bộ
 │       │   ├── mapper/         Chuyển entity và DTO
-│       │   └── exception/      Xử lý lỗi nghiệp vụ
-│       └── resources/db/migration/  Flyway migrations
+│       │   └── enums/          Loại và trạng thái trạm
+│       └── resources/          Cấu hình PostgreSQL (file local và example)
 ├── booking-service/
 │   └── src/main/
 │       ├── java/com/futa/booking/
@@ -195,7 +192,7 @@ j2ee-project/
 | Tệp dùng chung trong `frontend/src/types/` | Nội dung | Phân hệ sử dụng |
 | --- | --- | --- |
 | `station.ts` | `Station` | Khách hàng, quản trị, tài xế |
-| `route-stop.ts` | `RouteStop` | Tuyến, chuyến và lộ trình |
+| `route-stop.ts` | `Station` | Tuyến, chuyến và lộ trình |
 | `seat.ts` | `Seat` | Đặt chỗ, sơ đồ hành khách, soát vé |
 | `vehicle.ts` | `VehicleType` | Phương tiện và chuyến |
 | `pricing.ts` | `Pricing` | Quản trị giá và bán vé |
@@ -210,10 +207,10 @@ Kiểu riêng cho khách hàng nằm tại `frontend/src/features/customer/types
 | Database | Service sở hữu | Hệ quản trị CSDL | Nhóm dữ liệu |
 | --- | --- | --- | --- |
 | `FutaBus_AuthDb` | Auth | SQL Server | Tài khoản `users`, vai trò và refresh token |
-| `trip_db` | Trip | MySQL | Địa chỉ, trạm, tuyến, chuyến, xe, tài xế, delay và thông báo |
+| `trip_db` | Trip | PostgreSQL | Địa chỉ, trạm, tuyến, chuyến, xe, tài xế, delay và thông báo |
 | `booking_db` | Booking | MySQL | Đơn đặt, giữ ghế, thanh toán và vé |
 
-> **Ghi chú kiến trúc**: Áp dụng nguyên lý **Polyglot Persistence** trong Microservices, Auth Service sử dụng CSDL SQL Server độc lập, Trip và Booking sử dụng MySQL. Các service giao tiếp với nhau qua HTTP API và xác thực token JWT, hoàn toàn không phụ thuộc chéo vào hệ quản trị cơ sở dữ liệu của nhau.
+> **Ghi chú kiến trúc**: Áp dụng nguyên lý **Polyglot Persistence** trong Microservices: Auth dùng SQL Server, Trip dùng PostgreSQL và Booking dùng MySQL. Các service giao tiếp với nhau qua HTTP API và xác thực token JWT, hoàn toàn không phụ thuộc chéo vào hệ quản trị cơ sở dữ liệu của nhau.
 
 Tổng số bảng được thiết kế theo phạm vi khoảng 15–20 bảng của đồ án; số lượng cụ thể phải thống nhất với mô hình dữ liệu và migrations. Không tạo FK chéo database. Các service liên kết bằng mã/ID như `user_id`, `trip_code`, `station_id`.
 
@@ -224,7 +221,7 @@ Tổng số bảng được thiết kế theo phạm vi khoảng 15–20 bảng 
 - MoMo callback xử lý idempotent, kiểm tra chữ ký, số tiền và mã đơn; chỉ phát hành vé sau khi xác nhận thanh toán thành công.
 - Trạng thái thanh toán/vé tách khỏi trạng thái lên/xuống xe.
 - Occupancy = tổng vé thực bán / tổng sức chứa × 100%; từ 80% là Cao, từ 50% đến dưới 80% là Trung bình, dưới 50% là Thấp.
-- Spring dùng Flyway; Auth dùng EF migrations. Không dùng `ddl-auto=update` để thay thế migration.
+- Auth dùng EF migrations. Trip hiện dùng `ddl-auto=update` khi phát triển Station; trước khi triển khai production cần chuyển sang migration có phiên bản.
 
 Chi tiết hợp đồng dữ liệu đặt vé tại [docs/customer-data-model.md](docs/customer-data-model.md). Các quy tắc giá nhập tay theo chặng, khứ hồi, trung chuyển và hủy/hoàn phải được thống nhất giữa các service trước khi triển khai.
 
@@ -233,7 +230,7 @@ Chi tiết hợp đồng dữ liệu đặt vé tại [docs/customer-data-model.
 - Git, Node.js và npm để phát triển frontend. Frontend đã được kiểm tra với Node.js 24 và npm 11.
 - .NET SDK 8 và công cụ Entity Framework Core tương thích cho Auth.
 - JDK và Maven tương thích với phiên bản Spring Boot trong `pom.xml`; cấu hình `JAVA_HOME` đúng JDK.
-- MySQL, tài khoản tạo database và tài khoản kết nối riêng cho từng service.
+- PostgreSQL cho Trip, MySQL cho Booking; mỗi service cần tài khoản kết nối riêng.
 - OpenSSL để tạo khóa RSA; cấu hình MoMo và SMTP khi triển khai thanh toán/email.
 - Microsoft Edge nếu sử dụng script kiểm tra giao diện Playwright trong repository.
 
@@ -246,11 +243,12 @@ dotnet --version
 java -version
 mvn -version
 mysql --version
+psql --version
 ```
 
 ### Điều kiện chạy backend
 
-Để thực thi các lệnh backend bên dưới, Auth cần tệp `.csproj`, mã khởi tạo ứng dụng và EF migrations; các service Spring cần `pom.xml`, lớp Application, cấu hình và Flyway migrations. Hiện các thư mục backend đã có cấu trúc tầng nhưng chưa có các tệp build/khởi tạo này. Thành viên phụ trách bổ sung chúng trước khi chạy service; các lệnh dưới đây là quy trình thống nhất cho cấu trúc đó.
+Để chạy Station API, Trip cần `pom.xml`, lớp Application và cấu hình PostgreSQL. Các module nghiệp vụ khác vẫn cần được triển khai theo phạm vi của từng service.
 
 ## 7. Cấu hình local
 
@@ -258,9 +256,9 @@ mysql --version
 | --- | --- | --- |
 | Frontend | `frontend/.env.development` | `VITE_API_BASE_URL=http://localhost:8080` |
 | Auth | `auth-service/src/AuthService.Api/appsettings.json` | Kết nối `FutaBus_AuthDb` (SQL Server), JWT Secret, SMTP Gmail, URL Frontend |
-| Trip | `trip-service/src/main/resources/application-local.yml` | Cổng 8081, kết nối `trip_db`, JWKS/issuer/audience, URL Auth/Booking và khóa nội bộ |
+| Trip | `trip-service/src/main/resources/application.yaml` (local, không commit) | Cổng 8081 và kết nối PostgreSQL `trip_db`; cấu hình mẫu tại `application.example.yaml` |
 | Booking | `booking-service/src/main/resources/application-local.yml` | Cổng 8082, kết nối `booking_db`, JWKS/issuer/audience, URL Trip, khóa nội bộ, MoMo và SMTP |
-| Gateway | `gateway/src/main/resources/application-local.yml` | Cổng 8080, route service, JWKS/issuer/audience và origin CORS `http://localhost:5173` |
+| Gateway | `gateway-1` | Cổng 8080, route service, JWKS/issuer/audience và origin CORS `http://localhost:5173` |
 
 Tên các trường cấu hình backend phải khớp với lớp cấu hình của service. Không commit mật khẩu, token, secret MoMo, khóa RSA riêng hoặc tệp cấu hình local. Các tệp example chỉ chứa tên trường và giá trị không nhạy cảm.
 
@@ -270,10 +268,15 @@ Tạo cấu hình frontend từ thư mục gốc:
 Copy-Item frontend/.env.example frontend/.env.development
 ```
 
-Tạo database trong MySQL (dành cho Trip Service và Booking Service):
+Tạo database `trip_db` trong PostgreSQL cho Trip Service:
 
 ```sql
-CREATE DATABASE IF NOT EXISTS trip_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE trip_db;
+```
+
+Tạo database `booking_db` trong MySQL cho Booking Service:
+
+```sql
 CREATE DATABASE IF NOT EXISTS booking_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 *(Lưu ý: Database `FutaBus_AuthDb` của Auth Service trên SQL Server sẽ tự động được tạo khi chạy lệnh `dotnet ef database update` hoặc chạy `AuthService.sln`).*
@@ -291,7 +294,7 @@ Auth dùng khóa riêng để ký token và công bố khóa công khai tại `/
 
 ## 8. Chạy toàn hệ thống
 
-Thứ tự: **Database (SQL Server & MySQL) → Auth → Trip và Booking → Gateway → Frontend**. Chạy các service ở terminal riêng. Các đường dẫn trong các lệnh này tính từ thư mục gốc repository.
+Thứ tự: **Database (SQL Server, PostgreSQL, MySQL) → Auth → Trip và Booking → Gateway → Frontend**. Chạy các service ở terminal riêng. Các đường dẫn trong các lệnh này tính từ thư mục gốc repository.
 
 ### Auth Service (.NET - Cổng 5001)
 
@@ -307,10 +310,10 @@ dotnet run --project auth-service/src/AuthService.Api --urls "http://localhost:5
 ### Trip Service
 
 ```powershell
-mvn -f trip-service/pom.xml spring-boot:run "-Dspring-boot.run.profiles=local"
+mvn -f trip-service/pom.xml spring-boot:run
 ```
 
-Flyway chạy migrations trong `trip-service/src/main/resources/db/migration/` khi ứng dụng khởi động. Kiểm tra kết nối `trip_db` và URL gọi Auth/Booking.
+Station API hiện chạy trên `trip-service` với PostgreSQL `trip_db`; schema được Hibernate cập nhật trong môi trường phát triển. Các API khác và xác thực nội bộ cần được triển khai trước khi chạy toàn bộ luồng Trip.
 
 ### Booking Service
 
@@ -335,7 +338,7 @@ Gateway tích hợp:
 - Bộ lọc `InternalPathBlockFilter` tự động chặn mọi truy cập từ bên ngoài vào `/internal/**` với mã `403 Forbidden`.
 - Bộ lọc CORS deduplication `DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST` ngăn trùng lặp header CORS giữa Gateway và microservices.
 - Định tuyến API hành khách/soát vé và `/api/trips/*/seats` tới Booking trước route tổng quát `/api/admin/**`, `/api/driver/**`, `/api/trips/**` tới Trip.
-*(Chi tiết cấu hình Gateway xem tại: `gateway/readmeGATEWAY.MD`).*
+  *(Chi tiết cấu hình Gateway xem tại: `gateway-1`).*
 
 ### Frontend
 
@@ -415,7 +418,7 @@ Các endpoint trên là hợp đồng kiến trúc; controller, DTO, validation 
 | --- | --- |
 | Frontend không gọi được API | Gateway đã chạy, đúng `VITE_API_BASE_URL`, CORS và route tới service |
 | API trả 401/403 | Hạn token, chữ ký RSA/JWKS, issuer/audience, role và quyền sở hữu dữ liệu |
-| Service không kết nối MySQL | Database, user/password, quyền, port và cấu hình local |
+| Service không kết nối database | Kiểm tra đúng PostgreSQL cho Trip hoặc MySQL cho Booking, user/password, quyền, port và cấu hình local |
 | Spring không nạp cấu hình local | Profile `local` đã bật, tệp `application-local.yml` đúng thư mục |
 | Auth không đọc cấu hình | Environment `Development`, connection string và đường dẫn khóa RSA |
 | Migration thất bại | Phiên bản migration, quyền database và dữ liệu hiện có; không xóa database để xử lý tùy tiện |

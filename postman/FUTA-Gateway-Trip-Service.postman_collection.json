@@ -1,0 +1,555 @@
+{
+  "info": {
+    "name": "FUTA - Gateway & Trip Service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Collection cho endpoint hiện có trong mã nguồn. Gateway chạy tại localhost:8080 và chuyển tiếp Auth (/api/auth/**, /api/user/**) tới Auth Service, Station (/api/stations/**) tới Trip Service. Trip Service chạy trực tiếp tại localhost:8081. Gateway còn cấu hình /api/trips/**, /api/admin/**, /api/driver/** và route Booking (/api/bookings/**, /api/tickets/**, /api/trips/{code}/seats/**), nhưng hiện không có controller tương ứng trong repo nên chưa tạo request giả. Các biến accessToken/refreshToken chỉ là giá trị rỗng ban đầu; không lưu token thật vào Git."
+  },
+  "item": [
+    {
+      "name": "Gateway (localhost:8080)",
+      "description": "Request đi qua Gateway. Gateway là proxy, không có controller nghiệp vụ riêng.",
+      "item": [
+        {
+          "name": "Gateway / Auth Service",
+          "description": "Các endpoint Auth đã có controller; Gateway chuyển tiếp nguyên đường dẫn tới localhost:5001.",
+          "item": [
+            {
+              "name": "Đăng ký",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gatewayBaseUrl}}/api/auth/register",
+                "description": "Tạo tài khoản Member. username 3-50 ký tự, password ít nhất 6 ký tự; phoneNumber không bắt buộc.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"example_user\",\n  \"email\": \"example@example.com\",\n  \"fullName\": \"Nguyễn Văn A\",\n  \"phoneNumber\": \"0901234567\",\n  \"password\": \"Example@123\",\n  \"confirmPassword\": \"Example@123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Đăng nhập",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gatewayBaseUrl}}/api/auth/login",
+                "description": "Dùng username/password của tài khoản có sẵn. Khi thành công lưu accessToken và refreshToken vào collection variables.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (pm.response.code === 200) {",
+                      "  const response = pm.response.json();",
+                      "  if (response.success && response.data) {",
+                      "    if (response.data.accessToken) pm.collectionVariables.set('accessToken', response.data.accessToken);",
+                      "    if (response.data.refreshToken) pm.collectionVariables.set('refreshToken', response.data.refreshToken);",
+                      "  }",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Làm mới token",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gatewayBaseUrl}}/api/auth/refresh-token",
+                "description": "Dùng refreshToken đã nhận khi đăng nhập; cập nhật token nếu phản hồi có token mới.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (pm.response.code === 200) {",
+                      "  const response = pm.response.json();",
+                      "  if (response.success && response.data) {",
+                      "    if (response.data.accessToken) pm.collectionVariables.set('accessToken', response.data.accessToken);",
+                      "    if (response.data.refreshToken) pm.collectionVariables.set('refreshToken', response.data.refreshToken);",
+                      "  }",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Quên mật khẩu",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gatewayBaseUrl}}/api/auth/forgot-password",
+                "description": "Gửi username và email của tài khoản.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"{{username}}\",\n  \"email\": \"{{email}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Đặt lại mật khẩu",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gatewayBaseUrl}}/api/auth/reset-password",
+                "description": "Dùng mã xác nhận nhận qua email. newPassword ít nhất 6 ký tự.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"token\": \"{{resetToken}}\",\n  \"newPassword\": \"NewPassword@123\",\n  \"confirmPassword\": \"NewPassword@123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Đăng nhập Google",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gatewayBaseUrl}}/api/auth/google-login",
+                "description": "Cần Google ID token thật.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"idToken\": \"{{googleIdToken}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Đăng xuất",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{gatewayBaseUrl}}/api/auth/logout",
+                "description": "Yêu cầu Bearer accessToken.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Gateway / User Service",
+          "description": "Các endpoint /api/user/** của Auth Service yêu cầu Bearer accessToken.",
+          "item": [
+            {
+              "name": "Xem hồ sơ",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{gatewayBaseUrl}}/api/user/profile",
+                "description": "Thông tin tài khoản đang đăng nhập.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Cập nhật hồ sơ",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gatewayBaseUrl}}/api/user/profile",
+                "description": "fullName và email bắt buộc; phoneNumber không bắt buộc.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fullName\": \"Nguyễn Văn A\",\n  \"email\": \"{{email}}\",\n  \"phoneNumber\": \"0901234567\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Đổi mật khẩu",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gatewayBaseUrl}}/api/user/change-password",
+                "description": "Cần mật khẩu hiện tại; mật khẩu mới ít nhất 6 ký tự.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"currentPassword\": \"{{password}}\",\n  \"newPassword\": \"NewPassword@123\",\n  \"confirmNewPassword\": \"NewPassword@123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Gateway / Trip Service - Stations",
+          "description": "Các endpoint Station của Trip Service gọi qua Gateway.",
+          "item": [
+            {
+              "name": "Tạo trạm",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gatewayBaseUrl}}/api/stations",
+                "description": "Body yêu cầu name, address, type. type: TERMINAL | OFFICE | ROAD_STOP | REST_STOP. Trả 201 với Location và data.status=INACTIVE. Tự lưu id mới vào stationId.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Bến xe Miền Đông\",\n  \"address\": \"TP. Hồ Chí Minh\",\n  \"type\": \"TERMINAL\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "  const response = pm.response.json();",
+                      "  if (response.success && response.data && response.data.id) {",
+                      "    pm.collectionVariables.set('stationId', String(response.data.id));",
+                      "  }",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Danh sách trạm",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{gatewayBaseUrl}}/api/stations",
+                "description": "Trả 200, data là mảng trạm."
+              },
+              "response": []
+            },
+            {
+              "name": "Chi tiết trạm",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{gatewayBaseUrl}}/api/stations/{{stationId}}",
+                "description": "Trả 200; id không tồn tại trả 404."
+              },
+              "response": []
+            },
+            {
+              "name": "Cập nhật trạm",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gatewayBaseUrl}}/api/stations/{{stationId}}",
+                "description": "Yêu cầu đủ name, address, type, status. status: ACTIVE | INACTIVE. Trả 200.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Văn phòng Miền Đông\",\n  \"address\": \"Bình Thạnh, TP. Hồ Chí Minh\",\n  \"type\": \"OFFICE\",\n  \"status\": \"ACTIVE\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Xóa trạm",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{gatewayBaseUrl}}/api/stations/{{stationId}}",
+                "description": "Trả 204 không có body; id không tồn tại trả 404."
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Trip Service trực tiếp (localhost:8081)",
+      "description": "Cùng 5 endpoint Station gọi thẳng Trip Service, dùng khi kiểm tra service riêng.",
+      "item": [
+        {
+          "name": "Tạo trạm",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{tripBaseUrl}}/api/stations",
+            "description": "Body yêu cầu name, address, type. type: TERMINAL | OFFICE | ROAD_STOP | REST_STOP. Trả 201 với Location và data.status=INACTIVE. Tự lưu id mới vào stationId.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bến xe Miền Đông\",\n  \"address\": \"TP. Hồ Chí Minh\",\n  \"type\": \"TERMINAL\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const response = pm.response.json();",
+                  "  if (response.success && response.data && response.data.id) {",
+                  "    pm.collectionVariables.set('stationId', String(response.data.id));",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Danh sách trạm",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{tripBaseUrl}}/api/stations",
+            "description": "Trả 200, data là mảng trạm."
+          },
+          "response": []
+        },
+        {
+          "name": "Chi tiết trạm",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{tripBaseUrl}}/api/stations/{{stationId}}",
+            "description": "Trả 200; id không tồn tại trả 404."
+          },
+          "response": []
+        },
+        {
+          "name": "Cập nhật trạm",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{tripBaseUrl}}/api/stations/{{stationId}}",
+            "description": "Yêu cầu đủ name, address, type, status. status: ACTIVE | INACTIVE. Trả 200.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Văn phòng Miền Đông\",\n  \"address\": \"Bình Thạnh, TP. Hồ Chí Minh\",\n  \"type\": \"OFFICE\",\n  \"status\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xóa trạm",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{tripBaseUrl}}/api/stations/{{stationId}}",
+            "description": "Trả 204 không có body; id không tồn tại trả 404."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "gatewayBaseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "tripBaseUrl",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "stationId",
+      "value": "1"
+    },
+    {
+      "key": "username",
+      "value": ""
+    },
+    {
+      "key": "password",
+      "value": ""
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "email",
+      "value": ""
+    },
+    {
+      "key": "resetToken",
+      "value": ""
+    },
+    {
+      "key": "googleIdToken",
+      "value": ""
+    }
+  ]
+}

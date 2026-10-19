@@ -1,4 +1,4 @@
-    ### 1. Kiểm tra trạng thái Gateway (Health Check)
+### 1. Kiểm tra trạng thái Gateway (Health Check)
 GET http://localhost:8080/actuator/health
 
 ### 2. Kiểm tra định tuyến Đăng nhập (Auth Service .NET qua Gateway)
