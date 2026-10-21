@@ -1,12 +1,12 @@
-package com.futabus.transport.service;
+package com.futabus.transport.route.service;
 
-import com.futabus.transport.dto.request.StationCreationRequest;
-import com.futabus.transport.dto.request.StationUpdateRequest;
-import com.futabus.transport.dto.response.StationResponse;
-import com.futabus.transport.entity.Station;
-import com.futabus.transport.enums.StationStatus;
-import com.futabus.transport.mapper.StationMapper;
-import com.futabus.transport.repository.StationRepository;
+import com.futabus.transport.route.dto.request.StationCreationRequest;
+import com.futabus.transport.route.dto.request.StationUpdateRequest;
+import com.futabus.transport.route.dto.response.StationResponse;
+import com.futabus.transport.route.entity.Station;
+import com.futabus.transport.route.enums.StationStatus;
+import com.futabus.transport.route.mapper.StationMapper;
+import com.futabus.transport.route.repository.StationRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

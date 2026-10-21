@@ -1,6 +1,6 @@
-package com.futabus.transport.dto.request;
+package com.futabus.transport.route.dto.request;
 
-import com.futabus.transport.enums.StationType;
+import com.futabus.transport.route.enums.StationType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

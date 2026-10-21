@@ -1,10 +1,10 @@
-package com.futabus.transport.controller;
+package com.futabus.transport.route.controller;
 
-import com.futabus.transport.dto.request.StationCreationRequest;
-import com.futabus.transport.dto.request.StationUpdateRequest;
-import com.futabus.transport.dto.response.ApiResponse;
-import com.futabus.transport.dto.response.StationResponse;
-import com.futabus.transport.service.StationService;
+import com.futabus.transport.route.dto.request.StationCreationRequest;
+import com.futabus.transport.route.dto.request.StationUpdateRequest;
+import com.futabus.transport.route.dto.response.ApiResponse;
+import com.futabus.transport.route.dto.response.StationResponse;
+import com.futabus.transport.route.service.StationService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

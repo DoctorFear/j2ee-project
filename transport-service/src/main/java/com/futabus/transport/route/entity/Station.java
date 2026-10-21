@@ -1,7 +1,7 @@
-package com.futabus.transport.entity;
+package com.futabus.transport.route.entity;
 
-import com.futabus.transport.enums.StationStatus;
-import com.futabus.transport.enums.StationType;
+import com.futabus.transport.route.enums.StationStatus;
+import com.futabus.transport.route.enums.StationType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;

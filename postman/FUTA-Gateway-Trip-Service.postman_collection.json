@@ -2,7 +2,7 @@
   "info": {
     "name": "FUTA - Gateway & Transport Service",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Collection cho endpoint hiện có trong mã nguồn. Gateway chạy tại localhost:8080 và chuyển tiếp Auth (/api/auth/**, /api/user/**) tới Auth Service, Station (/api/stations/**) tới Transport Service. Transport Service chạy trực tiếp tại localhost:8081. Gateway còn cấu hình /api/trips/**, /api/admin/**, /api/driver/** và route Booking (/api/bookings/**, /api/tickets/**, /api/trips/{code}/seats/**), nhưng hiện không có controller tương ứng trong repo nên chưa tạo request giả. Các biến accessToken/refreshToken chỉ là giá trị rỗng ban đầu; không lưu token thật vào Git."
+    "description": "Collection cho endpoint hiện có trong mã nguồn. Gateway chạy tại localhost:8080 và chuyển tiếp Auth (/api/auth/**, /api/user/**) tới Auth Service, Station (/api/stations/**) tới Transport Service. Transport Service chạy trực tiếp tại localhost:8081. Gateway còn cấu hình /api/trips/**, /api/admin/**, /api/driver/** và route Booking (/api/bookings/**, /api/tickets/**, /api/trips/{code}/seats/**), nhưng hiện không có controller tương ứng trong repo nên chưa tạo request giả. Các biến accessToken/refreshToken chỉ là giá trị rỗng ban đầu; không lưu token thật vào Git.\nRoute and RouteStop CRUD are available directly and through Gateway. See transport-service/README.md for required fields and errors. Create parent records before stops; delete stops before their parents."
   },
   "item": [
     {
@@ -406,12 +406,362 @@
               "response": []
             }
           ]
+        },
+        {
+          "name": "Routes",
+          "description": "CRUD matching Station. Create defaults to INACTIVE. PUT replaces all fields and requires status. Duplicate code/version or deleting a route with stops returns 409; invalid payload 400; missing ID 404.",
+          "item": [
+            {
+              "name": "Create route",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gatewayBaseUrl}}/api/routes",
+                "description": "Required: code, positive versionNo, name, nonnegative integer basePrice (15 digits), effectiveFromAt. Optional effectiveToAt must be after effectiveFromAt. Captures routeId; returns INACTIVE and Location.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"{{routeCode}}\",\n  \"versionNo\": 1,\n  \"name\": \"Ho Chi Minh - Da Lat\",\n  \"basePrice\": 250000,\n  \"effectiveFromAt\": \"2026-10-21T08:00:00\",\n  \"effectiveToAt\": null\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                      "pm.test('Successful response envelope', () => {",
+                      "  const body = pm.response.json();",
+                      "  pm.expect(body.success).to.eql(true);",
+                      "  pm.expect(body).to.have.property('data');",
+                      "});",
+                      "if (pm.response.code === 201) {",
+                      "  pm.collectionVariables.set('routeId', String(pm.response.json().data.id));",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List routes",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{gatewayBaseUrl}}/api/routes",
+                "description": "Returns an unpaginated array."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Successful response envelope', () => {",
+                      "  const body = pm.response.json();",
+                      "  pm.expect(body.success).to.eql(true);",
+                      "  pm.expect(body).to.have.property('data');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get route",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{gatewayBaseUrl}}/api/routes/{{routeId}}",
+                "description": "Missing ID returns 404."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Successful response envelope', () => {",
+                      "  const body = pm.response.json();",
+                      "  pm.expect(body.success).to.eql(true);",
+                      "  pm.expect(body).to.have.property('data');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Update route",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gatewayBaseUrl}}/api/routes/{{routeId}}",
+                "description": "All creation fields plus status ACTIVE or INACTIVE. Null effectiveToAt clears its previous value.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"{{routeCode}}\",\n  \"versionNo\": 1,\n  \"name\": \"Ho Chi Minh - Da Lat\",\n  \"basePrice\": 250000,\n  \"effectiveFromAt\": \"2026-10-21T08:00:00\",\n  \"effectiveToAt\": null,\n  \"status\": \"ACTIVE\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Successful response envelope', () => {",
+                      "  const body = pm.response.json();",
+                      "  pm.expect(body.success).to.eql(true);",
+                      "  pm.expect(body).to.have.property('data');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Delete route",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{gatewayBaseUrl}}/api/routes/{{routeId}}",
+                "description": "Delete route stops first. Returns 409 while stops reference this route. Missing ID returns 404."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('HTTP 204', () => pm.response.to.have.status(204));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Route stops",
+          "description": "Create a route and station first. POST and PUT require every field, including booleans. Parent IDs must exist (404). Duplicate routeId/stopOrder returns 409. Distance and offset are cumulative; this CRUD does not enforce monotonicity or renumber stops.",
+          "item": [
+            {
+              "name": "Create route stop",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gatewayBaseUrl}}/api/route-stops",
+                "description": "Positive existing routeId/stationId; nonnegative stopOrder, distanceKm (8 integer and 2 fractional digits), offsetMinutes; required allowPickup/allowDropOff. Captures routeStopId. Returns Location and scalar IDs.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"routeId\": {{routeId}},\n  \"stationId\": {{stationId}},\n  \"stopOrder\": 0,\n  \"distanceKm\": 0,\n  \"offsetMinutes\": 0,\n  \"allowPickup\": true,\n  \"allowDropOff\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                      "pm.test('Successful response envelope', () => {",
+                      "  const body = pm.response.json();",
+                      "  pm.expect(body.success).to.eql(true);",
+                      "  pm.expect(body).to.have.property('data');",
+                      "});",
+                      "if (pm.response.code === 201) {",
+                      "  pm.collectionVariables.set('routeStopId', String(pm.response.json().data.id));",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List route stops",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{gatewayBaseUrl}}/api/route-stops",
+                "description": "Sorted by routeId then stopOrder, without pagination."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Successful response envelope', () => {",
+                      "  const body = pm.response.json();",
+                      "  pm.expect(body.success).to.eql(true);",
+                      "  pm.expect(body).to.have.property('data');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List stops of one route",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{gatewayBaseUrl}}/api/route-stops?routeId={{routeId}}",
+                "description": "Sorted by stopOrder. Empty array for an existing route with no stops; 404 for a missing route."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Successful response envelope', () => {",
+                      "  const body = pm.response.json();",
+                      "  pm.expect(body.success).to.eql(true);",
+                      "  pm.expect(body).to.have.property('data');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get route stop",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{gatewayBaseUrl}}/api/route-stops/{{routeStopId}}",
+                "description": "Missing ID returns 404."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Successful response envelope', () => {",
+                      "  const body = pm.response.json();",
+                      "  pm.expect(body.success).to.eql(true);",
+                      "  pm.expect(body).to.have.property('data');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Update route stop",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gatewayBaseUrl}}/api/route-stops/{{routeStopId}}",
+                "description": "All fields required. May change routeId or stationId. The same stop can retain its own order.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"routeId\": {{routeId}},\n  \"stationId\": {{stationId}},\n  \"stopOrder\": 0,\n  \"distanceKm\": 0,\n  \"offsetMinutes\": 0,\n  \"allowPickup\": true,\n  \"allowDropOff\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Successful response envelope', () => {",
+                      "  const body = pm.response.json();",
+                      "  pm.expect(body.success).to.eql(true);",
+                      "  pm.expect(body).to.have.property('data');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Delete route stop",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{gatewayBaseUrl}}/api/route-stops/{{routeStopId}}",
+                "description": "Preserves the route and station. Delete stops before deleting a referenced route or station."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('HTTP 204', () => pm.response.to.have.status(204));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
         }
       ]
     },
     {
       "name": "Transport Service trực tiếp (localhost:8081)",
-      "description": "Cùng 5 endpoint Station gọi thẳng Transport Service, dùng khi kiểm tra service riêng.",
+      "description": "Station, Route and RouteStop endpoints called directly on Transport Service.",
       "item": [
         {
           "name": "Tạo trạm",
@@ -506,6 +856,356 @@
             "description": "Trả 204 không có body; id không tồn tại trả 404."
           },
           "response": []
+        },
+        {
+          "name": "Routes",
+          "description": "CRUD matching Station. Create defaults to INACTIVE. PUT replaces all fields and requires status. Duplicate code/version or deleting a route with stops returns 409; invalid payload 400; missing ID 404.",
+          "item": [
+            {
+              "name": "Create route",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{tripBaseUrl}}/api/routes",
+                "description": "Required: code, positive versionNo, name, nonnegative integer basePrice (15 digits), effectiveFromAt. Optional effectiveToAt must be after effectiveFromAt. Captures routeId; returns INACTIVE and Location.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"{{routeCode}}\",\n  \"versionNo\": 1,\n  \"name\": \"Ho Chi Minh - Da Lat\",\n  \"basePrice\": 250000,\n  \"effectiveFromAt\": \"2026-10-21T08:00:00\",\n  \"effectiveToAt\": null\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                      "pm.test('Successful response envelope', () => {",
+                      "  const body = pm.response.json();",
+                      "  pm.expect(body.success).to.eql(true);",
+                      "  pm.expect(body).to.have.property('data');",
+                      "});",
+                      "if (pm.response.code === 201) {",
+                      "  pm.collectionVariables.set('routeId', String(pm.response.json().data.id));",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List routes",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{tripBaseUrl}}/api/routes",
+                "description": "Returns an unpaginated array."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Successful response envelope', () => {",
+                      "  const body = pm.response.json();",
+                      "  pm.expect(body.success).to.eql(true);",
+                      "  pm.expect(body).to.have.property('data');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get route",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{tripBaseUrl}}/api/routes/{{routeId}}",
+                "description": "Missing ID returns 404."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Successful response envelope', () => {",
+                      "  const body = pm.response.json();",
+                      "  pm.expect(body.success).to.eql(true);",
+                      "  pm.expect(body).to.have.property('data');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Update route",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{tripBaseUrl}}/api/routes/{{routeId}}",
+                "description": "All creation fields plus status ACTIVE or INACTIVE. Null effectiveToAt clears its previous value.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"{{routeCode}}\",\n  \"versionNo\": 1,\n  \"name\": \"Ho Chi Minh - Da Lat\",\n  \"basePrice\": 250000,\n  \"effectiveFromAt\": \"2026-10-21T08:00:00\",\n  \"effectiveToAt\": null,\n  \"status\": \"ACTIVE\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Successful response envelope', () => {",
+                      "  const body = pm.response.json();",
+                      "  pm.expect(body.success).to.eql(true);",
+                      "  pm.expect(body).to.have.property('data');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Delete route",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{tripBaseUrl}}/api/routes/{{routeId}}",
+                "description": "Delete route stops first. Returns 409 while stops reference this route. Missing ID returns 404."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('HTTP 204', () => pm.response.to.have.status(204));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Route stops",
+          "description": "Create a route and station first. POST and PUT require every field, including booleans. Parent IDs must exist (404). Duplicate routeId/stopOrder returns 409. Distance and offset are cumulative; this CRUD does not enforce monotonicity or renumber stops.",
+          "item": [
+            {
+              "name": "Create route stop",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{tripBaseUrl}}/api/route-stops",
+                "description": "Positive existing routeId/stationId; nonnegative stopOrder, distanceKm (8 integer and 2 fractional digits), offsetMinutes; required allowPickup/allowDropOff. Captures routeStopId. Returns Location and scalar IDs.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"routeId\": {{routeId}},\n  \"stationId\": {{stationId}},\n  \"stopOrder\": 0,\n  \"distanceKm\": 0,\n  \"offsetMinutes\": 0,\n  \"allowPickup\": true,\n  \"allowDropOff\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                      "pm.test('Successful response envelope', () => {",
+                      "  const body = pm.response.json();",
+                      "  pm.expect(body.success).to.eql(true);",
+                      "  pm.expect(body).to.have.property('data');",
+                      "});",
+                      "if (pm.response.code === 201) {",
+                      "  pm.collectionVariables.set('routeStopId', String(pm.response.json().data.id));",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List route stops",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{tripBaseUrl}}/api/route-stops",
+                "description": "Sorted by routeId then stopOrder, without pagination."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Successful response envelope', () => {",
+                      "  const body = pm.response.json();",
+                      "  pm.expect(body.success).to.eql(true);",
+                      "  pm.expect(body).to.have.property('data');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List stops of one route",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{tripBaseUrl}}/api/route-stops?routeId={{routeId}}",
+                "description": "Sorted by stopOrder. Empty array for an existing route with no stops; 404 for a missing route."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Successful response envelope', () => {",
+                      "  const body = pm.response.json();",
+                      "  pm.expect(body.success).to.eql(true);",
+                      "  pm.expect(body).to.have.property('data');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get route stop",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{tripBaseUrl}}/api/route-stops/{{routeStopId}}",
+                "description": "Missing ID returns 404."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Successful response envelope', () => {",
+                      "  const body = pm.response.json();",
+                      "  pm.expect(body.success).to.eql(true);",
+                      "  pm.expect(body).to.have.property('data');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Update route stop",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{tripBaseUrl}}/api/route-stops/{{routeStopId}}",
+                "description": "All fields required. May change routeId or stationId. The same stop can retain its own order.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"routeId\": {{routeId}},\n  \"stationId\": {{stationId}},\n  \"stopOrder\": 0,\n  \"distanceKm\": 0,\n  \"offsetMinutes\": 0,\n  \"allowPickup\": true,\n  \"allowDropOff\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Successful response envelope', () => {",
+                      "  const body = pm.response.json();",
+                      "  pm.expect(body.success).to.eql(true);",
+                      "  pm.expect(body).to.have.property('data');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Delete route stop",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{tripBaseUrl}}/api/route-stops/{{routeStopId}}",
+                "description": "Preserves the route and station. Delete stops before deleting a referenced route or station."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('HTTP 204', () => pm.response.to.have.status(204));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
         }
       ]
     }
@@ -550,6 +1250,18 @@
     {
       "key": "googleIdToken",
       "value": ""
+    },
+    {
+      "key": "routeId",
+      "value": "1"
+    },
+    {
+      "key": "routeStopId",
+      "value": "1"
+    },
+    {
+      "key": "routeCode",
+      "value": "HCM-DL"
     }
   ]
 }

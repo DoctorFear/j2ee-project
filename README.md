@@ -11,7 +11,7 @@ Tài liệu này giới thiệu kiến trúc, phân công công việc, tổ ch�
 | Frontend | React, TypeScript, Vite, React Router | Giao diện cho khách hàng, quản trị/điều phối và tài xế | 5173 |
 | API Gateway | Spring Cloud Gateway | Cổng API chung, định tuyến, CORS, xác minh JWT | 8080 |
 | Auth Service | .NET (ASP.NET Core Web API), Entity Framework Core, SQL Server | Tài khoản, vai trò, đăng nhập, đăng ký và token | 5001 |
-| Transport Service | Spring Boot, JPA, PostgreSQL (hiện có Station API) | Tuyến, trạm, chuyến, xe, tài xế, giá vé và điều phối | 8081 |
+| Transport Service | Spring Boot, JPA, PostgreSQL (hiện có Station, Route và RouteStop API) | Tuyến, trạm, chuyến, xe, tài xế, giá vé và điều phối | 8081 |
 | Booking Service | Spring Boot, Spring Security, JPA, Flyway | Đơn đặt, giữ ghế, thanh toán, vé điện tử và soát vé | 8082 |
 | Database | SQL Server (Auth), PostgreSQL (Trip), MySQL (Booking) | Phân tách database theo từng microservice độc lập | 1433 / 5432 / 3306 |
 
@@ -313,7 +313,7 @@ dotnet run --project auth-service/src/AuthService.Api --urls "http://localhost:5
 mvn -f /pom.xml spring-boot:run
 ```
 
-Station API hiện chạy trên `transport-service` với PostgreSQL `trip_db`; schema được Hibernate cập nhật trong môi trường phát triển. Các API khác và xác thực nội bộ cần được triển khai trước khi chạy toàn bộ luồng Trip.
+Station, Route và RouteStop API hiện chạy trên `transport-service` với PostgreSQL `trip_db`; schema được Hibernate cập nhật trong môi trường phát triển. Xem [hợp đồng CRUD Route và RouteStop](transport-service/README.md) để biết endpoint, body và mã lỗi. Các API khác và xác thực nội bộ cần được triển khai trước khi chạy toàn bộ luồng Trip.
 
 ### Booking Service
 

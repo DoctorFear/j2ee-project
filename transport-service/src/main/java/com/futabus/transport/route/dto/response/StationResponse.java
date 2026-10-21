@@ -1,7 +1,7 @@
-package com.futabus.transport.dto.response;
+package com.futabus.transport.route.dto.response;
 
-import com.futabus.transport.enums.StationStatus;
-import com.futabus.transport.enums.StationType;
+import com.futabus.transport.route.enums.StationStatus;
+import com.futabus.transport.route.enums.StationType;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 

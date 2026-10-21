@@ -1,6 +1,6 @@
 package com.futabus.transport;
 
-import com.futabus.transport.repository.StationRepository;
+import com.futabus.transport.route.repository.StationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

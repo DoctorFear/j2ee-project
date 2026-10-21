@@ -1,6 +1,6 @@
-package com.futabus.transport.repository;
+package com.futabus.transport.route.repository;
 
-import com.futabus.transport.entity.Station;
+import com.futabus.transport.route.entity.Station;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,4 +1,4 @@
-package com.futabus.transport.enums;
+package com.futabus.transport.route.enums;
 
 public enum StationStatus {
     ACTIVE,

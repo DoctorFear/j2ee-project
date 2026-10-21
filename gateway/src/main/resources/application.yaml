@@ -49,7 +49,7 @@ spring:
             - id: transport-service-route
               uri: http://localhost:8081
               predicates:
-                - Path=/api/trips/**, /api/stations/**, /api/admin/**, /api/driver/**
+                - Path=/api/trips/**, /api/stations/**, /api/routes/**, /api/route-stops/**, /api/admin/**, /api/driver/**
 
 # Chặn truy cập trực tiếp các API nội bộ /internal/** từ Gateway
 futa:

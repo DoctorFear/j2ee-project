@@ -1,6 +1,7 @@
 package com.futabus.transport.exception;
 
-import com.futabus.transport.dto.response.ApiResponse;
+import com.futabus.transport.route.dto.response.ApiResponse;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -23,7 +24,7 @@ public class ApiExceptionHandler {
         String message = exception.getBindingResult().getFieldErrors().stream()
                 .findFirst()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                .orElse("Invalid station request");
+                .orElse("Invalid request");
 
         return ResponseEntity
                 .badRequest()
@@ -35,6 +36,13 @@ public class ApiExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(error("Invalid JSON request"));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrity(DataIntegrityViolationException exception) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(error("Request conflicts with existing data or references"));
     }
 
     private ApiResponse<Void> error(String message) {
