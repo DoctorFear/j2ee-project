@@ -1,4 +1,4 @@
-package futabus.gateway.configuration.properties;
+package com.futabus.gateway.configuration.properties;
 
 import lombok.AccessLevel;
 import lombok.Getter;

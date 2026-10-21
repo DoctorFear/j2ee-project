@@ -33,7 +33,7 @@ spring:
               predicates:
                 - Path=/api/auth/**, /api/user/**
 
-            # 2. BOOKING SERVICE: Ghế chuyến đi (Phải đặt trước route tổng quát của Trip Service)
+            # 2. BOOKING SERVICE: Ghế chuyến đi (Phải đặt trước route tổng quát của Transport Service)
             - id: booking-trip-seats-route
               uri: http://localhost:8082
               predicates:
@@ -45,8 +45,8 @@ spring:
               predicates:
                 - Path=/api/bookings/**, /api/tickets/**
 
-            # 4. TRIP SERVICE: Tuyến, trạm, lịch chạy, điều phối, quản trị
-            - id: trip-service-route
+            # 4. TRANSPORT SERVICE: Tuyến, trạm, lịch chạy, điều phối, quản trị
+            - id: transport-service-route
               uri: http://localhost:8081
               predicates:
                 - Path=/api/trips/**, /api/stations/**, /api/admin/**, /api/driver/**

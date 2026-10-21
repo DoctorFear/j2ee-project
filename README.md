@@ -11,7 +11,7 @@ Tài liệu này giới thiệu kiến trúc, phân công công việc, tổ ch�
 | Frontend | React, TypeScript, Vite, React Router | Giao diện cho khách hàng, quản trị/điều phối và tài xế | 5173 |
 | API Gateway | Spring Cloud Gateway | Cổng API chung, định tuyến, CORS, xác minh JWT | 8080 |
 | Auth Service | .NET (ASP.NET Core Web API), Entity Framework Core, SQL Server | Tài khoản, vai trò, đăng nhập, đăng ký và token | 5001 |
-| Trip Service | Spring Boot, JPA, PostgreSQL (hiện có Station API) | Tuyến, trạm, chuyến, xe, tài xế, giá vé và điều phối | 8081 |
+| Transport Service | Spring Boot, JPA, PostgreSQL (hiện có Station API) | Tuyến, trạm, chuyến, xe, tài xế, giá vé và điều phối | 8081 |
 | Booking Service | Spring Boot, Spring Security, JPA, Flyway | Đơn đặt, giữ ghế, thanh toán, vé điện tử và soát vé | 8082 |
 | Database | SQL Server (Auth), PostgreSQL (Trip), MySQL (Booking) | Phân tách database theo từng microservice độc lập | 1433 / 5432 / 3306 |
 
@@ -154,7 +154,7 @@ j2ee-project/
 │       ├── Dtos/               Dữ liệu request/response
 │       ├── Security/           Kiểm tra quyền và khóa nội bộ
 │       └── Keys/               Khóa RSA của Auth
-├── trip-service/
+├── /
 │   └── src/main/
 │       ├── java/futabus/trip_service/
 │       │   ├── controller/     Station API và xử lý lỗi HTTP
@@ -256,7 +256,7 @@ psql --version
 | --- | --- | --- |
 | Frontend | `frontend/.env.development` | `VITE_API_BASE_URL=http://localhost:8080` |
 | Auth | `auth-service/src/AuthService.Api/appsettings.json` | Kết nối `FutaBus_AuthDb` (SQL Server), JWT Secret, SMTP Gmail, URL Frontend |
-| Trip | `trip-service/src/main/resources/application.yaml` (local, không commit) | Cổng 8081 và kết nối PostgreSQL `trip_db`; cấu hình mẫu tại `application.example.yaml` |
+| Trip | `transport-service` (local, không commit) | Cổng 8081 và kết nối PostgreSQL `trip_db`; cấu hình mẫu tại `application.example.yaml` |
 | Booking | `booking-service/src/main/resources/application-local.yml` | Cổng 8082, kết nối `booking_db`, JWKS/issuer/audience, URL Trip, khóa nội bộ, MoMo và SMTP |
 | Gateway | `gateway-1` | Cổng 8080, route service, JWKS/issuer/audience và origin CORS `http://localhost:5173` |
 
@@ -268,7 +268,7 @@ Tạo cấu hình frontend từ thư mục gốc:
 Copy-Item frontend/.env.example frontend/.env.development
 ```
 
-Tạo database `trip_db` trong PostgreSQL cho Trip Service:
+Tạo database `trip_db` trong PostgreSQL cho Transport Service:
 
 ```sql
 CREATE DATABASE trip_db;
@@ -307,13 +307,13 @@ dotnet run --project auth-service/src/AuthService.Api --urls "http://localhost:5
 ```
 *(Chi tiết cấu trúc, danh sách DTOs, endpoint Google Auth, câu lệnh CLI và 15 tài khoản seed sẵn cho 3 vai trò xem tại: `auth-service/readmeAuth.MD`).*
 
-### Trip Service
+### Transport Service
 
 ```powershell
-mvn -f trip-service/pom.xml spring-boot:run
+mvn -f /pom.xml spring-boot:run
 ```
 
-Station API hiện chạy trên `trip-service` với PostgreSQL `trip_db`; schema được Hibernate cập nhật trong môi trường phát triển. Các API khác và xác thực nội bộ cần được triển khai trước khi chạy toàn bộ luồng Trip.
+Station API hiện chạy trên `transport-service` với PostgreSQL `trip_db`; schema được Hibernate cập nhật trong môi trường phát triển. Các API khác và xác thực nội bộ cần được triển khai trước khi chạy toàn bộ luồng Trip.
 
 ### Booking Service
 
@@ -380,7 +380,7 @@ Sau khi các project backend đáp ứng điều kiện ở mục 6:
 
 ```powershell
 dotnet build auth-service/src/AuthService.Api
-mvn -f trip-service/pom.xml verify
+mvn -f /pom.xml verify
 mvn -f booking-service/pom.xml verify
 mvn -f gateway/pom.xml verify
 ```

@@ -1,6 +1,6 @@
-package futabus.gateway.configuration;
+package com.futabus.gateway.configuration;
 
-import futabus.gateway.configuration.properties.FutaGatewayProperties;
+import com.futabus.gateway.configuration.properties.FutaGatewayProperties;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

@@ -1,8 +1,8 @@
 {
   "info": {
-    "name": "FUTA - Gateway & Trip Service",
+    "name": "FUTA - Gateway & Transport Service",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Collection cho endpoint hiện có trong mã nguồn. Gateway chạy tại localhost:8080 và chuyển tiếp Auth (/api/auth/**, /api/user/**) tới Auth Service, Station (/api/stations/**) tới Trip Service. Trip Service chạy trực tiếp tại localhost:8081. Gateway còn cấu hình /api/trips/**, /api/admin/**, /api/driver/** và route Booking (/api/bookings/**, /api/tickets/**, /api/trips/{code}/seats/**), nhưng hiện không có controller tương ứng trong repo nên chưa tạo request giả. Các biến accessToken/refreshToken chỉ là giá trị rỗng ban đầu; không lưu token thật vào Git."
+    "description": "Collection cho endpoint hiện có trong mã nguồn. Gateway chạy tại localhost:8080 và chuyển tiếp Auth (/api/auth/**, /api/user/**) tới Auth Service, Station (/api/stations/**) tới Transport Service. Transport Service chạy trực tiếp tại localhost:8081. Gateway còn cấu hình /api/trips/**, /api/admin/**, /api/driver/** và route Booking (/api/bookings/**, /api/tickets/**, /api/trips/{code}/seats/**), nhưng hiện không có controller tương ứng trong repo nên chưa tạo request giả. Các biến accessToken/refreshToken chỉ là giá trị rỗng ban đầu; không lưu token thật vào Git."
   },
   "item": [
     {
@@ -308,8 +308,8 @@
           ]
         },
         {
-          "name": "Gateway / Trip Service - Stations",
-          "description": "Các endpoint Station của Trip Service gọi qua Gateway.",
+          "name": "Gateway / Transport Service - Stations",
+          "description": "Các endpoint Station của Transport Service gọi qua Gateway.",
           "item": [
             {
               "name": "Tạo trạm",
@@ -410,8 +410,8 @@
       ]
     },
     {
-      "name": "Trip Service trực tiếp (localhost:8081)",
-      "description": "Cùng 5 endpoint Station gọi thẳng Trip Service, dùng khi kiểm tra service riêng.",
+      "name": "Transport Service trực tiếp (localhost:8081)",
+      "description": "Cùng 5 endpoint Station gọi thẳng Transport Service, dùng khi kiểm tra service riêng.",
       "item": [
         {
           "name": "Tạo trạm",
