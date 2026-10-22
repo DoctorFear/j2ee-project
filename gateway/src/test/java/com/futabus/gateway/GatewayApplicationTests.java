@@ -24,13 +24,15 @@ class GatewayApplicationTests {
 	}
 
 	@Test
-	void routeAndRouteStopRequestsMatchTransportService() {
+	void transportRequestsMatchTransportService() {
 		var route = routeLocator.getRoutes()
 				.filter(candidate -> candidate.getId().equals("transport-service-route"))
 				.blockFirst(Duration.ofSeconds(5));
 		assertNotNull(route);
 		assertEquals("http://localhost:8081", route.getUri().toString());
-		for (String path : List.of("/api/routes", "/api/routes/1", "/api/route-stops", "/api/route-stops/1")) {
+		for (String path : List.of("/api/routes", "/api/routes/1", "/api/route-stops", "/api/route-stops/1",
+				"/api/vehicles", "/api/vehicles/1", "/api/drivers", "/api/drivers/1",
+				"/api/trips", "/api/trips/1", "/api/trip-drivers", "/api/trip-drivers/1")) {
 			var exchange = MockServerWebExchange.from(MockServerHttpRequest.get(path));
 			assertEquals(Boolean.TRUE, Mono.from(route.getPredicate().apply(exchange))
 					.block(Duration.ofSeconds(5)), path);
