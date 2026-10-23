@@ -62,7 +62,7 @@ Công nghệ và kiến trúc tuân theo tài liệu `cau_truc_thu_muc_FUTA.docx
   - Tự động nhận diện tài khoản Google chưa có mật khẩu (`hasPassword: false`) để hiển thị form **"Tạo mật khẩu"** (2 trường: mật khẩu mới và xác nhận).
   - Đối với tài khoản đã có mật khẩu (`hasPassword: true`), hiển thị form **"Đổi mật khẩu"** chuẩn (3 trường: mật khẩu hiện tại, mật khẩu mới và xác nhận).
 - Tự động seed sẵn 15 tài khoản thử nghiệm khi khởi động: 5 Admin (`Admin@123`), 5 Member (`Member@123`), 5 Driver (`Driver@123`).
-- Chi tiết kỹ thuật xem tại: `auth-service/readmeAuth.MD`.
+- Chi tiết kỹ thuật xem tại: `backend/auth-service`.
 
 ### Khách hàng
 
@@ -255,9 +255,9 @@ psql --version
 | Thành phần | Tệp cấu hình | Giá trị cần khai báo |
 | --- | --- | --- |
 | Frontend | `frontend/.env.development` | `VITE_API_BASE_URL=http://localhost:8080` |
-| Auth | `auth-service/src/AuthService.Api/appsettings.json` | Kết nối `FutaBus_AuthDb` (SQL Server), JWT Secret, SMTP Gmail, URL Frontend |
+| Auth | `backend/auth-service` | Kết nối `FutaBus_AuthDb` (SQL Server), JWT Secret, SMTP Gmail, URL Frontend |
 | Trip | `transport-service` (local, không commit) | Cổng 8081 và kết nối PostgreSQL `trip_db`; cấu hình mẫu tại `application.example.yaml` |
-| Booking | `booking-service/src/main/resources/application-local.yml` | Cổng 8082, kết nối `booking_db`, JWKS/issuer/audience, URL Trip, khóa nội bộ, MoMo và SMTP |
+| Booking | `backend/booking-service` | Cổng 8082, kết nối `booking_db`, JWKS/issuer/audience, URL Trip, khóa nội bộ, MoMo và SMTP |
 | Gateway | `gateway-1` | Cổng 8080, route service, JWKS/issuer/audience và origin CORS `http://localhost:5173` |
 
 Tên các trường cấu hình backend phải khớp với lớp cấu hình của service. Không commit mật khẩu, token, secret MoMo, khóa RSA riêng hoặc tệp cấu hình local. Các tệp example chỉ chứa tên trường và giá trị không nhạy cảm.
@@ -281,7 +281,7 @@ CREATE DATABASE IF NOT EXISTS booking_db CHARACTER SET utf8mb4 COLLATE utf8mb4_u
 ```
 *(Lưu ý: Database `FutaBus_AuthDb` của Auth Service trên SQL Server sẽ tự động được tạo khi chạy lệnh `dotnet ef database update` hoặc chạy `AuthService.sln`).*
 
-Cấp quyền theo database cho tài khoản service tương ứng và khai báo kết nối trong cấu hình local. SQL khởi tạo/seed dùng chung đặt tại `infra/mysql/`; thay đổi schema của từng service quản lý qua migration của service đó.
+Cấp quyền theo database cho tài khoản service tương ứng và khai báo kết nối trong cấu hình local. SQL khởi tạo/seed dùng chung đặt tại `backend/infra`; thay đổi schema của từng service quản lý qua migration của service đó.
 
 Tạo cặp khóa RSA từ thư mục gốc:
 
@@ -299,13 +299,13 @@ Thứ tự: **Database (SQL Server, PostgreSQL, MySQL) → Auth → Trip và Boo
 ### Auth Service (.NET - Cổng 5001)
 
 Có 2 cách chạy:
-- **Cách 1 (Bằng Visual Studio - Khuyên dùng)**: Mở tệp `auth-service/AuthService.sln` bằng Visual Studio và nhấn nút **Play (http)** hoặc `Ctrl + F5`. Trình duyệt sẽ tự động mở Swagger UI tại `http://localhost:5001/swagger`.
+- **Cách 1 (Bằng Visual Studio - Khuyên dùng)**: Mở tệp `backend/auth-service` bằng Visual Studio và nhấn nút **Play (http)** hoặc `Ctrl + F5`. Trình duyệt sẽ tự động mở Swagger UI tại `http://localhost:5001/swagger`.
 - **Cách 2 (Bằng Terminal)**:
 ```powershell
 dotnet ef database update --project auth-service/src/AuthService.Api
 dotnet run --project auth-service/src/AuthService.Api --urls "http://localhost:5001"
 ```
-*(Chi tiết cấu trúc, danh sách DTOs, endpoint Google Auth, câu lệnh CLI và 15 tài khoản seed sẵn cho 3 vai trò xem tại: `auth-service/readmeAuth.MD`).*
+*(Chi tiết cấu trúc, danh sách DTOs, endpoint Google Auth, câu lệnh CLI và 15 tài khoản seed sẵn cho 3 vai trò xem tại: `backend/auth-service`).*
 
 ### Transport Service
 
@@ -313,7 +313,7 @@ dotnet run --project auth-service/src/AuthService.Api --urls "http://localhost:5
 mvn -f /pom.xml spring-boot:run
 ```
 
-Station, Route và RouteStop API hiện chạy trên `transport-service` với PostgreSQL `trip_db`; schema được Hibernate cập nhật trong môi trường phát triển. Xem [hợp đồng CRUD Route và RouteStop](transport-service/README.md) để biết endpoint, body và mã lỗi. Các API khác và xác thực nội bộ cần được triển khai trước khi chạy toàn bộ luồng Trip.
+Station, Route và RouteStop API hiện chạy trên `transport-service` với PostgreSQL `trip_db`; schema được Hibernate cập nhật trong môi trường phát triển. Xem [hợp đồng CRUD Route và RouteStop](backend/transport-service/README.md) để biết endpoint, body và mã lỗi. Các API khác và xác thực nội bộ cần được triển khai trước khi chạy toàn bộ luồng Trip.
 
 ### Booking Service
 

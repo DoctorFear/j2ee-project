@@ -18,7 +18,7 @@ Tài liệu này ghi lại ngắn gọn quy trình xây dựng, ý nghĩa các t
 
 ## 2. Các Lệnh CLI Quan Trọng (Cheat Sheet)
 
-> **Lưu ý**: Mở Terminal tại thư mục `auth-service/` hoặc `auth-service/src/AuthService.Api/` trước khi gõ lệnh.
+> **Lưu ý**: Mở Terminal tại thư mục `backend/auth-service` hoặc `backend/auth-service` trước khi gõ lệnh.
 
 ### a. Khôi phục thư viện & Build dự án
 ```powershell
@@ -66,7 +66,7 @@ auth-service/
         ├── Data/                     # Tầng kết nối Cơ sở dữ liệu
         │   ├── AuthDbContext.cs      # Khai báo DbSet<User>, cấu hình Index duy nhất (Email, Username, GoogleId)
         │   ├── Migrations/           # Chứa các file Migration sinh tự động từ EF Core (AddGoogleAuth...)
-        │   └── Seed/                 
+        │   └── Seed/
         │       └── DatabaseSeeder.cs # Tự động seed 15 tài khoản mặc định (5 Admin, 5 Member, 5 Driver)
         │
         ├── Dtos/                     # Đối tượng truyền nhận dữ liệu (Data Transfer Objects)

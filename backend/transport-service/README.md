@@ -76,7 +76,7 @@ empty array. Without the filter, results are ordered by `routeId`, then
 `stopOrder`. Missing stop IDs return **404**. Deleting a stop preserves its route
 and station. A station referenced by a stop cannot be deleted (**409**).
 
-The existing Postman collection in `../postman/` includes requests for both
+The existing Postman collection in `../postman` includes requests for both
 resources, directly and through Gateway. Create a station and route before
 creating a stop; delete stops before deleting their parent records.
 
