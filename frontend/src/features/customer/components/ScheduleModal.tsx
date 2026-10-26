@@ -44,13 +44,13 @@ export default function ScheduleModal({
               </div>
               <div className="step-dot" />
               <div className="step-station-title">
-                {station(stop.stationId).name}
+                {station(stop.stationId, trip).name}
                 {!stop.active && (
                   <span className="step-badge-inactive">Ngưng hoạt động</span>
                 )}
               </div>
               <div className="step-address">
-                {station(stop.stationId).address}
+                {station(stop.stationId, trip).address}
               </div>
             </div>
           ))}

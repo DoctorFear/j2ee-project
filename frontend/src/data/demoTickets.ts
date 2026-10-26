@@ -11,6 +11,7 @@ export const demoContact = {
 // Tạo danh sách vé sắp khởi hành và lịch sử
 export const tickets: Ticket[] = [0, -2].map((day, i) => ({
   code: `FUTA-DEMO-${i + 1}`,
+  bookingId: `FUTA-DEMO-BOOKING-${i + 1}`,
   tripCode: trips.find(
     (t) => t.departureAt.startsWith(localDate(day)) && t.code.endsWith("D3"),
   )!.code,

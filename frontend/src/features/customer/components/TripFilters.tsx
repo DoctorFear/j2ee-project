@@ -1,7 +1,7 @@
 // Bộ lọc chuyến xe dạng nút lựa chọn
 import { Trash2 } from "lucide-react";
 import type { SearchCriteria } from "../types/search";
-import { vehicleTypes } from "../../../data/customer";
+import type { VehicleType } from "../../../types/vehicle";
 type Props = {
   criteria: SearchCriteria;
   update: <K extends keyof SearchCriteria>(
@@ -10,6 +10,7 @@ type Props = {
   ) => void;
   onClear: () => void;
   counts: number[];
+  vehicleTypes: VehicleType[];
 };
 // Áp dụng bộ lọc giờ, xe, vị trí ghế và khoảng giá
 export default function TripFilters({
@@ -17,6 +18,7 @@ export default function TripFilters({
   update,
   onClear,
   counts,
+  vehicleTypes,
 }: Props) {
   return (
     <aside className="filter-card">
@@ -73,7 +75,7 @@ export default function TripFilters({
                 )
               }
             >
-              {v.id === "BUS-34" ? "Giường nằm" : "Limousine"}
+              {v.name}
             </button>
           ))}
         </div>

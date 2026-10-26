@@ -7,7 +7,7 @@ import {
   LocateFixed,
   MapPin,
 } from "lucide-react";
-import { stations } from "../data/customer";
+import type { Station } from "../types/station";
 import { normalize } from "../utils/customer";
 
 // Mở danh sách bến xe và giữ lựa chọn theo mã trạm
@@ -16,11 +16,13 @@ export default function StationPicker({
   value,
   onChange,
   children,
+  stations,
 }: {
   label: string;
   value: string;
   onChange: (id: string) => void;
   children?: ReactNode;
+  stations: Station[];
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -28,7 +30,9 @@ export default function StationPicker({
   const searchRef = useRef<HTMLInputElement>(null);
   const selected = stations.find((s) => s.id === value);
   const visible = stations.filter((s) =>
-    normalize(`${s.name} ${s.province}`).includes(normalize(query)),
+    normalize(`${s.name} ${s.province} ${s.address}`).includes(
+      normalize(query),
+    ),
   );
   // Đóng danh sách khi bấm ngoài và đặt con trỏ vào ô tìm kiếm
   useEffect(() => {

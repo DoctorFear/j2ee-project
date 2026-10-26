@@ -9,4 +9,6 @@ public interface TripDriverRepository extends JpaRepository<TripDriver, Long> {
     boolean existsByTripIdAndDriverId(Long tripId, Long driverId);
 
     boolean existsByTripId(Long tripId);
+
+    void deleteByTripId(Long tripId);
 }

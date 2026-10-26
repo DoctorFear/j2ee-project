@@ -2,6 +2,7 @@
 import type { Contact } from "./contact";
 export type Ticket = {
   code: string;
+  bookingId: string;
   tripCode: string;
   seatCode: string;
   originId: string;

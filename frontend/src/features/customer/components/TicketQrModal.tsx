@@ -18,7 +18,7 @@ export default function TicketQrModal({
         <span>
           Ghế {ticket.seatCode} · {ticket.passenger.name}
         </span>
-        <small>Vé mẫu, chưa có giá trị lên xe.</small>
+        <small>Xuất trình mã QR này cho tài xế khi lên xe.</small>
       </div>
     </Modal>
   );

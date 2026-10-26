@@ -1,0 +1,49 @@
+# Cấu hình kết nối và nghiệp vụ đặt vé
+server:
+  port: 8082
+spring:
+  profiles:
+    default: local
+  task:
+    scheduling:
+      pool:
+        size: 3
+  application:
+    name: booking-service
+  datasource:
+    url: ${BOOKING_DB_URL:jdbc:mysql://localhost:3306/booking_db?connectionTimeZone=UTC}
+    username: ${BOOKING_DB_USERNAME:root}
+    password: ${BOOKING_DB_PASSWORD:}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate.jdbc.time_zone: UTC
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.connectiontimeout: 10000
+      mail.smtp.timeout: 10000
+      mail.smtp.writetimeout: 10000
+booking:
+  sales-enabled: ${BOOKING_SALES_ENABLED:true}
+  transport-url: ${TRANSPORT_URL:http://localhost:8081}
+  transport-zone: ${TRANSPORT_ZONE:UTC}
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+  jwt-secret: ${AUTH_JWT_SECRET:}
+  jwt-issuer: ${AUTH_JWT_ISSUER:FutaBusAuthApi}
+  jwt-audience: ${AUTH_JWT_AUDIENCE:FutaBusClient}
+  email-from: ${SMTP_USERNAME:}
+  internal-key: ${BOOKING_INTERNAL_KEY:}
+  momo:
+    endpoint: ${MOMO_ENDPOINT:https://test-payment.momo.vn}
+    partner-code: ${MOMO_PARTNER_CODE:}
+    access-key: ${MOMO_ACCESS_KEY:}
+    secret-key: ${MOMO_SECRET_KEY:}
+    ipn-url: ${MOMO_IPN_URL:}

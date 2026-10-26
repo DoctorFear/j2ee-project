@@ -9,6 +9,7 @@ import {
 import StationPicker from "../../../components/StationPicker";
 import { localDate } from "../../../data/customer";
 import type { SearchCriteria } from "../types/search";
+import type { Station } from "../../../types/station";
 type Props = {
   form: SearchCriteria;
   setForm: (form: SearchCriteria) => void;
@@ -18,6 +19,7 @@ type Props = {
   setReturnDate: (value: string) => void;
   onSearch: () => void;
   error: string;
+  stations: Station[];
 };
 // Đổi chiều và chọn ngày tìm kiếm mà không thay đổi bộ lọc
 export default function SearchForm({
@@ -29,6 +31,7 @@ export default function SearchForm({
   setReturnDate,
   onSearch,
   error,
+  stations,
 }: Props) {
   return (
     <div className="search-wrapper">
@@ -53,6 +56,7 @@ export default function SearchForm({
         </div>
         <div className="search-grid">
           <StationPicker
+            stations={stations}
             label="Điểm đi"
             value={form.originId}
             onChange={(originId) => setForm({ ...form, originId })}
@@ -73,6 +77,7 @@ export default function SearchForm({
             </button>
           </StationPicker>
           <StationPicker
+            stations={stations}
             label="Điểm đến"
             value={form.destinationId}
             onChange={(destinationId) => setForm({ ...form, destinationId })}

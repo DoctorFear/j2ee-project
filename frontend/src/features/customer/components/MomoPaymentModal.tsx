@@ -4,6 +4,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Check, CircleCheck, Clock, QrCode, X } from "lucide-react";
 import Modal from "../../../components/Modal";
 import type { Contact } from "../../../types/contact";
+import type { PaymentSession } from "../types/order";
 import { money } from "../../../utils/customer";
 type Props = {
   remaining: number;
@@ -13,7 +14,10 @@ type Props = {
   contact: Contact;
   routeName: string;
   success: boolean;
-  onSuccess: () => void;
+  payment: PaymentSession | null;
+  status: string;
+  error: string;
+  onRetry: () => void;
   onClose: () => void;
 };
 // Hiển thị thông tin thanh toán và kết quả giao dịch
@@ -25,7 +29,10 @@ export default function MomoPaymentModal({
   contact,
   routeName,
   success,
-  onSuccess,
+  payment,
+  status,
+  error,
+  onRetry,
   onClose,
 }: Props) {
   return (
@@ -59,11 +66,14 @@ export default function MomoPaymentModal({
               <Check size={32} />
             </div>
             <h3>Thanh toán thành công!</h3>
-            <p>Kết quả giả lập, chưa phát hành vé thật.</p>
+            <p>
+              Vé đã được phát hành. Vui lòng kiểm tra email hoặc mở danh sách
+              vé.
+            </p>
             <div className="ticket-pass">
-              <div className="ticket-pass-title">VÉ XE ĐIỆN TỬ FUTA — MẪU</div>
+              <div className="ticket-pass-title">VÉ XE ĐIỆN TỬ FUTA</div>
               <div>
-                <b>Mã vé:</b> {code}
+                <b>Mã đơn:</b> {code}
               </div>
               <div>
                 <b>Tuyến:</b> {routeName}
@@ -76,32 +86,44 @@ export default function MomoPaymentModal({
                 <b>Khách hàng:</b> {contact.name}
               </div>
             </div>
-            <Link className="btn-simulate-success finish-payment" to="/">
-              Hoàn tất &amp; Quay lại trang chủ
+            <Link
+              className="btn-simulate-success finish-payment"
+              to="/my-tickets"
+            >
+              Hoàn tất &amp; Xem vé của tôi
             </Link>
           </div>
         ) : (
           <>
             <p className="payment-instructions">
-              Phiên thanh toán minh họa kéo dài <b>10 phút</b>. Mã QR bên dưới
-              chỉ phục vụ xem trước, không chuyển tiền.
+              {status === "PAYMENT_REVIEW" ? (
+                "Thanh toán cần được đối soát. Vui lòng giữ mã đơn và liên hệ hỗ trợ; không thanh toán lại."
+              ) : (
+                <>
+                  Ghế được tạm giữ trong <b>10 phút</b>. Mở MoMo hoặc quét mã QR
+                  để thanh toán.
+                </>
+              )}
             </p>
-            <div className="qr-container">
-              <QRCodeSVG
-                value={`FUTA-PREVIEW:${code}:${total}`}
-                size={180}
-                level="H"
-                className="qr-img"
-              />
-              <div className="qr-momo-center">M</div>
-            </div>
+            {error && <p role="alert">{error}</p>}
+            {payment && status === "HELD" && (
+              <div className="qr-container">
+                <QRCodeSVG
+                  value={payment.payUrl}
+                  size={180}
+                  level="H"
+                  className="qr-img"
+                />
+                <div className="qr-momo-center">M</div>
+              </div>
+            )}
             <div className="transfer-info-list">
               <div className="transfer-row">
-                <span className="t-label">Số tài khoản MoMo:</span>
-                <span className="t-val">Chưa kết nối</span>
+                <span className="t-label">Cổng thanh toán:</span>
+                <span className="t-val">MoMo</span>
               </div>
               <div className="transfer-row">
-                <span className="t-label">Người thụ hưởng:</span>
+                <span className="t-label">Đơn vị bán vé:</span>
                 <span className="t-val">FUTA BUS LINES CO.</span>
               </div>
               <div className="transfer-row">
@@ -109,17 +131,38 @@ export default function MomoPaymentModal({
                 <span className="t-val price">{money(total)}</span>
               </div>
               <div className="transfer-row">
-                <span className="t-label">Nội dung chuyển khoản:</span>
-                <span className="t-val transfer-code">{code}</span>
+                <span className="t-label">Mã đơn đặt vé:</span>
+                <span className="t-val transfer-code" title={code}>
+                  {code.match(/.{1,12}/g)?.map((part, index) => (
+                    <span key={index}>
+                      {part}
+                      <wbr />
+                    </span>
+                  ))}
+                </span>
               </div>
             </div>
             <div className="modal-actions">
-              <button className="btn-simulate-success" onClick={onSuccess}>
-                <CircleCheck size={16} />
-                Giả lập: Đã nhận tiền thành công
-              </button>
+              {!payment && status === "HELD" && (
+                <button className="btn-simulate-success" onClick={onRetry}>
+                  Thử tạo thanh toán lại
+                </button>
+              )}
+              {payment && status === "HELD" && (
+                <a
+                  className="btn-simulate-success"
+                  href={payment.payUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <CircleCheck size={16} />
+                  Mở MoMo để thanh toán
+                </a>
+              )}
               <button className="btn-cancel-pay" onClick={onClose}>
-                Hủy thanh toán &amp; Nhả ghế
+                {status === "PAYMENT_REVIEW"
+                  ? "Đóng"
+                  : "Hủy thanh toán & Nhả ghế"}
               </button>
             </div>
           </>

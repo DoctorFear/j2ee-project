@@ -1,20 +1,55 @@
 // Trang danh sách vé của khách hàng
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Ticket as TicketIcon } from "lucide-react";
 import CustomerHeader from "../../layouts/CustomerHeader";
 import TicketCard from "./components/TicketCard";
 import TicketTabs from "./components/TicketTabs";
 import TicketDetailModal from "./components/TicketDetailModal";
 import TicketQrModal from "./components/TicketQrModal";
-import { tickets, trips } from "../../data/customer";
+import { bookingApi, type CustomerTicket } from "../../api/bookingApi";
 import type { Ticket } from "../../types/ticket";
 import "./tickets.css";
 
 // Ghép danh sách vé và các hộp thoại chi tiết, QR
 export default function MyTicketsPage() {
+  const [tickets, setTickets] = useState<CustomerTicket[]>([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const load = useCallback(
+    () =>
+      bookingApi
+        .tickets()
+        .then((values) => {
+          setTickets(values);
+          setError("");
+        })
+        .catch((error) => setError(error.message))
+        .finally(() => setLoading(false)),
+    [],
+  );
+  useEffect(() => {
+    load();
+    const timer = setInterval(load, 15000);
+    return () => clearInterval(timer);
+  }, [load]);
   const [tab, setTab] = useState<"PAID" | "COMPLETED">("PAID");
   const [modal, setModal] = useState<{ ticket: Ticket; qr: boolean } | null>(
     null,
+  );
+  const currentTicket = tickets.find(
+    (ticket) => ticket.code === modal?.ticket.code,
+  );
+  const visibleTickets = tickets.filter((ticket) =>
+    tab === "PAID" ? ticket.status === "PAID" : ticket.status !== "PAID",
+  );
+  const bookingGroups = Array.from(
+    visibleTickets
+      .reduce((groups, ticket) => {
+        const key = ticket.bookingId || ticket.code;
+        groups.set(key, [...(groups.get(key) ?? []), ticket]);
+        return groups;
+      }, new Map<string, CustomerTicket[]>)
+      .entries(),
   );
   return (
     <div className="tickets-page">
@@ -30,30 +65,40 @@ export default function MyTicketsPage() {
           tab={tab}
           onChange={setTab}
           upcoming={tickets.filter((t) => t.status === "PAID").length}
-          history={tickets.filter((t) => t.status === "COMPLETED").length}
+          history={tickets.filter((t) => t.status !== "PAID").length}
         />
+        {loading && <p role="status">Đang tải vé...</p>}
+        {error && <p role="alert">{error}</p>}
         <div className="ticket-list">
-          {tickets
-            .filter((t) => t.status === tab)
-            .map((ticket) => (
+          {bookingGroups.map(([bookingId, bookingTickets]) => (
               <TicketCard
-                key={ticket.code}
-                ticket={ticket}
-                trip={trips.find((t) => t.code === ticket.tripCode)!}
-                onDetail={() => setModal({ ticket, qr: false })}
-                onQr={() => setModal({ ticket, qr: true })}
+                key={bookingId}
+                bookingId={bookingId}
+                tickets={bookingTickets}
+                onDetail={(ticket) => setModal({ ticket, qr: false })}
+                onQr={(ticket) => setModal({ ticket, qr: true })}
               />
             ))}
         </div>
       </div>
       {modal &&
-        (modal.qr ? (
-          <TicketQrModal ticket={modal.ticket} onClose={() => setModal(null)} />
+        currentTicket &&
+        (modal.qr && currentTicket.status === "PAID" ? (
+          <TicketQrModal
+            ticket={currentTicket}
+            onClose={() => {
+              setModal(null);
+              load();
+            }}
+          />
         ) : (
           <TicketDetailModal
-            ticket={modal.ticket}
-            trip={trips.find((t) => t.code === modal.ticket.tripCode)!}
-            onClose={() => setModal(null)}
+            ticket={currentTicket}
+            trip={currentTicket.trip}
+            onClose={() => {
+              setModal(null);
+              load();
+            }}
           />
         ))}
     </div>

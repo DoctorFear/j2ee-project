@@ -1,0 +1,4 @@
+# Cấu hình khởi động dịch vụ vận tải
+spring:
+  profiles:
+    default: local

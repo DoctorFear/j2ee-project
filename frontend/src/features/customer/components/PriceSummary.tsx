@@ -27,9 +27,7 @@ export default function PriceSummary({
         <span>Thông tin chuyến đi</span>
         <span className="vehicle-summary">
           <CircleCheck size={14} />
-          {vehicle(trip).name.includes("Limousine")
-            ? "Limousine"
-            : "Giường nằm"}
+          {vehicle(trip).name}
         </span>
       </div>
       <div className="summary-item">

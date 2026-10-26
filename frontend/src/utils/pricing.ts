@@ -1,11 +1,13 @@
 // Tính giá vé theo chặng và cơ chế định giá
 import type { Trip } from "../types/trip";
 import { segment } from "./trip";
+import type { CustomerJourney } from "../features/customer/types/journey";
 
 // Tính giá theo chặng và khuyến mãi, làm tròn đến nghìn đồng
 export function fare(trip: Trip, originId: string, destinationId: string) {
   const part = segment(trip, originId, destinationId);
   if (!part) return 0;
+  if ("unitFare" in trip) return (trip as CustomerJourney).unitFare;
   const distance = part.destination.distanceKm - part.origin.distanceKm;
   const total = trip.stops.at(-1)!.distanceKm;
   const base =

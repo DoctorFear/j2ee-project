@@ -9,13 +9,13 @@ Tài liệu này giới thiệu kiến trúc, phân công công việc, tổ ch�
 | Thành phần | Công nghệ | Trách nhiệm | Cổng local |
 | --- | --- | --- | --- |
 | Frontend | React, TypeScript, Vite, React Router | Giao diện cho khách hàng, quản trị/điều phối và tài xế | 5173 |
-| API Gateway | Spring Cloud Gateway | Cổng API chung, định tuyến, CORS, xác minh JWT | 8080 |
+| API Gateway | Spring Cloud Gateway | Cổng API chung, định tuyến, CORS, chặn đường dẫn nội bộ | 8080 |
 | Auth Service | .NET (ASP.NET Core Web API), Entity Framework Core, SQL Server | Tài khoản, vai trò, đăng nhập, đăng ký và token | 5001 |
 | Transport Service | Spring Boot, JPA, PostgreSQL (hiện có Station, Route và RouteStop API) | Tuyến, trạm, chuyến, xe, tài xế, giá vé và điều phối | 8081 |
 | Booking Service | Spring Boot, Spring Security, JPA, Flyway | Đơn đặt, giữ ghế, thanh toán, vé điện tử và soát vé | 8082 |
-| Database | SQL Server (Auth), PostgreSQL (Trip), MySQL (Booking) | Phân tách database theo từng microservice độc lập | 1433 / 5432 / 3306 |
+| Database | SQL Server (Auth), PostgreSQL (Trip), MySQL (Booking) | Phân tách database theo từng microservice độc lập; cổng tùy cấu hình từng máy | 1433 / 5432 / 3306 (mặc định) |
 
-Các service chạy trực tiếp trên môi trường local, không sử dụng Docker hoặc RabbitMQ. Giao tiếp giữa các service qua HTTP. Frontend gọi API qua Gateway; các service kiểm tra JWT và quyền truy cập tại backend.
+Các backend/frontend chạy trên môi trường local. Database có thể cài trực tiếp hoặc chạy trong container, tùy môi trường từng thành viên; cấu hình kết nối phải khớp database đang sử dụng. Hệ thống không sử dụng RabbitMQ. Giao tiếp giữa các service qua HTTP. Frontend gọi API qua Gateway; Auth và Booking kiểm tra JWT và quyền truy cập tại backend.
 
 Các thư viện giao diện gồm Lucide React cho icon và qrcode.react cho mã QR. Font chữ sử dụng Plus Jakarta Sans. Booking tích hợp MoMo và gửi email xác nhận vé/thông báo hoãn chuyến; Trip tổng hợp báo cáo và xuất Excel bằng Apache POI.
 
@@ -72,7 +72,8 @@ Công nghệ và kiến trúc tuân theo tài liệu `cau_truc_thu_muc_FUTA.docx
 - Chọn ghế theo cấu hình xe, tối đa 5 ghế mỗi đơn; nhập thông tin liên hệ và điểm đón/trả.
 - Giữ chỗ 10 phút, thanh toán MoMo, nhận vé điện tử và email xác nhận.
 - Quản lý vé sắp khởi hành/lịch sử, xem chi tiết, xuất trình QR và đặt lại tuyến.
-- Hủy/hoàn tiền, trung chuyển và khứ hồi cần tuân thủ quy trình và chính sách được thống nhất trước khi triển khai API.
+- Hủy và hoàn toàn bộ tiền vé qua MoMo khi còn ít nhất 5 tiếng trước giờ xe khởi hành tại bến đầu tuyến. Chỉ hủy vé và trả lại ghế sau khi MoMo xác nhận hoàn tiền thành công.
+- Khứ hồi tìm theo hai chiều và đặt vé từng lượt. Đón/trả tại các trạm hợp lệ của Transport; trung chuyển được bổ sung khi có danh mục khu vực phục vụ.
 
 ### Quản trị và điều phối
 
@@ -117,7 +118,7 @@ j2ee-project/
 ├── docs/                       Tài liệu nghiệp vụ và hợp đồng dữ liệu
 ├── infra/
 │   ├── mysql/                  SQL khởi tạo database và dữ liệu
-│   └── keys/                   Hướng dẫn và khóa công khai RSA
+│   └── keys/                   Tài nguyên khóa theo cơ chế xác thực sử dụng
 ├── scripts/                    Script vận hành các service
 ├── frontend/
 │   ├── package.json
@@ -153,8 +154,8 @@ j2ee-project/
 │       ├── Entities/           Thực thể tài khoản và refresh token
 │       ├── Dtos/               Dữ liệu request/response
 │       ├── Security/           Kiểm tra quyền và khóa nội bộ
-│       └── Keys/               Khóa RSA của Auth
-├── /
+│       └── Keys/               Tài nguyên khóa xác thực
+├── transport-service/
 │   └── src/main/
 │       ├── java/futabus/trip_service/
 │       │   ├── controller/     Station API và xử lý lỗi HTTP
@@ -223,18 +224,18 @@ Tổng số bảng được thiết kế theo phạm vi khoảng 15–20 bảng 
 - Occupancy = tổng vé thực bán / tổng sức chứa × 100%; từ 80% là Cao, từ 50% đến dưới 80% là Trung bình, dưới 50% là Thấp.
 - Auth dùng EF migrations. Trip hiện dùng `ddl-auto=update` khi phát triển Station; trước khi triển khai production cần chuyển sang migration có phiên bản.
 
-Chi tiết hợp đồng dữ liệu đặt vé tại [docs/customer-data-model.md](docs/customer-data-model.md). Các quy tắc giá nhập tay theo chặng, khứ hồi, trung chuyển và hủy/hoàn phải được thống nhất giữa các service trước khi triển khai.
+Booking đọc `ticketPrice` của Transport và áp dụng nguyên giá toàn tuyến cho các chặng đón/trả hợp lệ. Cấu hình mã ghế theo từng `vehicleId` nằm trong `booking.vehicle-seats`; số ghế phải khớp sức chứa xe và `capacitySnapshot`. Chỉ chuyến `SCHEDULED` và `OPEN`, tuyến/xe đang hoạt động và sơ đồ hợp lệ mới được mở bán.
 
 ## 6. Chuẩn bị môi trường
 
 - Git, Node.js và npm để phát triển frontend. Frontend đã được kiểm tra với Node.js 24 và npm 11.
-- .NET SDK 8 và công cụ Entity Framework Core tương thích cho Auth.
-- JDK và Maven tương thích với phiên bản Spring Boot trong `pom.xml`; cấu hình `JAVA_HOME` đúng JDK.
-- PostgreSQL cho Trip, MySQL cho Booking; mỗi service cần tài khoản kết nối riêng.
-- OpenSSL để tạo khóa RSA; cấu hình MoMo và SMTP khi triển khai thanh toán/email.
+- .NET SDK 10 và công cụ Entity Framework Core 10 tương thích cho Auth.
+- JDK 21, cấu hình `JAVA_HOME` đúng JDK. Mỗi service Java có Maven Wrapper; không bắt buộc cài Maven riêng.
+- SQL Server cho Auth, PostgreSQL cho Transport và MySQL cho Booking; mỗi service cần tài khoản kết nối đúng database. Docker là lựa chọn triển khai database, không phải điều kiện bắt buộc.
+- Thông tin merchant MoMo, IPN công khai và SMTP để chạy thanh toán/gửi email.
 - Microsoft Edge nếu sử dụng script kiểm tra giao diện Playwright trong repository.
 
-Kiểm tra công cụ:
+Kiểm tra các công cụ sử dụng trên máy; Maven và CLI database không bắt buộc nếu dùng Wrapper hoặc công cụ quản lý tương ứng:
 
 ```powershell
 node --version
@@ -248,7 +249,7 @@ psql --version
 
 ### Điều kiện chạy backend
 
-Để chạy Station API, Trip cần `pom.xml`, lớp Application và cấu hình PostgreSQL. Các module nghiệp vụ khác vẫn cần được triển khai theo phạm vi của từng service.
+Các database phải sẵn sàng và thông tin kết nối trong cấu hình local phải đúng môi trường từng thành viên. Auth cần áp dụng EF migrations trước lần chạy trên database mới. Transport và Booking hiện mặc định chọn profile `local` khi không chỉ định profile khác. Thanh toán cần thông tin merchant MoMo và IPN công khai; email cần cấu hình SMTP hợp lệ.
 
 ## 7. Cấu hình local
 
@@ -256,41 +257,34 @@ psql --version
 | --- | --- | --- |
 | Frontend | `frontend/.env.development` | `VITE_API_BASE_URL=http://localhost:8080` |
 | Auth | `auth-service/src/AuthService.Api/appsettings.json` | Kết nối `FutaBus_AuthDb` (SQL Server), JWT Secret, SMTP Gmail, URL Frontend |
-| Trip | `transport-service` (local, không commit) | Cổng 8081 và kết nối PostgreSQL `trip_db`; cấu hình mẫu tại `application.example.yaml` |
-| Booking | `booking-service/src/main/resources/application-local.yml` | Cổng 8082, kết nối `booking_db`, JWKS/issuer/audience, URL Trip, khóa nội bộ, MoMo và SMTP |
-| Gateway | `gateway-1` | Cổng 8080, route service, JWKS/issuer/audience và origin CORS `http://localhost:5173` |
+| Trip | `transport-service/src/main/resources/application-local.yml` | Cổng API 8081, kết nối PostgreSQL `trip_db` theo máy; mẫu `application.example.yaml` |
+| Booking | `booking-service/src/main/resources/application-local.yml` | MySQL `booking_db`, JWT secret/issuer/audience khớp Auth, URL Transport, sơ đồ ghế từng xe, khóa nội bộ, MoMo và SMTP |
+| Gateway | `gateway/src/main/resources/application.yaml` | Cổng 8080, định tuyến service và CORS cho frontend cổng 5173 |
 
 Tên các trường cấu hình backend phải khớp với lớp cấu hình của service. Không commit mật khẩu, token, secret MoMo, khóa RSA riêng hoặc tệp cấu hình local. Các tệp example chỉ chứa tên trường và giá trị không nhạy cảm.
 
 Tạo cấu hình frontend từ thư mục gốc:
 
 ```powershell
-Copy-Item frontend/.env.example frontend/.env.development
+if (!(Test-Path frontend/.env.development)) { Copy-Item frontend/.env.example frontend/.env.development }
 ```
 
-Tạo database `trip_db` trong PostgreSQL cho Transport Service:
+Nếu database chưa tồn tại, tạo `trip_db` trong PostgreSQL cho Transport Service:
 
 ```sql
 CREATE DATABASE trip_db;
 ```
 
-Tạo database `booking_db` trong MySQL cho Booking Service:
+Nếu `booking_db` chưa có, tạo trong MySQL cho Booking Service:
 
 ```sql
 CREATE DATABASE IF NOT EXISTS booking_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
-*(Lưu ý: Database `FutaBus_AuthDb` của Auth Service trên SQL Server sẽ tự động được tạo khi chạy lệnh `dotnet ef database update` hoặc chạy `AuthService.sln`).*
+Auth tạo database/bảng khi chạy `dotnet ef database update`; khởi động ứng dụng thực hiện seed tài khoản sau khi schema đã có.
 
 Cấp quyền theo database cho tài khoản service tương ứng và khai báo kết nối trong cấu hình local. SQL khởi tạo/seed dùng chung đặt tại `infra/mysql/`; thay đổi schema của từng service quản lý qua migration của service đó.
 
-Tạo cặp khóa RSA từ thư mục gốc:
-
-```powershell
-openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out auth-service/src/AuthService.Api/Keys/private.pem
-openssl pkey -in auth-service/src/AuthService.Api/Keys/private.pem -pubout -out infra/keys/public.pem
-```
-
-Auth dùng khóa riêng để ký token và công bố khóa công khai tại `/.well-known/jwks.json`. Các service cấu hình JWKS URL `http://localhost:5001/.well-known/jwks.json`. Issuer, audience và tên claim role phải thống nhất toàn hệ thống.
+Auth hiện ký JWT bằng HS256. Booking xác minh cùng secret trong `JwtSettings:Secret`, issuer `FutaBusAuthApi`, audience `FutaBusClient` và claim `role`. Không tự tạo khóa khác cho Booking; không đưa secret vào frontend hoặc Git.
 
 ## 8. Chạy toàn hệ thống
 
@@ -310,18 +304,48 @@ dotnet run --project auth-service/src/AuthService.Api --urls "http://localhost:5
 ### Transport Service
 
 ```powershell
-mvn -f /pom.xml spring-boot:run
+mvn -f transport-service/pom.xml spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
-Station, Route và RouteStop API hiện chạy trên `transport-service` với PostgreSQL `trip_db`; schema được Hibernate cập nhật trong môi trường phát triển. Xem [hợp đồng CRUD Route và RouteStop](transport-service/README.md) để biết endpoint, body và mã lỗi. Các API khác và xác thực nội bộ cần được triển khai trước khi chạy toàn bộ luồng Trip.
+Transport kết nối PostgreSQL `trip_db`; schema được Hibernate cập nhật trong môi trường phát triển. Thông tin kết nối nằm trong `transport-service/src/main/resources/application-local.yml`.
 
 ### Booking Service
+
+Tạo cấu hình từ mẫu nếu chưa có, thực hiện từ thư mục gốc repository:
+
+```powershell
+if (!(Test-Path booking-service/src/main/resources/application-local.yml)) { Copy-Item booking-service/src/main/resources/application-local.example.yml booking-service/src/main/resources/application-local.yml }
+```
+
+Điền cấu hình local trước khi chạy:
+
+- `spring.datasource`: tài khoản MySQL có quyền trên `booking_db`; Flyway tự tạo bảng khi khởi động, không cần chạy thủ công SQL bảng.
+- `booking.jwt-secret`: trùng `JwtSettings:Secret` của Auth, ít nhất 32 byte.
+- `booking.transport-url`: `http://localhost:8081`; `transport-zone: UTC` theo quy ước dữ liệu Transport. Đổi thành `Asia/Ho_Chi_Minh` nếu dữ liệu `LocalDateTime` của nhóm được nhập theo giờ Việt Nam.
+- `booking.vehicle-seats`: khóa là ID xe thực tế, giá trị là danh sách mã ghế theo đúng thứ tự trên xe, ví dụ `"1": [A01, A02, B01, B02]` cho xe 4 chỗ. Với xe 34 chỗ, khai báo đủ các mã ghế thực tế. Để trống hoặc lệch sức chứa thì chuyến không mở bán.
+- `booking.momo`: tài khoản merchant, access key, secret key và IPN URL công khai `https://<host>/api/bookings/payments/momo/ipn`. Endpoint mặc định là MoMo sandbox; cấu hình endpoint tương ứng tài khoản sử dụng.
+- `spring.mail` và `booking.email-from`: tài khoản SMTP gửi vé; Gmail dùng mật khẩu ứng dụng. Email có mã vé, thông tin đón và ảnh QR đính kèm; gửi lỗi sẽ được thử lại.
+- `booking.internal-key`: khóa riêng dùng giữa các backend; không đưa khóa này vào biến `VITE_*`.
+
+Chạy Booking từ thư mục gốc repository:
 
 ```powershell
 mvn -f booking-service/pom.xml spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
-Flyway chạy migrations của Booking. Khai báo thời gian giữ ghế, kết nối Trip, thông tin MoMo và SMTP. Endpoint giả lập kết quả thanh toán chỉ được bật ở profile phát triển.
+Có thể dùng Maven Wrapper trong từng service nếu không cài Maven riêng. Booking chạy tại `http://localhost:8082`. Frontend dùng `VITE_API_BASE_URL=http://localhost:8080` để gọi qua Gateway. Tiền và trạng thái thành công lấy từ backend; frontend không tự xác nhận thanh toán. Giao dịch về sau khi hết hạn/nhả ghế chuyển sang `PAYMENT_REVIEW` để đối soát và không phát vé trùng ghế.
+
+| API Booking qua Gateway | Quyền và chức năng |
+| --- | --- |
+| `GET /api/bookings/catalog/stations`, `GET /api/bookings/catalog/trips`, `GET /api/bookings/catalog/trips/{code}` | Công khai, danh mục trạm/chuyến từ Transport |
+| `POST /api/bookings/hold` | Member, giữ tối đa 5 ghế, tối đa 600 giây và không vượt giờ đón |
+| `GET /api/bookings/{id}`, `DELETE /api/bookings/{id}/hold` | Chủ đơn tra cứu/nhả ghế chưa thanh toán |
+| `POST /api/bookings/{id}/pay` | Chủ đơn tạo hoặc lấy lại phiên MoMo |
+| `POST /api/bookings/payments/momo/ipn` | MoMo callback, bắt buộc xác minh chữ ký và số tiền |
+| `GET /api/tickets/my`, `GET /api/tickets/{code}`, `GET /api/tickets/{code}/qr` | Chủ vé xem danh sách, thông tin và mã QR |
+| `POST /api/tickets/{code}/cancel`, `GET /api/tickets/{code}/refund` | Chủ vé yêu cầu hủy/tra cứu kết quả hoàn tiền |
+
+Các đơn và vé được kiểm tra chủ sở hữu bằng `sub` trong JWT; mã người dùng, giá và trạng thái thanh toán không lấy từ dữ liệu khách gửi.
 
 ### API Gateway (Cổng 8080)
 
@@ -337,8 +361,8 @@ mvn -f gateway/pom.xml spring-boot:run "-Dspring-boot.run.profiles=local"
 Gateway tích hợp:
 - Bộ lọc `InternalPathBlockFilter` tự động chặn mọi truy cập từ bên ngoài vào `/internal/**` với mã `403 Forbidden`.
 - Bộ lọc CORS deduplication `DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST` ngăn trùng lặp header CORS giữa Gateway và microservices.
-- Định tuyến API hành khách/soát vé và `/api/trips/*/seats` tới Booking trước route tổng quát `/api/admin/**`, `/api/driver/**`, `/api/trips/**` tới Trip.
-  *(Chi tiết cấu hình Gateway xem tại: `gateway-1`).*
+- Định tuyến `/api/bookings/**`, `/api/tickets/**` và `/api/trips/*/seats` tới Booking; các API vận tải tới Transport.
+  *(Chi tiết cấu hình Gateway: `gateway/src/main/resources/application.yaml`).*
 
 ### Frontend
 
@@ -350,7 +374,18 @@ npm run dev
 
 Truy cập [http://localhost:5173](http://localhost:5173). API base URL lấy từ `.env.development`; khởi động lại Vite sau khi đổi biến môi trường. Trước khi kiểm tra luồng end-to-end, các feature phải được nối với API, Auth và dữ liệu database của service tương ứng.
 
-Frontend hiện đọc dữ liệu trong `src/data/`; HTTP client và endpoint nằm ở `src/api/client.ts`. Khi tích hợp, chuyển việc tải dữ liệu sang module API và hook tương ứng, giữ kiểu dữ liệu dùng chung ổn định và kiểm tra quyền ở backend.
+Các trang khách hàng gọi `src/api/bookingApi.ts` qua HTTP client dùng chung `src/services/apiClient.ts`: tìm chuyến từ Transport thông qua Booking, giữ ghế, thanh toán và quản lý vé. Sơ đồ ghế và trạng thái vé lấy từ backend; tải lại trang thanh toán sẽ khôi phục phiên giữ chỗ còn hiệu lực.
+
+### Dữ liệu khởi tạo local
+
+- Auth sử dụng `Data/Seed/DatabaseSeeder.cs` hiện có để tạo tài khoản/vai trò.
+- Transport sử dụng `seed/DatabaseSeeder.java`: thêm 20 chuyến theo ngày Việt Nam, tuyến/trạm, phương tiện và tài xế; gồm giường nằm 34 chỗ, Limousine 22 chỗ và ghế ngồi 45 chỗ. Chuyến có đủ bốn khung giờ và các trạng thái mở bán, tạm dừng, đóng, nháp, đang chạy, hoàn thành, hủy.
+- Booking sử dụng `seed/DatabaseSeeder.java`: chờ Transport sẵn sàng, bổ sung sơ đồ cho xe seed và tạo 5 booking / 13 vé cho tài khoản cấu hình tại `booking.seed.user-id`. Điền ID thực tế của tài khoản khách hàng trong Auth; có thể sử dụng tài khoản `member1` do Auth khởi tạo. Thông tin liên hệ có thể đặt tại `booking.seed.name`, `phone`, `email`.
+- Bộ dữ liệu dùng mã `SEED-<yyyyMMdd>-...`; chạy lại cùng ngày không thêm trùng hoặc ghi đè dữ liệu đã tồn tại. Khởi động Transport ngày mới bổ sung bộ chuyến ngày mới; các bộ cũ được giữ nguyên. Booking chọn bộ seed mới nhất khi khởi động.
+- Lịch kiểm tra chính: TP. Hồ Chí Minh → Bình Định hôm nay có chuyến sau khoảng 2 và 7 tiếng tính từ lần seed đầu; ngày mai có 6 chuyến mở bán theo chiều đi và 2 chuyến chiều về. Các tuyến Nha Trang, Đà Lạt, Đà Nẵng nằm ở hai ngày tới. Ngày/giờ đã lưu không tự kéo dài khi khởi động lại.
+- `member1` / `Member@123` có 8 vé sắp đi, 3 vé chuyến hoàn thành và 2 vé đã hủy/hoàn ngay sau lần seed đầu. Mỗi ghế là một vé, một booking có thể chứa nhiều vé.
+- Vé seed không tạo email hoặc giao dịch MoMo. Không gửi yêu cầu hoàn tiền của vé seed sang MoMo; dùng vé mới thanh toán thật để kiểm tra hoàn tiền qua cổng. Hai vé đã hoàn được tạo sẵn để xem giao diện lịch sử/trạng thái hoàn tiền.
+- Seeder Java chỉ chạy ở profile `local`. Tắt bằng `futa.seed.enabled=false` ở Transport và `booking.seed.enabled=false` ở Booking. Khi tắt seeder Booking, cấu hình sơ đồ các xe cần mở bán trong `booking.vehicle-seats`.
 
 ## 9. Build và kiểm tra
 
@@ -380,7 +415,7 @@ Sau khi các project backend đáp ứng điều kiện ở mục 6:
 
 ```powershell
 dotnet build auth-service/src/AuthService.Api
-mvn -f /pom.xml verify
+mvn -f transport-service/pom.xml verify
 mvn -f booking-service/pom.xml verify
 mvn -f gateway/pom.xml verify
 ```
@@ -402,6 +437,8 @@ Mọi API nội bộ kèm `X-Internal-Key`; service nhận xác minh khóa, Gate
 
 Các endpoint trên là hợp đồng kiến trúc; controller, DTO, validation và xử lý lỗi phải thống nhất với service gọi. Thống nhất mã lỗi nghiệp vụ như `SEAT_UNAVAILABLE`, `HOLD_EXPIRED`, `INVALID_SEGMENT`, `PRICE_CHANGED`, `FORBIDDEN` để frontend xử lý nhất quán.
 
+Booking đã cung cấp `POST /internal/bookings/booked-counts` với body danh sách mã chuyến, `GET /internal/reports/trip-sales?tripCodes=T001,T002` và `GET /internal/trips/{code}/stop-counts`. Cả ba trả envelope `{success,data}` và bắt buộc `X-Internal-Key`. Báo cáo tách doanh thu đã thu, số tiền đã hoàn và doanh thu ròng. Transport gọi trực tiếp cổng 8082; Gateway chặn `/internal/**`. Những endpoint nội bộ khác trong bảng cần phối hợp với phần phụ trách tương ứng trước khi sử dụng.
+
 ## 11. Nguyên tắc phát triển
 
 1. Tuân thủ cấu trúc thư mục và trách nhiệm từng tầng. Trang ghép component; hook xử lý trạng thái; API module gọi server; controller nhận/trả HTTP; service xử lý nghiệp vụ; repository truy cập dữ liệu.
@@ -417,10 +454,10 @@ Các endpoint trên là hợp đồng kiến trúc; controller, DTO, validation 
 | Hiện tượng | Kiểm tra |
 | --- | --- |
 | Frontend không gọi được API | Gateway đã chạy, đúng `VITE_API_BASE_URL`, CORS và route tới service |
-| API trả 401/403 | Hạn token, chữ ký RSA/JWKS, issuer/audience, role và quyền sở hữu dữ liệu |
+| API trả 401/403 | Hạn token, JWT secret HS256 khớp Auth, issuer/audience, role và quyền sở hữu dữ liệu |
 | Service không kết nối database | Kiểm tra đúng PostgreSQL cho Trip hoặc MySQL cho Booking, user/password, quyền, port và cấu hình local |
 | Spring không nạp cấu hình local | Profile `local` đã bật, tệp `application-local.yml` đúng thư mục |
-| Auth không đọc cấu hình | Environment `Development`, connection string và đường dẫn khóa RSA |
+| Auth không đọc cấu hình | Environment `Development`, connection string SQL Server và JWT secret |
 | Migration thất bại | Phiên bản migration, quyền database và dữ liệu hiện có; không xóa database để xử lý tùy tiện |
 | MoMo không báo kết quả | Cấu hình provider, chữ ký, mã đơn/số tiền và khả năng truy cập IPN URL từ bên ngoài |
 | Cổng đã được sử dụng | Xác định tiến trình dùng cổng và thống nhất cổng trong cấu hình các service |

@@ -243,6 +243,70 @@
     gap: 24px;
     align-items: center;
   }
+  .ticket-booking-count {
+    min-width: 150px;
+    padding-left: 20px;
+    border-left: 1px dashed var(--border);
+    color: var(--accent-green);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    text-align: center;
+    font-size: 12px;
+  }
+  .ticket-booking-count b {
+    font-size: 13px;
+    color: var(--text-main);
+  }
+  .ticket-booking-count span {
+    color: var(--text-muted);
+    line-height: 1.35;
+  }
+  .booking-ticket-list {
+    margin: 0 24px 18px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  .booking-ticket-list-title {
+    padding: 10px 14px;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-size: 12.5px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .booking-ticket-row {
+    padding: 11px 14px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .booking-ticket-row > :first-child {
+    min-width: 190px;
+    color: var(--text-main);
+    font-size: 12px;
+  }
+  .booking-ticket-row b {
+    font-size: 13px;
+  }
+  .booking-seat {
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 800;
+  }
+  .booking-ticket-row .action-btn-group {
+    margin-left: auto;
+  }
+  .ticket-row-status {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 700;
+  }
   .journey-info {
     display: flex;
     flex-direction: column;
@@ -597,13 +661,26 @@
     .ticket-card-body {
       grid-template-columns: 1fr;
     }
-    .ticket-qr-side {
+    .ticket-qr-side,
+    .ticket-booking-count {
       border-left: none;
       padding-left: 0;
       border-top: 1px dashed var(--border);
       padding-top: 14px;
       flex-direction: row;
       justify-content: space-between;
+    }
+    .booking-ticket-row {
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+    }
+    .booking-ticket-row > :first-child {
+      min-width: 150px;
+    }
+    .booking-ticket-row .action-btn-group {
+      width: 100%;
+      margin-left: 0;
     }
     .ticket-card-footer {
       flex-direction: column;

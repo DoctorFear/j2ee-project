@@ -1,13 +1,14 @@
 // Quản lý tiêu chí và kết quả tìm chuyến khách hàng
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { trips, localDate, stations } from "../data/customer";
+import { localDate } from "../utils/localDate";
+import useCustomerCatalog from "./useCustomerCatalog";
 import { atStop, fare, segment, time, vehicle } from "../utils/customer";
 import type { SearchCriteria } from "../features/customer/types/search";
 import type { Trip } from "../types/trip";
 const initial: SearchCriteria = {
-  originId: "AN-NHON",
-  destinationId: "MIEN-TAY",
+  originId: "",
+  destinationId: "",
   date: localDate(),
   timeRanges: [],
   vehicleTypes: [],
@@ -20,6 +21,8 @@ const initial: SearchCriteria = {
 
 // Kiểm tra chặng, ngày đón và áp dụng bộ lọc tìm kiếm
 export default function useTripSearch() {
+  const catalog = useCustomerCatalog();
+  const { trips, stations } = catalog;
   const [params] = useSearchParams();
   const seed = {
     ...initial,
@@ -36,6 +39,23 @@ export default function useTripSearch() {
   };
   const [form, setForm] = useState(seed);
   const [criteria, setCriteria] = useState(seed);
+  useEffect(() => {
+    if (!stations.length) return;
+    setForm((previous) => {
+      if (previous.originId && previous.destinationId) return previous;
+      const next = {
+        ...previous,
+        originId: stations.some((s) => s.id === params.get("origin"))
+          ? params.get("origin")!
+          : stations[0].id,
+        destinationId: stations.some((s) => s.id === params.get("destination"))
+          ? params.get("destination")!
+          : stations.at(-1)!.id,
+      };
+      setCriteria(next);
+      return next;
+    });
+  }, [stations, params]);
   const [roundTrip, setRoundTrip] = useState(false);
   const [returnDate, setReturnDate] = useState(localDate(1));
   const [direction, setDirection] = useState<"outbound" | "return">("outbound");
@@ -54,7 +74,7 @@ export default function useTripSearch() {
   const results = trips
     .filter((t) => {
       const part = segment(t, origin, destination);
-      if (!part || t.saleStatus !== "OPEN") return false;
+      if (!part || !t.bookable || t.saleStatus !== "OPEN") return false;
       const pickup = atStop(t, origin);
       const price = fare(t, origin, destination);
       const hour = Number(time(pickup).split(":")[0]);
@@ -131,6 +151,11 @@ export default function useTripSearch() {
     });
   }
   return {
+    stations,
+    vehicleTypes: [
+      ...new Map(trips.map((trip) => [trip.vehicleTypeId, { ...trip.vehicle, id: trip.vehicleTypeId }])).values(),
+    ],
+    loading: catalog.loading,
     form,
     setForm,
     criteria,
@@ -140,7 +165,7 @@ export default function useTripSearch() {
     setReturnDate,
     direction,
     setDirection,
-    error,
+    error: error || catalog.error,
     modal,
     setModal,
     origin,

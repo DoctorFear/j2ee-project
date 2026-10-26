@@ -48,7 +48,7 @@ export default function TripCard({
         </div>
         <div className="rating">
           <Star size={15} fill="currentColor" />
-          {rating.toFixed(1)}
+          {rating > 0 ? rating.toFixed(1) : "Chưa có"}
         </div>
       </div>
       <div className="ticket-main">
@@ -56,7 +56,7 @@ export default function TripCard({
           <div className="point">
             <h4>{time(atStop(trip, origin))}</h4>
             <span>
-              {station(origin).name} ({station(origin).province})
+              {station(origin, trip).name} ({station(origin, trip).province})
             </span>
           </div>
           <div className="travel-info">
@@ -71,7 +71,8 @@ export default function TripCard({
           <div className="point">
             <h4>{time(atStop(trip, destination))}</h4>
             <span>
-              {station(destination).name} ({station(destination).province})
+              {station(destination, trip).name} (
+              {station(destination, trip).province})
             </span>
           </div>
         </div>
@@ -111,7 +112,7 @@ export default function TripCard({
         </div>
         <Link
           className="btn-select"
-          to={`/trips/${trip.code}/book?origin=${origin}&destination=${destination}`}
+          to={`/trips/${encodeURIComponent(trip.code)}/book?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`}
         >
           Chọn ghế
         </Link>

@@ -10,6 +10,9 @@ import {
   UserRound,
   X,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { bookingApi } from "../../../api/bookingApi";
+import type { RefundStatus } from "../types/order";
 import Modal from "../../../components/Modal";
 import type { Ticket } from "../../../types/ticket";
 import type { Trip } from "../../../types/trip";
@@ -24,6 +27,50 @@ export default function TicketDetailModal({
   trip: Trip;
   onClose: () => void;
 }) {
+  const [refund, setRefund] = useState<RefundStatus | null>(null);
+  const [refundError, setRefundError] = useState("");
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    let active = true;
+    const load = () =>
+      bookingApi
+        .refund(ticket.code)
+        .then((value) => {
+          if (active) setRefund(value);
+        })
+        .catch((error) => {
+          if (active) setRefundError(error.message);
+        });
+    load();
+    const timer = setInterval(load, 5000);
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
+  }, [ticket.code]);
+  // Gửi yêu cầu hủy vé khi còn đủ năm tiếng trước giờ xe chạy
+  async function cancel() {
+    if (
+      !window.confirm(
+        "Hủy vé này và hoàn toàn bộ tiền về phương thức thanh toán ban đầu?",
+      )
+    )
+      return;
+    setBusy(true);
+    setRefundError("");
+    try {
+      setRefund(await bookingApi.cancel(ticket.code));
+    } catch (error) {
+      setRefundError(
+        error instanceof Error ? error.message : "Không hủy được vé.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+  const canCancel =
+    ticket.status === "PAID" &&
+    new Date(trip.departureAt).getTime() - Date.now() >= 5 * 3600000;
   const pickupTime = dateTime(
     new Date(
       new Date(atStop(trip, ticket.originId)).getTime() - 900000,
@@ -57,9 +104,11 @@ export default function TicketDetailModal({
             <span className="tb-code">{ticket.code}</span>
           </div>
           <span className="tb-status">
-            {ticket.status === "COMPLETED"
-              ? "Đã hoàn thành"
-              : "Mua vé thành công"}
+            {ticket.status === "CANCELLED"
+              ? "Đã hủy và hoàn tiền"
+              : ticket.status === "COMPLETED"
+                ? "Đã hoàn thành"
+                : "Mua vé thành công"}
           </span>
         </div>
         <div className="detail-card-block">
@@ -119,11 +168,14 @@ export default function TicketDetailModal({
                 {pickup ? "Điểm lên xe" : "Điểm xuống xe"}
               </div>
               <div className="stop-station-name">
-                {station(pickup ? ticket.originId : ticket.destinationId).name}
+                {
+                  station(pickup ? ticket.originId : ticket.destinationId, trip)
+                    .name
+                }
               </div>
               <div className="stop-station-addr">
                 {
-                  station(pickup ? ticket.originId : ticket.destinationId)
+                  station(pickup ? ticket.originId : ticket.destinationId, trip)
                     .address
                 }
               </div>
@@ -134,8 +186,8 @@ export default function TicketDetailModal({
                   </div>
                   <div className="stop-alert-box">
                     Quý khách vui lòng có mặt tại Bến xe/VP{" "}
-                    {station(ticket.originId).name} trước <b>{pickupTime}</b> để
-                    kiểm tra thông tin trước khi lên xe!
+                    {station(ticket.originId, trip).name} trước{" "}
+                    <b>{pickupTime}</b> để kiểm tra thông tin trước khi lên xe!
                   </div>
                 </>
               )}
@@ -162,6 +214,29 @@ export default function TicketDetailModal({
               MoMo
             </span>
           </div>
+          {ticket.status === "PAID" && (
+            <div className="price-calc-row">
+              <span>Hủy và hoàn vé</span>
+              {refund ? (
+                <span className="p-val">
+                  {refund.status === "SUCCESS"
+                    ? "Đã hoàn tiền"
+                    : refund.status === "REVIEW_REQUIRED"
+                      ? "Cần đối soát hoàn tiền"
+                      : "Đang xử lý hoàn tiền"}
+                </span>
+              ) : (
+                <button
+                  className="btn-action"
+                  disabled={!canCancel || busy}
+                  onClick={cancel}
+                >
+                  {canCancel ? "Hủy vé và hoàn tiền" : "Đã quá hạn hủy vé"}
+                </button>
+              )}
+            </div>
+          )}
+          {refundError && <p role="alert">{refundError}</p>}
           <div className="price-calc-row">
             <b>Tổng tiền</b>
             <span className="p-val final">

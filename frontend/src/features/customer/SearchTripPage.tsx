@@ -1,5 +1,12 @@
 // Trang tìm kiếm chuyến xe khách hàng
 import { Frown } from "lucide-react";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "../../context/UserContext";
+import {
+  bookingReturnPath,
+  readBookingSelection,
+} from "../../utils/bookingSession";
 import CustomerHeader from "../../layouts/CustomerHeader";
 import useTripSearch from "../../hooks/useTripSearch";
 import SearchForm from "./components/SearchForm";
@@ -8,12 +15,22 @@ import TripCard from "./components/TripCard";
 import SortBar from "./components/SortBar";
 import ScheduleModal from "./components/ScheduleModal";
 import PolicyModal from "./components/PolicyModal";
-import { station, atStop, time } from "../../utils/customer";
+import { atStop, time } from "../../utils/customer";
 import "./search.css";
 
 // Ghép các thành phần tìm kiếm và hộp thoại
 export default function SearchTripPage() {
   const model = useTripSearch();
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useUser();
+  // Quay lại bước chọn ghế sau khi đăng nhập Google
+  useEffect(() => {
+    const path = bookingReturnPath(readBookingSelection());
+    if (isAuthenticated && user?.role === "Member" && path) {
+      sessionStorage.removeItem("futa-booking-selection");
+      navigate(path, { replace: true });
+    }
+  }, [isAuthenticated, user?.role, navigate]);
   const { origin, destination, criteria, results, modal, setModal } = model;
   const counts = [0, 1, 2, 3].map(
     (range) =>
@@ -38,6 +55,7 @@ export default function SearchTripPage() {
         setReturnDate={model.setReturnDate}
         onSearch={model.search}
         error={model.error}
+        stations={model.stations}
       />
       <div className="content-wrapper">
         <TripFilters
@@ -45,13 +63,17 @@ export default function SearchTripPage() {
           update={model.update}
           onClear={model.clearFilters}
           counts={counts}
+          vehicleTypes={model.vehicleTypes}
         />
         <main>
           <div className="results-head">
             <div>
               <h2 className="route-name">
-                {station(origin).province} ({station(origin).name}) đi{" "}
-                {station(destination).province}
+                {model.stations.find((item) => item.id === origin)?.name ||
+                  "Điểm đi"}{" "}
+                đi{" "}
+                {model.stations.find((item) => item.id === destination)?.name ||
+                  "Điểm đến"}
               </h2>
               <div className="route-sub">
                 {new Date(`${model.day}T12:00:00+07:00`).toLocaleDateString(
@@ -88,6 +110,7 @@ export default function SearchTripPage() {
             </div>
           )}
           <div>
+            {model.loading && <p role="status">Đang tải chuyến xe...</p>}
             {results.map((trip) => (
               <TripCard
                 key={trip.code}
@@ -99,7 +122,7 @@ export default function SearchTripPage() {
               />
             ))}
           </div>
-          {!results.length && (
+          {!model.loading && !model.error && !results.length && (
             <div className="empty-state" style={{ display: "flex" }}>
               <Frown size={48} />
               <strong>Không tìm thấy chuyến xe phù hợp</strong>

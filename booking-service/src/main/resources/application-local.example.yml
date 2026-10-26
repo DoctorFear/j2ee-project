@@ -1,0 +1,27 @@
+# Cấu hình kết nối Booking khi chạy trên máy cá nhân
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/booking_db?connectionTimeZone=UTC
+    username: YOUR_MYSQL_USER
+    password: YOUR_MYSQL_PASSWORD
+  mail:
+    username: YOUR_EMAIL
+    password: YOUR_EMAIL_APP_PASSWORD
+booking:
+  seed:
+    enabled: true
+    user-id: ""
+  jwt-secret: SAME_SECRET_AS_AUTH
+  jwt-issuer: FutaBusAuthApi
+  jwt-audience: FutaBusClient
+  email-from: YOUR_EMAIL
+  internal-key: YOUR_SHARED_INTERNAL_KEY
+  sales-enabled: true
+  transport-zone: UTC
+  # Mã xe và danh sách ghế phải khớp phương tiện thực tế
+  vehicle-seats: {}
+  momo:
+    partner-code: YOUR_PARTNER_CODE
+    access-key: YOUR_ACCESS_KEY
+    secret-key: YOUR_SECRET_KEY
+    ipn-url: https://YOUR_PUBLIC_HOST/api/bookings/payments/momo/ipn

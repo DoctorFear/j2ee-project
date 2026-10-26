@@ -34,6 +34,9 @@ export default function PickupDropSection({
         const candidates = trip.stops.filter(
           (s) =>
             s.active &&
+            (s as { allowPickup?: boolean; allowDropOff?: boolean })[
+              pickup ? "allowPickup" : "allowDropOff"
+            ] !== false &&
             (pickup
               ? s.order < trip.stops.at(-1)!.order
               : s.order >
@@ -82,7 +85,8 @@ export default function PickupDropSection({
               >
                 {candidates.map((s) => (
                   <option key={s.stationId} value={s.stationId}>
-                    {station(s.stationId).name} ({station(s.stationId).address})
+                    {station(s.stationId, trip).name} (
+                    {station(s.stationId, trip).address})
                   </option>
                 ))}
               </select>
@@ -98,7 +102,7 @@ export default function PickupDropSection({
             {pickup && (
               <div className="notice-box">
                 Quý khách vui lòng có mặt tại Bến xe/Văn Phòng{" "}
-                <strong>{station(origin).name}</strong> trước{" "}
+                <strong>{station(origin, trip).name}</strong> trước{" "}
                 <strong>
                   {dateTime(
                     new Date(

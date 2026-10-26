@@ -43,3 +43,6 @@ screenshots/
 **/*.test.*
 **/*.spec.*
 frontend/scripts/check-ui.mjs
+
+# Script khởi động cá nhân
+/run-spring.ps1

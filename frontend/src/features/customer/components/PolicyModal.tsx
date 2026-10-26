@@ -15,8 +15,10 @@ export default function PolicyModal({ onClose }: { onClose: () => void }) {
           khi lên xe.
         </p>
         <p>
-          Chính sách hủy và hoàn tiền sẽ được công bố khi hệ thống mở thanh toán
-          chính thức.
+          Chỉ tiếp nhận hủy vé khi còn ít nhất 5 tiếng trước giờ xe khởi hành
+          tại bến đầu tuyến. Vé được hoàn toàn bộ giá vé qua MoMo; vé và ghế chỉ
+          được hủy sau khi hoàn tiền thành công. Không nhận hủy sát giờ khởi
+          hành.
         </p>
       </div>
     </Modal>

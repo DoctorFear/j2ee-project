@@ -1,6 +1,5 @@
 // Thẻ vé của khách hàng
 import { Link } from "react-router-dom";
-import { QRCodeSVG } from "qrcode.react";
 import {
   ArrowRight,
   BusFront,
@@ -9,10 +8,11 @@ import {
   FileText,
   QrCode,
   RotateCcw,
+  TicketCheck,
 } from "lucide-react";
-import type { Ticket } from "../../../types/ticket";
+import type { CustomerTicket } from "../../../api/bookingApi";
 import type { Trip } from "../../../types/trip";
-import { localDate } from "../../../data/customer";
+import { localDate } from "../../../utils/localDate";
 import {
   atStop,
   dateTime,
@@ -20,48 +20,62 @@ import {
   station,
   vehicle,
 } from "../../../utils/customer";
-// Hiển thị trạng thái vé, hành trình và các thao tác xem vé
+// Gom các vé cùng đơn nhưng vẫn giữ thao tác riêng cho từng QR
 export default function TicketCard({
-  ticket,
-  trip,
+  bookingId,
+  tickets,
   onDetail,
   onQr,
 }: {
-  ticket: Ticket;
-  trip: Trip;
-  onDetail: () => void;
-  onQr: () => void;
+  bookingId: string;
+  tickets: CustomerTicket[];
+  onDetail: (ticket: CustomerTicket) => void;
+  onQr: (ticket: CustomerTicket) => void;
 }) {
-  const completed = ticket.status === "COMPLETED";
+  const ticket = tickets[0];
+  const trip: Trip = ticket.trip;
+  const completed = ticket.status !== "PAID";
+  const total = tickets.reduce((sum, item) => sum + item.fare + item.fee, 0);
+  const seatCodes = tickets.map((item) => item.seatCode).join(", ");
   return (
     <article className="ticket-item-card">
       <div className="ticket-card-header">
         <div className="ticket-code-wrap">
-          <span>Mã vé/Code:</span>
-          <span className="ticket-code">{ticket.code}</span>
+          <span>Mã đơn đặt vé:</span>
+          <span className="ticket-code">{bookingId}</span>
         </div>
         <div className={`status-badge ${completed ? "completed" : "success"}`}>
           {completed ? <CheckCheck size={14} /> : <CircleCheck size={14} />}{" "}
-          {completed ? "Đã hoàn thành" : "Mua vé thành công"}
+          {ticket.status === "CANCELLED"
+            ? "Đã hủy và hoàn tiền"
+            : completed
+              ? "Đã hoàn thành"
+              : "Đã thanh toán"}
         </div>
       </div>
       <div className="ticket-card-body">
         <div className="journey-info">
           <div className="journey-direction">
             <ArrowRight size={14} />
-            Thông tin lượt đi
+            Thông tin hành trình
           </div>
           <div className="route-points">
-            <span className="route-point">{station(ticket.originId).name}</span>
+            <span className="route-point">
+              {station(ticket.originId, trip).name}
+            </span>
             <span className="route-arrow">→</span>
             <span className="route-point">
-              {station(ticket.destinationId).name}
+              {station(ticket.destinationId, trip).name}
             </span>
           </div>
           <div className="ticket-meta-grid">
             <div className="meta-item">
-              <span className="meta-label">Số ghế</span>
-              <span className="meta-val seat">{ticket.seatCode}</span>
+              <span className="meta-label">Số lượng vé</span>
+              <span className="meta-val">{tickets.length} vé</span>
+            </div>
+            <div className="meta-item">
+              <span className="meta-label">Ghế đã đặt</span>
+              <span className="meta-val seat">{seatCodes}</span>
             </div>
             <div className="meta-item">
               <span className="meta-label">Giờ xuất bến</span>
@@ -71,36 +85,51 @@ export default function TicketCard({
             </div>
             <div className="meta-item">
               <span className="meta-label">Điểm lên xe</span>
-              <span className="meta-val">{station(ticket.originId).name}</span>
+              <span className="meta-val">
+                {station(ticket.originId, trip).name}
+              </span>
             </div>
             <div className="meta-item">
-              <span className="meta-label">Tổng tiền</span>
+              <span className="meta-label">Tổng tiền đơn</span>
               <span className="meta-val ticket-total">
-                {money(ticket.fare + ticket.fee)}
+                {money(total)}
               </span>
             </div>
           </div>
         </div>
-        <div className="ticket-qr-side">
-          <button
-            className="qr-button"
-            disabled={completed}
-            aria-label={`Xem QR vé ${ticket.code}`}
-            onClick={onQr}
-          >
-            <QRCodeSVG
-              value={ticket.qrToken}
-              size={120}
-              className="qr-thumbnail"
-              style={
-                completed ? { filter: "grayscale(1)", opacity: 0.5 } : undefined
-              }
-            />
-          </button>
-          <span className="qr-hint">
-            {completed ? "Vé đã sử dụng" : "Quét khi lên xe"}
-          </span>
+        <div className="ticket-booking-count">
+          <TicketCheck size={28} />
+          <b>{tickets.length} vé cùng đơn</b>
+          <span>Xem QR riêng cho từng ghế phía dưới</span>
         </div>
+      </div>
+      <div className="booking-ticket-list">
+        <div className="booking-ticket-list-title">
+          <TicketCheck size={16} /> Vé trong đơn ({tickets.length})
+        </div>
+        {tickets.map((item) => (
+          <div className="booking-ticket-row" key={item.code}>
+            <div>
+              <span className="ticket-code-label">Mã vé</span>
+              <b>{item.code}</b>
+            </div>
+            <span className="booking-seat">Ghế {item.seatCode}</span>
+            <div className="action-btn-group">
+              <button className="btn-action highlight" onClick={() => onDetail(item)}>
+                <FileText size={14} /> Chi tiết
+              </button>
+              {completed ? (
+                <span className="ticket-row-status">
+                  {item.status === "CANCELLED" ? "Đã hủy" : "Đã sử dụng"}
+                </span>
+              ) : (
+                <button className="btn-action" onClick={() => onQr(item)}>
+                  <QrCode size={14} /> QR lên xe
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
       <div className="ticket-card-footer">
         <div className="car-type-tag">
@@ -108,10 +137,6 @@ export default function TicketCard({
           {vehicle(trip).name}
         </div>
         <div className="action-btn-group">
-          <button className="btn-action highlight" onClick={onDetail}>
-            <FileText size={14} />
-            Xem chi tiết vé
-          </button>
           {completed ? (
             <Link
               className="btn-action"
@@ -120,12 +145,7 @@ export default function TicketCard({
               <RotateCcw size={14} />
               Đặt lại chuyến này
             </Link>
-          ) : (
-            <button className="btn-action" onClick={onQr}>
-              <QrCode size={14} />
-              QR Lên xe
-            </button>
-          )}
+          ) : null}
         </div>
       </div>
     </article>
