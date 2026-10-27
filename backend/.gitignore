@@ -1,0 +1,22 @@
+# .NET build files
+bin/
+obj/
+
+# Visual Studio settings
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+
+# .NET configuration files
+appsettings.json
+appsettings.*.json
+!appsettings.example.json
+
+# Java and Maven build files
+target/
+*.class
+
+# Spring Boot local configuration
+application-local.yml
