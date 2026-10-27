@@ -1,0 +1,40 @@
+name: j2ee-project
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: futa-postgres
+    env_file:
+      - .docker.env
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - futa_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d trip_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.4
+    container_name: futa-mysql
+    env_file:
+      - .docker.env
+    ports:
+      - "127.0.0.1:3307:3306"
+    volumes:
+      - futa_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u$$MYSQL_USER -p$$MYSQL_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  futa_postgres_data:
+    external: true
+  futa_mysql_data:
+    external: true

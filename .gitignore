@@ -13,6 +13,7 @@ dist/
 .env.production
 .env.*.local
 !.env.example
+.docker.env
 
 # .NET / C# build artifacts & settings
 bin/
