@@ -18,13 +18,19 @@ using AuthService.Api.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Cấu hình DbContext kết nối SQL Server (FutaBus_AuthDb)
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? "Server=(localdb)\\mssqllocaldb;Database=FutaBus_AuthDb;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
+// Cấu hình PostgreSQL
+var connectionString = builder.Configuration
+    .GetConnectionString("DefaultConnection");
+
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException(
+        "Không tìm thấy ConnectionStrings:DefaultConnection"
+    );
+}
 
 builder.Services.AddDbContext<AuthDbContext>(options =>
-{
-    options.UseSqlServer(connectionString);
-});
+    options.UseNpgsql(connectionString));
 
 // 2. Đăng ký Dependency Injection (DI)
 builder.Services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();

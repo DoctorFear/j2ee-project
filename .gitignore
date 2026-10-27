@@ -1,10 +1,3 @@
-# Node & Frontend dependencies & build
-node_modules/
-dist/
-*.tsbuildinfo
-.npm-cache/
-.vite/
-
 # Environment files
 .env
 .env.local
@@ -14,32 +7,17 @@ dist/
 .env.*.local
 !.env.example
 
-# .NET / C# build artifacts & settings
-bin/
-obj/
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-.vs/
-appsettings.json
-appsettings.*.json
-!appsettings.example.json
-
-# Java / Maven build artifacts
-target/
-*.class
-
-# Spring Boot local configs & Secret keys
-application-local.yml
+# Secret keys
 *.pem
 
-# IDE & Editor settings
+# IDE settings
 .idea/
 .vscode/
 
-# Testing & Screenshots
+# Test files and screenshots
 screenshots/
 **/*.test.*
 **/*.spec.*
-frontend/scripts/check-ui.mjs
+
+# AI
+AGENTS.md

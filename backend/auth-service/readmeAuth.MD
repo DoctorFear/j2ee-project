@@ -18,7 +18,7 @@ Tài liệu này ghi lại ngắn gọn quy trình xây dựng, ý nghĩa các t
 
 ## 2. Các Lệnh CLI Quan Trọng (Cheat Sheet)
 
-> **Lưu ý**: Mở Terminal tại thư mục `backend/auth-service` hoặc `backend/auth-service` trước khi gõ lệnh.
+> **Lưu ý**: Mở Terminal tại thư mục `backend/auth-service` trước khi gõ lệnh.
 
 ### a. Khôi phục thư viện & Build dự án
 ```powershell

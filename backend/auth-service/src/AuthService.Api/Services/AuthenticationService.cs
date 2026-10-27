@@ -136,12 +136,12 @@ public class AuthenticationService : IAuthService
 
     public async Task<ApiResponse<bool>> ForgotPasswordAsync(ForgotPasswordRequestDto request)
     {
-        if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Email))
+        if (string.IsNullOrWhiteSpace(request.Email))
         {
-            return ApiResponse<bool>.Fail("Tên đăng nhập và Email không được để trống.");
+            return ApiResponse<bool>.Fail("Email không được để trống.");
         }
 
-        var user = await _userRepository.GetByUsernameAsync(request.Username);
+        var user = await _userRepository.GetByEmailAsync(request.Email);
 
         if (user == null || !user.Email.Equals(request.Email.Trim(), StringComparison.OrdinalIgnoreCase))
         {
@@ -225,7 +225,7 @@ public class AuthenticationService : IAuthService
         var googleId = root.TryGetProperty("sub", out var subEl) ? subEl.GetString() : null;
         var email = root.TryGetProperty("email", out var emailEl) ? emailEl.GetString() : null;
         var fullName = root.TryGetProperty("name", out var nameEl) ? nameEl.GetString() : null;
-        var emailVerified = root.TryGetProperty("email_verified", out var verEl) && 
+        var emailVerified = root.TryGetProperty("email_verified", out var verEl) &&
             (verEl.ValueKind == System.Text.Json.JsonValueKind.True || (verEl.ValueKind == System.Text.Json.JsonValueKind.String && verEl.GetString() == "true"));
 
         if (string.IsNullOrEmpty(googleId) || string.IsNullOrEmpty(email) || !emailVerified)

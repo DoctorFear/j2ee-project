@@ -1,0 +1,38 @@
+# Node.js dependencies
+node_modules/
+
+# Build files
+dist/
+*.tsbuildinfo
+
+# Cache files
+.npm-cache/
+.vite/
+
+# Local-only tests
+**/*.test.*
+**/*.spec.*
+**/__tests__/
+**/__mocks__/
+src/test/
+e2e/
+integration/
+smoke/
+postman/
+vitest*.config.*
+playwright*.config.*
+vite.e2e.config.*
+scripts/test-*
+
+# Local scripts
+/scripts
+
+# Test results
+test-results/
+playwright-report/
+.test-output/
+coverage/
+.nyc_output/
+
+# Docs
+docs/

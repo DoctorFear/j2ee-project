@@ -34,3 +34,6 @@ build/
 
 # Spring Boot configuration
 /src/main/resources/application.yaml
+
+# Sample data
+/src/main/resources/sample-data.sql

@@ -22,7 +22,7 @@ public class AuthDbContext : DbContext
 
             entity.HasIndex(e => e.Username).IsUnique();
             entity.HasIndex(e => e.Email).IsUnique();
-            entity.HasIndex(e => e.GoogleId).IsUnique().HasFilter("[GoogleId] IS NOT NULL");
+            entity.HasIndex(e => e.GoogleId).IsUnique();
             entity.Property(e => e.Username).HasMaxLength(50).IsRequired();
             entity.Property(e => e.Email).HasMaxLength(150).IsRequired();
             entity.Property(e => e.FullName).HasMaxLength(100).IsRequired();
