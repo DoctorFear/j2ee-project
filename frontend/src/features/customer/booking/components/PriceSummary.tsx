@@ -1,7 +1,8 @@
 // Bảng tổng kết ghế, giá vé và phương thức thanh toán
 import { CircleCheck, LockKeyhole, Wallet } from "lucide-react";
-import type { Trip } from "../../../types/trip";
-import { atStop, dateTime, money, vehicle } from "../../../utils/customer";
+import type { Trip } from "@/features/customer/types/trip";
+import { atStop, vehicle } from "@/features/customer/model/trip";
+import { dateTime, money } from "@/lib/format";
 // Tổng hợp số ghế và tiền thanh toán từ chặng đang chọn
 export default function PriceSummary({
   trip,

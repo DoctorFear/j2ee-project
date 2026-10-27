@@ -1,15 +1,15 @@
 // Quản lý lựa chọn ghế và phiên thanh toán
 import { useEffect, useState } from "react";
-import type { Trip } from "../types/trip";
-import type { CustomerJourney } from "../features/customer/types/journey";
+import type { Trip } from "@/features/customer/types/trip";
+import type { CustomerJourney } from "@/features/customer/types/journey";
 import type {
   BookingOrder,
   PaymentSession,
-} from "../features/customer/types/order";
-import { bookingApi } from "../api/bookingApi";
-import { useUser } from "../context/UserContext";
-import { userService } from "../services/userService";
-import { atStop, fare, segment } from "../utils/customer";
+} from "@/features/customer/types/order";
+import { bookingApi } from "@/features/customer/api/bookingApi";
+import { useUser } from "@/features/auth";
+import { atStop, segment } from "@/features/customer/model/trip";
+import { fare } from "@/features/customer/model/pricing";
 
 // Kiểm tra thông tin đặt vé và giới hạn năm ghế mỗi đơn
 export default function useBooking(
@@ -37,25 +37,6 @@ export default function useBooking(
   const success = order?.status === "PAID";
   const expiresAt = order ? new Date(order.expiresAt).getTime() : null;
 
-  // Bổ sung thông tin liên hệ từ hồ sơ sau khi đăng nhập
-  useEffect(() => {
-    let active = true;
-    if (user && !user.phoneNumber)
-      userService
-        .getProfile()
-        .then((profile) => {
-          if (active)
-            setContact((previous) => ({
-              name: previous.name || profile.fullName,
-              phone: previous.phone || profile.phoneNumber || "",
-              email: previous.email || profile.email,
-            }));
-        })
-        .catch(() => {});
-    return () => {
-      active = false;
-    };
-  }, [user?.id]);
 
   // Khôi phục phiên chưa kết thúc khi tải lại trang
   useEffect(() => {

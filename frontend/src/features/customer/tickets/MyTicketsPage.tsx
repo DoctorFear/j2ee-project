@@ -1,17 +1,17 @@
 // Trang danh sách vé của khách hàng
 import { useCallback, useEffect, useState } from "react";
 import { Ticket as TicketIcon } from "lucide-react";
-import CustomerHeader from "../../layouts/CustomerHeader";
+import type { ReactNode } from "react";
 import TicketCard from "./components/TicketCard";
 import TicketTabs from "./components/TicketTabs";
 import TicketDetailModal from "./components/TicketDetailModal";
 import TicketQrModal from "./components/TicketQrModal";
-import { bookingApi, type CustomerTicket } from "../../api/bookingApi";
-import type { Ticket } from "../../types/ticket";
-import "./tickets.css";
+import { bookingApi, type CustomerTicket } from "@/features/customer/api/bookingApi";
+import type { Ticket } from "@/features/customer/types/ticket";
+import "@/features/customer/tickets/tickets.css";
 
 // Ghép danh sách vé và các hộp thoại chi tiết, QR
-export default function MyTicketsPage() {
+export default function MyTicketsPage({ header }: { header: ReactNode }) {
   const [tickets, setTickets] = useState<CustomerTicket[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -53,7 +53,7 @@ export default function MyTicketsPage() {
   );
   return (
     <div className="tickets-page">
-      <CustomerHeader />
+      {header}
       <div className="ticket-history-wrapper">
         <div className="page-title-row">
           <h1 className="page-title">

@@ -1,9 +1,9 @@
 // Trang nhận kết quả thanh toán và đối chiếu trạng thái đơn
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { bookingApi } from "../../api/bookingApi";
-import type { BookingOrder } from "./types/order";
-import CustomerHeader from "../../layouts/CustomerHeader";
+import { bookingApi } from "@/features/customer/api/bookingApi";
+import type { BookingOrder } from "@/features/customer/types/order";
+import CustomerHeader from "@/app/layouts/customer/CustomerHeader";
 // Chỉ xác nhận thành công từ trạng thái đơn trên máy chủ
 export default function PaymentResultPage() {
   const [params] = useSearchParams();

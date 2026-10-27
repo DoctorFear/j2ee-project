@@ -7,29 +7,29 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import { Armchair, Ban, Check } from "lucide-react";
-import CustomerHeader from "../../layouts/CustomerHeader";
-import SeatGrid from "../../components/SeatGrid";
-import Toast from "../../components/Toast";
+import type { ReactNode } from "react";
+import SeatGrid from "@/features/customer/booking/components/SeatGrid";
+import Toast from "@/features/customer/components/Toast";
 import ContactForm from "./components/ContactForm";
 import PickupDropSection from "./components/PickupDropSection";
 import PriceSummary from "./components/PriceSummary";
 import MomoPaymentModal from "./components/MomoPaymentModal";
-import useBooking from "../../hooks/useBooking";
+import useBooking from "@/features/customer/booking/useBooking";
 import { useEffect, useState } from "react";
-import { bookingApi } from "../../api/bookingApi";
-import { useUser } from "../../context/UserContext";
-import type { CustomerJourney } from "./types/journey";
+import { bookingApi } from "@/features/customer/api/bookingApi";
+import { useUser } from "@/features/auth";
+import type { CustomerJourney } from "@/features/customer/types/journey";
 import PaymentResultPage from "./PaymentResultPage";
 import {
   bookingReturnPath,
   readBookingSelection,
-} from "../../utils/bookingSession";
-import { segment, vehicle } from "../../utils/customer";
-import type { Trip } from "../../types/trip";
-import "./booking.css";
+} from "@/features/customer/booking/bookingSession";
+import { segment, vehicle } from "@/features/customer/model/trip";
+import type { Trip } from "@/features/customer/types/trip";
+import "@/features/customer/booking/booking.css";
 
 // Kiểm tra mã chuyến và chặng trên đường dẫn trước khi đặt ghế
-export default function SeatBookingPage() {
+export default function SeatBookingPage({ header }: { header: ReactNode }) {
   const { code } = useParams();
   const [params] = useSearchParams();
   const { user, isAuthenticated, loading: authLoading } = useUser();
@@ -69,7 +69,7 @@ export default function SeatBookingPage() {
   if (authLoading)
     return (
       <div className="booking-page">
-        <CustomerHeader booking />
+        {header}
         <main className="fallback">Đang xác thực tài khoản...</main>
       </div>
     );
@@ -94,7 +94,7 @@ export default function SeatBookingPage() {
   if (loading)
     return (
       <div className="booking-page">
-        <CustomerHeader booking />
+        {header}
         <main className="fallback">Đang tải chuyến xe...</main>
       </div>
     );
@@ -114,7 +114,7 @@ export default function SeatBookingPage() {
   if (!trip || !segment(trip, origin, destination))
     return (
       <div className="booking-page">
-        <CustomerHeader booking />
+        {header}
         <main className="fallback">
           <h1>{loadError || "Không tìm thấy chuyến xe hoặc chặng hợp lệ"}</h1>
           <Link to="/">Tìm chuyến khác</Link>
@@ -127,6 +127,7 @@ export default function SeatBookingPage() {
       trip={trip}
       origin={origin}
       destination={destination}
+      header={header}
     />
   );
 }
@@ -136,15 +137,17 @@ function BookingContent({
   trip,
   origin,
   destination,
+  header,
 }: {
   trip: Trip;
   origin: string;
   destination: string;
+  header: ReactNode;
 }) {
   const model = useBooking(trip, origin, destination);
   return (
     <div className="booking-page">
-      <CustomerHeader booking />
+      {header}
       <div className="checkout-container">
         <div className="left-content">
           <div className="section-card">

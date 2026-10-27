@@ -11,12 +11,13 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { bookingApi } from "../../../api/bookingApi";
-import type { RefundStatus } from "../types/order";
-import Modal from "../../../components/Modal";
-import type { Ticket } from "../../../types/ticket";
-import type { Trip } from "../../../types/trip";
-import { atStop, dateTime, money, station } from "../../../utils/customer";
+import { bookingApi } from "@/features/customer/api/bookingApi";
+import type { RefundStatus } from "@/features/customer/types/order";
+import Modal from "@/features/customer/components/Modal";
+import type { Ticket } from "@/features/customer/types/ticket";
+import type { Trip } from "@/features/customer/types/trip";
+import { atStop, station } from "@/features/customer/model/trip";
+import { dateTime, money } from "@/lib/format";
 // Hiển thị hành khách, điểm đón trả và các khoản thanh toán
 export default function TicketDetailModal({
   ticket,

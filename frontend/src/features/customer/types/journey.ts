@@ -1,7 +1,7 @@
 // Thông tin chuyến và danh mục lấy từ dịch vụ đặt vé
-import type { Trip } from "../../../types/trip";
-import type { Station } from "../../../types/station";
-import type { VehicleType } from "../../../types/vehicle";
+import type { Trip } from "@/features/customer/types/trip";
+import type { Station } from "@/features/customer/types/station";
+import type { VehicleType } from "@/features/customer/types/vehicle";
 export type CustomerJourney = Trip & {
   stations: Station[];
   vehicle: VehicleType;

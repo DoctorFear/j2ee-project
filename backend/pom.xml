@@ -21,6 +21,7 @@
     <modules>
         <module>gateway</module>
         <module>transport-service</module>
+        <module>booking-service</module>
     </modules>
 
     <properties>

@@ -1,8 +1,9 @@
 // Chọn điểm đón trả và hình thức trung chuyển
 import { useState } from "react";
 import { Building2, LocateFixed, MapPinned, MapPin, Bus } from "lucide-react";
-import type { Trip } from "../../../types/trip";
-import { atStop, dateTime, station } from "../../../utils/customer";
+import type { Trip } from "@/features/customer/types/trip";
+import { atStop, station } from "@/features/customer/model/trip";
+import { dateTime } from "@/lib/format";
 // Giữ điểm trả sau điểm đón và hiển thị thông tin trung chuyển
 export default function PickupDropSection({
   trip,

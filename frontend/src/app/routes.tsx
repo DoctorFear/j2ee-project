@@ -9,6 +9,7 @@ const AdminLayout = lazy(() => import("./layouts/admin/AdminLayout"));
 const SearchTripPage = lazy(() => import("@/features/customer/search/SearchTripPage"));
 const SeatBookingPage = lazy(() => import("@/features/customer/booking/SeatBookingPage"));
 const MyTicketsPage = lazy(() => import("@/features/customer/tickets/MyTicketsPage"));
+const PaymentResultPage = lazy(() => import("@/features/customer/booking/PaymentResultPage"));
 const LoginPage = lazy(() => import("@/features/auth/pages/LoginPage"));
 const RegisterPage = lazy(() => import("@/features/auth/pages/RegisterPage"));
 const ForgotPasswordPage = lazy(() => import("@/features/auth/pages/ForgotPasswordPage"));
@@ -61,6 +62,14 @@ export function AppRoutes() {
             <CustomerRoute>
               <SeatBookingPage header={<CustomerHeader booking />} />
             </CustomerRoute>
+          }
+        />
+        <Route
+          path="/trips/payment/book"
+          element={
+            <ProtectedRoute requiredRole="Member">
+              <PaymentResultPage />
+            </ProtectedRoute>
           }
         />
         <Route

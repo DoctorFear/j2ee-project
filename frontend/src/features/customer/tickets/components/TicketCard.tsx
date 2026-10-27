@@ -10,16 +10,15 @@ import {
   RotateCcw,
   TicketCheck,
 } from "lucide-react";
-import type { CustomerTicket } from "../../../api/bookingApi";
-import type { Trip } from "../../../types/trip";
-import { localDate } from "../../../utils/localDate";
+import type { CustomerTicket } from "@/features/customer/api/bookingApi";
+import type { Trip } from "@/features/customer/types/trip";
+import { localDate } from "@/lib/localDate";
 import {
   atStop,
-  dateTime,
-  money,
   station,
   vehicle,
-} from "../../../utils/customer";
+} from "@/features/customer/model/trip";
+import { dateTime, money } from "@/lib/format";
 // Gom các vé cùng đơn nhưng vẫn giữ thao tác riêng cho từng QR
 export default function TicketCard({
   bookingId,

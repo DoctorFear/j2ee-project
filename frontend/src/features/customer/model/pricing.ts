@@ -1,7 +1,7 @@
 // Tính giá vé theo chặng và cơ chế định giá
-import type { Trip } from "../types/trip";
-import { segment } from "./trip";
-import type { CustomerJourney } from "../features/customer/types/journey";
+import type { Trip } from "@/features/customer/types/trip";
+import { segment } from "@/features/customer/model/trip";
+import type { CustomerJourney } from "@/features/customer/types/journey";
 
 // Tính giá theo chặng và khuyến mãi, làm tròn đến nghìn đồng
 export function fare(trip: Trip, originId: string, destinationId: string) {

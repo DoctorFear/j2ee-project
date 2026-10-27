@@ -2,10 +2,10 @@
 import { Link } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
 import { Check, CircleCheck, Clock, QrCode, X } from "lucide-react";
-import Modal from "../../../components/Modal";
-import type { Contact } from "../../../types/contact";
-import type { PaymentSession } from "../types/order";
-import { money } from "../../../utils/customer";
+import Modal from "@/features/customer/components/Modal";
+import type { Contact } from "@/features/customer/types/contact";
+import type { PaymentSession } from "@/features/customer/types/order";
+import { money } from "@/lib/format";
 type Props = {
   remaining: number;
   total: number;

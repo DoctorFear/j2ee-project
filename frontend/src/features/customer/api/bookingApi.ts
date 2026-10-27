@@ -1,17 +1,17 @@
 // Gọi API danh mục, đặt chỗ, thanh toán và vé điện tử
-import { apiClient } from "../services/apiClient";
+import { apiClient } from "@/api/client";
 import type {
   CustomerJourney,
   JourneyResponse,
-} from "../features/customer/types/journey";
+} from "@/features/customer/types/journey";
 import type {
   BookingOrder,
   PaymentSession,
   RefundStatus,
-} from "../features/customer/types/order";
-import type { Contact } from "../types/contact";
-import type { Station } from "../types/station";
-import type { Ticket } from "../types/ticket";
+} from "@/features/customer/types/order";
+import type { Contact } from "@/features/customer/types/contact";
+import type { Station } from "@/features/customer/types/station";
+import type { Ticket } from "@/features/customer/types/ticket";
 
 // Chuyển dữ liệu API sang cấu trúc đang dùng của giao diện
 export function journeyFromApi(raw: JourneyResponse): CustomerJourney {
@@ -51,13 +51,13 @@ export const bookingApi = {
   ) =>
     apiClient<BookingOrder>("/api/bookings/hold", {
       method: "POST",
-      body: JSON.stringify({
+      data: {
         tripCode,
         originId,
         destinationId,
         seatCodes,
         ...contact,
-      }),
+      },
     }),
   order: (id: string) =>
     apiClient<BookingOrder>(`/api/bookings/${encodeURIComponent(id)}`),

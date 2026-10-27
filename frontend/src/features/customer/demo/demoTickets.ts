@@ -1,7 +1,7 @@
 // Dữ liệu vé và thông tin khách hàng
-import type { Ticket } from "../types/ticket";
+import type { Ticket } from "@/features/customer/types/ticket";
 import { trips } from "./demoTrips";
-import { localDate } from "../utils/localDate";
+import { localDate } from "@/lib/localDate";
 export const demoContact = {
   name: "Nguyễn Trương Mai Phương",
   phone: "0912345678",

@@ -1,8 +1,8 @@
 // Tải danh mục vận tải dùng cho các trang khách hàng
 import { useEffect, useState } from "react";
-import { bookingApi } from "../api/bookingApi";
-import type { CustomerJourney } from "../features/customer/types/journey";
-import type { Station } from "../types/station";
+import { bookingApi } from "@/features/customer/api/bookingApi";
+import type { CustomerJourney } from "@/features/customer/types/journey";
+import type { Station } from "@/features/customer/types/station";
 export default function useCustomerCatalog() {
   const [trips, setTrips] = useState<CustomerJourney[]>([]);
   const [stations, setStations] = useState<Station[]>([]);

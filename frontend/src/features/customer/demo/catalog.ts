@@ -1,4 +1,4 @@
-import type { Trip } from "../types/trip";
+import type { Trip } from "@/features/customer/types/trip";
 import { stations } from "./stations";
 import { vehicleTypes } from "./vehicleTypes";
 

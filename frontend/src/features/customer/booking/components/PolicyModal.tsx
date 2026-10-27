@@ -1,5 +1,5 @@
 // Hộp thoại chính sách vé và quy định đón khách
-import Modal from "../../../components/Modal";
+import Modal from "@/features/customer/components/Modal";
 import { ShieldCheck } from "lucide-react";
 // Hiển thị quy định đón khách và chính sách vé
 export default function PolicyModal({ onClose }: { onClose: () => void }) {
