@@ -46,4 +46,4 @@ screenshots/
 frontend/scripts/check-ui.mjs
 
 # Script khởi động cá nhân
-/run-spring.ps1
+/run-backend.ps1

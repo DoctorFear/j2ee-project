@@ -327,12 +327,12 @@ Các trang khách hàng gọi `src/features/customer/api/bookingApi.ts` qua HTTP
 ### Dữ liệu khởi tạo local
 
 - Auth sử dụng `Data/Seed/DatabaseSeeder.cs` hiện có để tạo tài khoản/vai trò.
-- Transport sử dụng `seed/DatabaseSeeder.java`: thêm 20 chuyến theo ngày Việt Nam, tuyến/trạm, phương tiện và tài xế; gồm giường nằm 34 chỗ, Limousine 22 chỗ và ghế ngồi 45 chỗ. Chuyến có đủ bốn khung giờ và các trạng thái mở bán, tạm dừng, đóng, nháp, đang chạy, hoàn thành, hủy.
-- Booking sử dụng `seed/DatabaseSeeder.java`: chờ Transport sẵn sàng, bổ sung sơ đồ cho xe seed và tạo 5 booking / 13 vé cho tài khoản cấu hình tại `booking.seed.user-id`. Điền ID thực tế của tài khoản khách hàng trong Auth; có thể sử dụng tài khoản `member1` do Auth khởi tạo. Thông tin liên hệ có thể đặt tại `booking.seed.name`, `phone`, `email`.
-- Bộ dữ liệu dùng mã `SEED-<yyyyMMdd>-...`; chạy lại cùng ngày không thêm trùng hoặc ghi đè dữ liệu đã tồn tại. Khởi động Transport ngày mới bổ sung bộ chuyến ngày mới; các bộ cũ được giữ nguyên. Booking chọn bộ seed mới nhất khi khởi động.
+- Transport sử dụng `backend/transport-service/src/main/java/com/futabus/transport/seed/DatabaseSeeder.java`: đồng bộ 20 chuyến (`SEED-01` đến `SEED-20`), tuyến/trạm, phương tiện và tài xế theo ngày Việt Nam; gồm giường nằm 34 chỗ, Limousine 22 chỗ và ghế ngồi 45 chỗ. Chuyến có các trạng thái mở bán, tạm dừng, đóng, nháp, đang chạy, hoàn thành, hủy.
+- Booking sử dụng `backend/booking-service/src/main/java/com/futa/booking/seed/DatabaseSeeder.java`: chờ Transport sẵn sàng, bổ sung sơ đồ cho xe seed và tạo 5 booking / 13 vé cho tài khoản cấu hình tại `booking.seed.user-id`. Điền ID thực tế của tài khoản khách hàng trong Auth; có thể sử dụng tài khoản `member1` do Auth khởi tạo. Thông tin liên hệ có thể đặt tại `booking.seed.name`, `phone`, `email`.
+- Transport dùng lại mã chuyến cố định `SEED-01` đến `SEED-20` và cập nhật ngày/giờ theo ngày Việt Nam mỗi lần khởi động; không tích lũy một bộ chuyến mới theo ngày. Booking xóa và tạo lại riêng các booking/vé/payment/refund seed có mã `SEED-...` khi khởi tạo; dữ liệu booking thật không thuộc các mã này.
 - Lịch kiểm tra chính: TP. Hồ Chí Minh → Bình Định hôm nay có chuyến sau khoảng 2 và 7 tiếng tính từ lần seed đầu; ngày mai có 6 chuyến mở bán theo chiều đi và 2 chuyến chiều về. Các tuyến Nha Trang, Đà Lạt, Đà Nẵng nằm ở hai ngày tới. Ngày/giờ đã lưu không tự kéo dài khi khởi động lại.
 - `member1` / `Member@123` có 8 vé sắp đi, 3 vé chuyến hoàn thành và 2 vé đã hủy/hoàn ngay sau lần seed đầu. Mỗi ghế là một vé, một booking có thể chứa nhiều vé.
-- Vé seed không tạo email hoặc giao dịch MoMo. Không gửi yêu cầu hoàn tiền của vé seed sang MoMo; dùng vé mới thanh toán thật để kiểm tra hoàn tiền qua cổng. Hai vé đã hoàn được tạo sẵn để xem giao diện lịch sử/trạng thái hoàn tiền.
+- Vé seed không gửi email, không gọi MoMo và không tạo giao dịch thật; payment/refund của chúng chỉ là bản ghi giả trạng thái thành công. Dùng booking mới để kiểm tra thanh toán/hoàn tiền MoMo; không yêu cầu hoàn tiền cho vé seed.
 - Seeder Java chỉ chạy ở profile `local`. Tắt bằng `futa.seed.enabled=false` ở Transport và `booking.seed.enabled=false` ở Booking. Khi tắt seeder Booking, cấu hình sơ đồ các xe cần mở bán trong `booking.vehicle-seats`.
 
 ## 9. Build và kiểm tra

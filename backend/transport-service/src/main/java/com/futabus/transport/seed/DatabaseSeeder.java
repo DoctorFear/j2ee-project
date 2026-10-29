@@ -48,6 +48,8 @@ public class DatabaseSeeder implements ApplicationRunner {
   @Transactional
   public void run(ApplicationArguments arguments) {
     jdbc.execute("SELECT pg_advisory_xact_lock(19890531)");
+
+    jdbc.execute("DELETE FROM trip_drivers WHERE trip_id IN (SELECT id FROM trips WHERE code LIKE 'SEED-%')");
     LocalDate today = LocalDate.now(VIETNAM);
     String prefix = "SEED-";
     removeLegacyDailySeeds();
