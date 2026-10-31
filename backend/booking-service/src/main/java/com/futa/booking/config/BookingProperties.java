@@ -21,15 +21,13 @@ public class BookingProperties {
   private String internalKey;
   private boolean salesEnabled = true;
   private java.util.Map<String, java.util.List<String>> vehicleSeats = new java.util.HashMap<>();
-  private Momo momo = new Momo();
+  private PayOS payos = new PayOS();
 
   @Getter
   @Setter
-  public static class Momo {
-    private String endpoint;
-    private String partnerCode;
-    private String accessKey;
-    private String secretKey;
-    private String ipnUrl;
+  public static class PayOS {
+    private String clientId;
+    private String apiKey;
+    private String checksumKey;
   }
 }

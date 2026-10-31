@@ -6,9 +6,9 @@
     --primary-light: #fff2ed;
     --primary-subtle: #fef6f3;
     --accent-green: #007646;
-    --momo: #a50064;
-    --momo-hover: #80004d;
-    --momo-light: #fdf2f8;
+    --vietqr: #0066b2;
+    --vietqr-hover: #004b85;
+    --vietqr-light: #f0f7ff;
     --text-main: #0f172a;
     --text-muted: #64748b;
     --text-light: #94a3b8;
@@ -28,12 +28,12 @@
     margin: 0;
     padding: 0;
     font-family:
-      "Plus Jakarta Sans",
-      -apple-system,
-      BlinkMacSystemFont,
-      "Segoe UI",
-      Roboto,
-      sans-serif;
+            "Plus Jakarta Sans",
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            Roboto,
+            sans-serif;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -419,38 +419,38 @@
     align-items: center;
     gap: 6px;
   }
-  .momo-pay-box {
+  .qr-pay-box {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 12px 14px;
-    border: 1.5px solid var(--momo);
-    background: var(--momo-light);
+    border: 1.5px solid var(--vietqr);
+    background: var(--vietqr-light);
     border-radius: var(--radius-md);
     cursor: pointer;
     margin-bottom: 16px;
   }
-  .momo-logo-img {
+  .qr-logo-img {
     width: 38px;
     height: 38px;
-    background: var(--momo);
+    background: var(--vietqr);
     color: #fff;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 15px;
     font-weight: 900;
     flex-shrink: 0;
   }
-  .momo-info h4 {
+  .qr-info h4 {
     font-size: 13.5px;
     font-weight: 800;
-    color: #83004f;
+    color: #004b85;
   }
-  .momo-info p {
+  .qr-info p {
     font-size: 11.5px;
-    color: #9d174d;
+    color: #0284c7;
     font-weight: 500;
   }
 
@@ -473,7 +473,7 @@
 
   .btn-checkout {
     width: 100%;
-    background: linear-gradient(135deg, var(--momo), var(--momo-hover));
+    background: linear-gradient(135deg, var(--vietqr), var(--vietqr-hover));
     color: #fff;
     border: none;
     padding: 13px 18px;
@@ -481,7 +481,7 @@
     font-size: 14.5px;
     font-weight: 800;
     cursor: pointer;
-    box-shadow: 0 8px 20px -4px rgba(165, 0, 100, 0.4);
+    box-shadow: 0 8px 20px -4px rgba(0, 102, 178, 0.4);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -511,7 +511,7 @@
   .modal-overlay.active {
     display: flex;
   }
-  .momo-modal {
+  .qr-modal {
     background: #ffffff;
     width: 100%;
     max-width: 480px;
@@ -531,15 +531,15 @@
       opacity: 1;
     }
   }
-  .momo-modal-header {
-    background: linear-gradient(135deg, var(--momo), #d81b60);
+  .qr-modal-header {
+    background: linear-gradient(135deg, var(--vietqr), #0284c7);
     color: #fff;
     padding: 16px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
-  .momo-modal-header h3 {
+  .qr-modal-header h3 {
     font-size: 16px;
     font-weight: 800;
     display: flex;
@@ -557,7 +557,7 @@
     align-items: center;
     gap: 6px;
   }
-  .momo-modal-body {
+  .qr-modal-body {
     padding: 24px 22px;
     text-align: center;
   }
@@ -566,7 +566,7 @@
     width: 190px;
     height: 190px;
     margin: 0 auto 16px auto;
-    border: 2px dashed #f472b6;
+    border: 2px dashed #93c5fd;
     border-radius: var(--radius-md);
     padding: 10px;
     background: #ffffff;
@@ -581,18 +581,18 @@
     height: 100%;
     object-fit: contain;
   }
-  .qr-momo-center {
+  .qr-logo-center {
     position: absolute;
-    width: 32px;
-    height: 32px;
-    background: var(--momo);
+    width: 34px;
+    height: 34px;
+    background: var(--vietqr);
     border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
     font-weight: 900;
-    font-size: 14px;
+    font-size: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
   .transfer-info-list {
@@ -621,7 +621,7 @@
     color: var(--text-main);
   }
   .transfer-row .t-val.price {
-    color: var(--momo);
+    color: var(--vietqr);
     font-size: 15px;
   }
 
@@ -693,8 +693,8 @@
     margin-bottom: 18px;
   }
   .ticket-pass {
-    background: #fdf2f8;
-    border: 1.5px dashed var(--momo);
+    background: var(--vietqr-light);
+    border: 1.5px dashed var(--vietqr);
     border-radius: var(--radius-md);
     padding: 16px;
     margin-bottom: 20px;
@@ -756,14 +756,14 @@
     color: var(--text-light);
   }
   .payment-title svg {
-    color: var(--momo);
+    color: var(--vietqr);
   }
-  .momo-modal-header h3 {
+  .qr-modal-header h3 {
     display: flex;
     align-items: center;
     gap: 6px;
   }
-  .customer-modal.momo-modal {
+  .customer-modal.qr-modal {
     width: min(480px, calc(100% - 40px));
     padding: 0;
     margin: auto;
@@ -779,7 +779,7 @@
     display: grid;
     place-items: center;
   }
-  .momo-modal-header {
+  .qr-modal-header {
     position: relative;
     padding-right: 36px;
   }

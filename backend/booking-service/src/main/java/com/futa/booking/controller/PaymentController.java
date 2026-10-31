@@ -12,9 +12,10 @@ import tools.jackson.databind.JsonNode;
 public class PaymentController {
   private final PaymentService payments;
 
-  @PostMapping("/api/bookings/payments/momo/ipn")
+  // Tiếp nhận thông báo Webhook thanh toán từ PayOS
+  @PostMapping({"/payos/webhook", "/api/bookings/payments/payos/webhook"})
   public ResponseEntity<Void> notify(@RequestBody JsonNode body) {
-    payments.notify(body);
+    payments.notifyPayOS(body);
     return ResponseEntity.noContent().build();
   }
 }

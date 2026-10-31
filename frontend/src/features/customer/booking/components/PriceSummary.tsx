@@ -62,11 +62,11 @@ export default function PriceSummary({
         <Wallet size={16} />
         Phương thức thanh toán
       </div>
-      <div className="momo-pay-box">
-        <div className="momo-logo-img">M</div>
-        <div className="momo-info">
-          <h4>Chuyển khoản Ví MoMo</h4>
-          <p>Quét mã QR chuyển khoản tức thì 24/7</p>
+      <div className="qr-pay-box">
+        <div className="qr-logo-img">M</div>
+        <div className="qr-info">
+          <h4>Chuyển khoản VietQR (PayOS)</h4>
+          <p>Quét mã QR qua App Ngân hàng hoặc Ví điện tử 24/7</p>
         </div>
       </div>
       <div className="divider" />

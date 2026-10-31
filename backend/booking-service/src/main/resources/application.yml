@@ -41,9 +41,7 @@ booking:
   jwt-audience: ${AUTH_JWT_AUDIENCE:FutaBusClient}
   email-from: ${SMTP_USERNAME:}
   internal-key: ${BOOKING_INTERNAL_KEY:}
-  momo:
-    endpoint: ${MOMO_ENDPOINT:https://test-payment.momo.vn}
-    partner-code: ${MOMO_PARTNER_CODE:}
-    access-key: ${MOMO_ACCESS_KEY:}
-    secret-key: ${MOMO_SECRET_KEY:}
-    ipn-url: ${MOMO_IPN_URL:}
+  payos:
+    client-id: ${PAYOS_CLIENT_ID:}
+    api-key: ${PAYOS_API_KEY:}
+    checksum-key: ${PAYOS_CHECKSUM_KEY:}

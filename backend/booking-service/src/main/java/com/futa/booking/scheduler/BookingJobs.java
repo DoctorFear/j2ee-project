@@ -33,11 +33,11 @@ public class BookingJobs {
   @Scheduled(fixedDelay = 30000)
   public void refunds() {
     for (var refund :
-        refunds.findTop10ByStatusAndNextAttemptAtBeforeOrderByRequestedAt(
-            "PENDING", java.time.Instant.now())) refundService.process(refund.getTicketCode());
+            refunds.findTop10ByStatusAndNextAttemptAtBeforeOrderByRequestedAt(
+                    "PENDING", java.time.Instant.now())) refundService.process(refund.getTicketCode());
   }
 
-  // Tra cứu giao dịch chưa nhận được thông báo từ MoMo
+  // Tra cứu giao dịch chưa nhận được Webhook từ PayOS
   @Scheduled(fixedDelay = 60000)
   public void payments() {
     for (var payment : payments.findByStatusOrderById("PENDING")) {

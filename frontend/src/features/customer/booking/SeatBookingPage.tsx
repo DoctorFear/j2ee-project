@@ -13,7 +13,7 @@ import Toast from "@/features/customer/components/Toast";
 import ContactForm from "./components/ContactForm";
 import PickupDropSection from "./components/PickupDropSection";
 import PriceSummary from "./components/PriceSummary";
-import MomoPaymentModal from "./components/MomoPaymentModal";
+import QRPaymentModal from "./components/QRPaymentModal.tsx";
 import useBooking from "@/features/customer/booking/useBooking";
 import { useEffect, useState } from "react";
 import { bookingApi } from "@/features/customer/api/bookingApi";
@@ -204,7 +204,7 @@ function BookingContent({
         </div>
       </div>
       {model.expiresAt && (
-        <MomoPaymentModal
+        <QRPaymentModal
           remaining={model.remaining}
           total={model.price * model.selected.length}
           code={model.paymentCode}

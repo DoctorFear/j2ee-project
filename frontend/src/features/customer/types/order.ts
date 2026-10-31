@@ -1,4 +1,4 @@
-// Trạng thái đơn giữ chỗ và phiên thanh toán
+// Trạng thái đơn giữ chỗ và phiên thanh toán PayOS
 export type BookingOrder = {
   id: string;
   tripCode: string;

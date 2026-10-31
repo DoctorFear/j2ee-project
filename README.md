@@ -17,7 +17,7 @@ Tài liệu này giới thiệu kiến trúc, phân công công việc, tổ ch�
 
 Các backend/frontend chạy trên môi trường local. Database có thể cài trực tiếp hoặc chạy trong container, tùy môi trường từng thành viên; cấu hình kết nối phải khớp database đang sử dụng. Hệ thống không sử dụng RabbitMQ. Giao tiếp giữa các service qua HTTP. Frontend gọi API qua Gateway; Auth và Booking kiểm tra JWT và quyền truy cập tại backend.
 
-Các thư viện giao diện gồm Lucide React cho icon và qrcode.react cho mã QR. Font chữ sử dụng Plus Jakarta Sans. Booking tích hợp MoMo và gửi email xác nhận vé/thông báo hoãn chuyến; Trip tổng hợp báo cáo và xuất Excel bằng Apache POI.
+Các thư viện giao diện gồm Lucide React cho icon và qrcode.react cho mã QR. Font chữ sử dụng Plus Jakarta Sans. Booking tích hợp PayOS và gửi email xác nhận vé/thông báo hoãn chuyến; Trip tổng hợp báo cáo và xuất Excel bằng Apache POI.
 
 Luồng kiến trúc:
 
@@ -70,9 +70,9 @@ Công nghệ và kiến trúc tuân theo tài liệu `cau_truc_thu_muc_FUTA.docx
 - Lọc giờ đón, loại xe, vị trí/tầng ghế, khoảng giá; sắp xếp theo giá, giờ và ghế trống.
 - Xem lộ trình các trạm, địa chỉ, mốc giờ và chính sách vé.
 - Chọn ghế theo cấu hình xe, tối đa 5 ghế mỗi đơn; nhập thông tin liên hệ và điểm đón/trả.
-- Giữ chỗ 10 phút, thanh toán MoMo, nhận vé điện tử và email xác nhận.
+- Giữ chỗ 10 phút, thanh toán PayOS, nhận vé điện tử và email xác nhận.
 - Quản lý vé sắp khởi hành/lịch sử, xem chi tiết, xuất trình QR và đặt lại tuyến.
-- Hủy và hoàn toàn bộ tiền vé qua MoMo khi còn ít nhất 5 tiếng trước giờ xe khởi hành tại bến đầu tuyến. Chỉ hủy vé và trả lại ghế sau khi MoMo xác nhận hoàn tiền thành công.
+- Hủy và hoàn toàn bộ tiền vé qua PayOS khi còn ít nhất 5 tiếng trước giờ xe khởi hành tại bến đầu tuyến. Chỉ hủy vé và trả lại ghế sau khi PayOS xác nhận hoàn tiền thành công.
 - Khứ hồi tìm theo hai chiều và đặt vé từng lượt. Đón/trả tại các trạm hợp lệ của Transport; trung chuyển được bổ sung khi có danh mục khu vực phục vụ.
 
 ### Quản trị và điều phối
@@ -171,7 +171,7 @@ Tổng số bảng được thiết kế theo phạm vi khoảng 15–20 bảng 
 - Giờ đón/trả tính bằng giờ xuất bến cộng offset; lưu ngày giờ đầy đủ, có múi giờ, để xử lý hành trình qua ngày.
 - Giá do Trip tính; Booking xác minh và lưu giá tại lúc đặt, không tin giá gửi từ giao diện.
 - Giữ ghế và phát hành vé phải chống trùng; theo cấu trúc đã chốt, ghế khóa theo `trip_code + seat_code` cho toàn chuyến.
-- MoMo callback xử lý idempotent, kiểm tra chữ ký, số tiền và mã đơn; chỉ phát hành vé sau khi xác nhận thanh toán thành công.
+- PayOS callback xử lý idempotent, kiểm tra chữ ký, số tiền và mã đơn; chỉ phát hành vé sau khi xác nhận thanh toán thành công.
 - Trạng thái thanh toán/vé tách khỏi trạng thái lên/xuống xe.
 - Occupancy = tổng vé thực bán / tổng sức chứa × 100%; từ 80% là Cao, từ 50% đến dưới 80% là Trung bình, dưới 50% là Thấp.
 - Auth dùng EF migrations. Trip hiện dùng `ddl-auto=update` khi phát triển Station; trước khi triển khai production cần chuyển sang migration có phiên bản.
@@ -184,7 +184,7 @@ Booking đọc `ticketPrice` của Transport và áp dụng nguyên giá toàn t
 - .NET SDK 10 và công cụ Entity Framework Core 10 tương thích cho Auth.
 - JDK 21, cấu hình `JAVA_HOME` đúng JDK. Mỗi service Java có Maven Wrapper; không bắt buộc cài Maven riêng.
 - SQL Server cho Auth, PostgreSQL cho Transport và MySQL cho Booking; mỗi service cần tài khoản kết nối đúng database. Docker là lựa chọn triển khai database, không phải điều kiện bắt buộc.
-- Thông tin merchant MoMo, IPN công khai và SMTP để chạy thanh toán/gửi email.
+- Thông tin merchant PayOS, IPN công khai và SMTP để chạy thanh toán/gửi email.
 - Microsoft Edge nếu sử dụng script kiểm tra giao diện Playwright trong repository.
 
 Kiểm tra các công cụ sử dụng trên máy; Maven và CLI database không bắt buộc nếu dùng Wrapper hoặc công cụ quản lý tương ứng:
@@ -201,7 +201,7 @@ psql --version
 
 ### Điều kiện chạy backend
 
-Các database phải sẵn sàng và thông tin kết nối trong cấu hình local phải đúng môi trường từng thành viên. Auth cần áp dụng EF migrations trước lần chạy trên database mới. Transport và Booking hiện mặc định chọn profile `local` khi không chỉ định profile khác. Thanh toán cần thông tin merchant MoMo và IPN công khai; email cần cấu hình SMTP hợp lệ.
+Các database phải sẵn sàng và thông tin kết nối trong cấu hình local phải đúng môi trường từng thành viên. Auth cần áp dụng EF migrations trước lần chạy trên database mới. Transport và Booking hiện mặc định chọn profile `local` khi không chỉ định profile khác. Thanh toán cần thông tin merchant PayOS và IPN công khai; email cần cấu hình SMTP hợp lệ.
 
 ## 7. Cấu hình local
 
@@ -210,10 +210,10 @@ Các database phải sẵn sàng và thông tin kết nối trong cấu hình lo
 | Frontend | `frontend/.env.development` | `VITE_API_BASE_URL=http://localhost:8080` |
 | Auth | `backend/auth-service/src/AuthService.Api/appsettings.json` | Kết nối `FutaBus_AuthDb` (SQL Server), JWT Secret, SMTP Gmail, URL Frontend |
 | Trip | `backend/transport-service/src/main/resources/application-local.yml` | Cổng API 8081, kết nối PostgreSQL `trip_db` theo máy; mẫu `application.example.yaml` |
-| Booking | `backend/booking-service/src/main/resources/application-local.yml` | MySQL `booking_db`, JWT secret/issuer/audience khớp Auth, URL Transport, sơ đồ ghế từng xe, khóa nội bộ, MoMo và SMTP |
+| Booking | `backend/booking-service/src/main/resources/application-local.yml` | MySQL `booking_db`, JWT secret/issuer/audience khớp Auth, URL Transport, sơ đồ ghế từng xe, khóa nội bộ, PayOS và SMTP |
 | Gateway | `backend/gateway/src/main/resources/application.yaml` | Cổng 8080, định tuyến service và CORS cho frontend cổng 5173 |
 
-Tên các trường cấu hình backend phải khớp với lớp cấu hình của service. Không commit mật khẩu, token, secret MoMo, khóa RSA riêng hoặc tệp cấu hình local. Các tệp example chỉ chứa tên trường và giá trị không nhạy cảm.
+Tên các trường cấu hình backend phải khớp với lớp cấu hình của service. Không commit mật khẩu, token, secret PayOS, khóa RSA riêng hoặc tệp cấu hình local. Các tệp example chỉ chứa tên trường và giá trị không nhạy cảm.
 
 Tạo cấu hình frontend từ thư mục gốc:
 
@@ -275,7 +275,7 @@ if (!(Test-Path backend/booking-service/src/main/resources/application-local.yml
 - `booking.jwt-secret`: trùng `JwtSettings:Secret` của Auth, ít nhất 32 byte.
 - `booking.transport-url`: `http://localhost:8081`; `transport-zone: UTC` theo quy ước dữ liệu Transport. Đổi thành `Asia/Ho_Chi_Minh` nếu dữ liệu `LocalDateTime` của nhóm được nhập theo giờ Việt Nam.
 - `booking.vehicle-seats`: khóa là ID xe thực tế, giá trị là danh sách mã ghế theo đúng thứ tự trên xe, ví dụ `"1": [A01, A02, B01, B02]` cho xe 4 chỗ. Với xe 34 chỗ, khai báo đủ các mã ghế thực tế. Để trống hoặc lệch sức chứa thì chuyến không mở bán.
-- `booking.momo`: tài khoản merchant, access key, secret key và IPN URL công khai `https://<host>/api/bookings/payments/momo/ipn`. Endpoint mặc định là MoMo sandbox; cấu hình endpoint tương ứng tài khoản sử dụng.
+- `booking.PayOS`: tài khoản merchant, access key, secret key và IPN URL công khai `https://<host>/api/bookings/payments/PayOS/ipn`. Endpoint mặc định là PayOS sandbox; cấu hình endpoint tương ứng tài khoản sử dụng.
 - `spring.mail` và `booking.email-from`: tài khoản SMTP gửi vé; Gmail dùng mật khẩu ứng dụng. Email có mã vé, thông tin đón và ảnh QR đính kèm; gửi lỗi sẽ được thử lại.
 - `booking.internal-key`: khóa riêng dùng giữa các backend; không đưa khóa này vào biến `VITE_*`.
 
@@ -292,8 +292,8 @@ Có thể dùng Maven Wrapper trong từng service nếu không cài Maven riên
 | `GET /api/bookings/catalog/stations`, `GET /api/bookings/catalog/trips`, `GET /api/bookings/catalog/trips/{code}` | Công khai, danh mục trạm/chuyến từ Transport |
 | `POST /api/bookings/hold` | Member, giữ tối đa 5 ghế, tối đa 600 giây và không vượt giờ đón |
 | `GET /api/bookings/{id}`, `DELETE /api/bookings/{id}/hold` | Chủ đơn tra cứu/nhả ghế chưa thanh toán |
-| `POST /api/bookings/{id}/pay` | Chủ đơn tạo hoặc lấy lại phiên MoMo |
-| `POST /api/bookings/payments/momo/ipn` | MoMo callback, bắt buộc xác minh chữ ký và số tiền |
+| `POST /api/bookings/{id}/pay` | Chủ đơn tạo hoặc lấy lại phiên PayOS |
+| `POST /api/bookings/payments/PayOS/ipn` | PayOS callback, bắt buộc xác minh chữ ký và số tiền |
 | `GET /api/tickets/my`, `GET /api/tickets/{code}`, `GET /api/tickets/{code}/qr` | Chủ vé xem danh sách, thông tin và mã QR |
 | `POST /api/tickets/{code}/cancel`, `GET /api/tickets/{code}/refund` | Chủ vé yêu cầu hủy/tra cứu kết quả hoàn tiền |
 
@@ -332,7 +332,7 @@ Các trang khách hàng gọi `src/features/customer/api/bookingApi.ts` qua HTTP
 - Transport dùng lại mã chuyến cố định `SEED-01` đến `SEED-20` và cập nhật ngày/giờ theo ngày Việt Nam mỗi lần khởi động; không tích lũy một bộ chuyến mới theo ngày. Booking xóa và tạo lại riêng các booking/vé/payment/refund seed có mã `SEED-...` khi khởi tạo; dữ liệu booking thật không thuộc các mã này.
 - Lịch kiểm tra chính: TP. Hồ Chí Minh → Bình Định hôm nay có chuyến sau khoảng 2 và 7 tiếng tính từ lần seed đầu; ngày mai có 6 chuyến mở bán theo chiều đi và 2 chuyến chiều về. Các tuyến Nha Trang, Đà Lạt, Đà Nẵng nằm ở hai ngày tới. Ngày/giờ đã lưu không tự kéo dài khi khởi động lại.
 - `member1` / `Member@123` có 8 vé sắp đi, 3 vé chuyến hoàn thành và 2 vé đã hủy/hoàn ngay sau lần seed đầu. Mỗi ghế là một vé, một booking có thể chứa nhiều vé.
-- Vé seed không gửi email, không gọi MoMo và không tạo giao dịch thật; payment/refund của chúng chỉ là bản ghi giả trạng thái thành công. Dùng booking mới để kiểm tra thanh toán/hoàn tiền MoMo; không yêu cầu hoàn tiền cho vé seed.
+- Vé seed không gửi email, không gọi PayOS và không tạo giao dịch thật; payment/refund của chúng chỉ là bản ghi giả trạng thái thành công. Dùng booking mới để kiểm tra thanh toán/hoàn tiền PayOS; không yêu cầu hoàn tiền cho vé seed.
 - Seeder Java chỉ chạy ở profile `local`. Tắt bằng `futa.seed.enabled=false` ở Transport và `booking.seed.enabled=false` ở Booking. Khi tắt seeder Booking, cấu hình sơ đồ các xe cần mở bán trong `booking.vehicle-seats`.
 
 ## 9. Build và kiểm tra
@@ -407,5 +407,58 @@ Booking đã cung cấp `POST /internal/bookings/booked-counts` với body danh 
 | Spring không nạp cấu hình local | Profile `local` đã bật, tệp `application-local.yml` đúng thư mục |
 | Auth không đọc cấu hình | Environment `Development`, connection string SQL Server và JWT secret |
 | Migration thất bại | Phiên bản migration, quyền database và dữ liệu hiện có; không xóa database để xử lý tùy tiện |
-| MoMo không báo kết quả | Cấu hình provider, chữ ký, mã đơn/số tiền và khả năng truy cập IPN URL từ bên ngoài |
+| PayOS không báo kết quả | Cấu hình provider, chữ ký, mã đơn/số tiền và khả năng truy cập IPN URL từ bên ngoài |
 | Cổng đã được sử dụng | Xác định tiến trình dùng cổng và thống nhất cổng trong cấu hình các service |
+
+## 13. Hướng dẫn chạy kiểm thử chuyển khoản thanh toán VietQR PayOS (Local Dev Test Flow)
+
+Phần này hướng dẫn các thành viên cấu hình thông số API Key PayOS Sandbox và thực hiện chạy kiểm thử luồng thanh toán chuyển khoản VietQR tự động trên máy local.
+
+### 13.1. Chuẩn bị thông số API Key PayOS Sandbox
+
+Mỗi thành viên khi tự chạy dự án dưới máy cá nhân cần cấu hình bộ 3 mã khóa Sandbox PayOS do Trưởng nhóm cung cấp vào tệp cấu hình local (`application-local.yml`).
+
+Các thông số bao gồm:
+- `client-id`: Mã định danh ứng dụng PayOS Sandbox.
+- `api-key`: Mã khóa kết nối API PayOS.
+- `checksum-key`: Mã chữ ký bảo mật xác minh dữ liệu Webhook.
+
+### 13.2. Cấu hình tệp `application-local.yml`
+Mở tệp `backend/booking-service/src/main/resources/application-local.yml` và khai báo bộ thông số kết nối dưới khối `booking.payos`:
+```yaml
+booking:
+  sales-enabled: true
+  transport-zone: UTC
+  payos:
+    client-id: "DÁN_CLIENT_ID_VÀO_ĐÂY"
+    api-key: "DÁN_API_KEY_VÀO_ĐÂY"
+    checksum-key: "DÁN_CHECKSUM_KEY_VÀO_ĐÂY"
+    return-url: http://localhost:5173/payment-result
+    cancel-url: http://localhost:5173/booking
+```
+> ⚠️ **CẢNH BÁO BẢO MẬT**: Tệp `application-local.yml` đã được thêm vào `.gitignore`. Tuyệt đối không commit tệp chứa khóa bí mật thật lên Git repository.
+
+### 13.3. Quy trình kích hoạt ngrok để nhận Webhook ( AI CHƯA CÓ NGROK THÌ TỰ CÀI TRÊN MICROSOFT STORE/WEB )
+PayOS bắt buộc một đường dẫn HTTPS công khai trên Internet để gửi thông báo biến động số dư (Webhook) về Backend khi nhận được tiền.
+
+1. Mở cửa sổ Terminal / PowerShell mới và chạy ngrok trỏ về cổng Backend Booking Service (`8082`):
+   ```powershell
+   ngrok http 8082
+   ```
+2. Sao chép đường dẫn HTTPS ở dòng `Forwarding` (Ví dụ: `https://xxxx-xx-xx.ngrok-free.app`).
+3. Truy cập [Dashboard PayOS Sandbox](https://payos.vn) -> Mục **Cấu hình Webhook** -> Dán URL tiếp nhận:
+   `https://xxxx-xx-xx.ngrok-free.app/payos/webhook`
+   (Hoặc `/api/bookings/payments/payos/webhook`).
+
+### 13.4. Khởi động Backend và Frontend
+
+1. **Khởi động Backend Services**: Mở PowerShell tại thư mục `j2ee-project/backend/booking-service` và chạy script tự động:
+   ```powershell
+   .\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=local"
+   ```
+2. **Khởi động Frontend**: Mở cửa sổ Terminal tại thư mục `frontend/` và chạy:
+   ```powershell
+   cd frontend
+   npm run dev
+   ```
+3. Trình duyệt mở tại `http://localhost:5173`.

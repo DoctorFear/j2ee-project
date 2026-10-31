@@ -19,25 +19,25 @@ public class SecurityConfig {
   @Bean
   JwtDecoder decoder(BookingProperties properties) {
     if (properties.getJwtSecret() == null
-        || properties.getJwtSecret().getBytes(StandardCharsets.UTF_8).length < 32)
+            || properties.getJwtSecret().getBytes(StandardCharsets.UTF_8).length < 32)
       throw new IllegalStateException("AUTH_JWT_SECRET phải khớp Auth và có ít nhất 32 byte");
     var decoder =
-        NimbusJwtDecoder.withSecretKey(
-                new SecretKeySpec(
-                    properties.getJwtSecret().getBytes(StandardCharsets.UTF_8), "HmacSHA256"))
-            .build();
+            NimbusJwtDecoder.withSecretKey(
+                            new SecretKeySpec(
+                                    properties.getJwtSecret().getBytes(StandardCharsets.UTF_8), "HmacSHA256"))
+                    .build();
     OAuth2TokenValidator<Jwt> audience =
-        token ->
-            token.getAudience().contains(properties.getJwtAudience())
-                ? OAuth2TokenValidatorResult.success()
-                : OAuth2TokenValidatorResult.failure(new OAuth2Error("invalid_token"));
+            token ->
+                    token.getAudience().contains(properties.getJwtAudience())
+                            ? OAuth2TokenValidatorResult.success()
+                            : OAuth2TokenValidatorResult.failure(new OAuth2Error("invalid_token"));
     decoder.setJwtValidator(
-        new DelegatingOAuth2TokenValidator<>(
-            JwtValidators.createDefaultWithIssuer(properties.getJwtIssuer()), audience));
+            new DelegatingOAuth2TokenValidator<>(
+                    JwtValidators.createDefaultWithIssuer(properties.getJwtIssuer()), audience));
     return decoder;
   }
 
-  // Chỉ công khai danh mục chuyến và callback có chữ ký của MoMo
+  // Chỉ công khai danh mục chuyến và callback xác minh của PayOS
   @Bean
   SecurityFilterChain security(HttpSecurity http) throws Exception {
     var authorities = new JwtGrantedAuthoritiesConverter();
@@ -46,16 +46,20 @@ public class SecurityConfig {
     var converter = new JwtAuthenticationConverter();
     converter.setJwtGrantedAuthoritiesConverter(authorities);
     return http.csrf(csrf -> csrf.disable())
-        .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authorizeHttpRequests(
-            a ->
-                a.requestMatchers("/api/bookings/catalog/**", "/api/bookings/payments/momo/ipn")
-                    .permitAll()
-                    .requestMatchers("/internal/**")
-                    .permitAll()
-                    .anyRequest()
-                    .hasRole("Member"))
-        .oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(converter)))
-        .build();
+            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(
+                    a ->
+                            a.requestMatchers(
+                                            "/api/bookings/catalog/**",
+                                            "/payos/webhook",
+                                            "/api/bookings/payments/payos/webhook",
+                                            "/api/bookings/payments/**")
+                                    .permitAll()
+                                    .requestMatchers("/internal/**")
+                                    .permitAll()
+                                    .anyRequest()
+                                    .hasRole("Member"))
+            .oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(converter)))
+            .build();
   }
 }
