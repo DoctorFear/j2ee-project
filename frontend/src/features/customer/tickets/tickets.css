@@ -784,3 +784,40 @@
     margin-top: 1px;
   }
 }
+.hero-chip {
+  padding: 7px 14px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.22);
+  font-size: 13px;
+  font-weight: 700;
+}
+.ticket-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 48px 20px;
+  margin-top: 16px;
+  text-align: center;
+  background: #fff;
+  border: 1.5px dashed #e2e8f0;
+  border-radius: 18px;
+  color: #94a3b8;
+}
+.ticket-empty strong {
+  color: #0f172a;
+  font-size: 16px;
+}
+.ticket-empty p {
+  margin: 0 0 10px;
+  font-size: 13.5px;
+}
+.ticket-empty-btn {
+  padding: 10px 22px;
+  border-radius: 9999px;
+  background: #f95721;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+}

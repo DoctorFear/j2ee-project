@@ -2,15 +2,12 @@ import { useProfile } from "@/features/account/useProfile";
 // Giao diện Quản lý hồ sơ cá nhân và Đổi mật khẩu FutaBus (Dành riêng cho Khách hàng Member)
 import React, { useState } from "react";
 import { User, Lock, Save, ShieldCheck } from "lucide-react";
-import { ToastNotification } from "@/components/shared/ToastNotification";
 import styles from "@/features/account/ProfilePage.module.css";
 
 export default function ProfilePage({ header }: { header: React.ReactNode }) {
   const [activeTab, setActiveTab] = useState<"profile" | "password">("profile");
   const {
     user,
-    toasts,
-    removeToast,
     profileForm,
     setProfileForm,
     savingProfile,
@@ -26,7 +23,6 @@ export default function ProfilePage({ header }: { header: React.ReactNode }) {
   return (
     <>
       {header}
-      <ToastNotification toasts={toasts} onClose={removeToast} />
 
       <main className={styles.profileContainer}>
         <div className={styles.profileCard}>

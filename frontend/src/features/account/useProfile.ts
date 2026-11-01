@@ -1,11 +1,11 @@
 import { useState, type FormEvent } from "react";
 import { useUser } from "@/features/auth";
 import { userService } from "@/features/account/api";
-import { useToastNotifications } from "@/lib/useToastNotifications";
+import { useToast } from "@/components/shared/toast/toast-context";
 
 export function useProfile() {
   const { user, updateUser, refreshUserProfile } = useUser();
-  const { toasts, showToast, removeToast } = useToastNotifications();
+  const toast = useToast();
 
   // State thông tin cá nhân
   const [profileDraft, setProfileForm] = useState<{
@@ -33,22 +33,22 @@ export function useProfile() {
   const handleUpdateProfile = async (e: FormEvent) => {
     e.preventDefault();
     if (!profileForm.fullName.trim()) {
-      showToast("Vui lòng nhập họ và tên.", "error");
+      toast.error("Vui lòng nhập họ và tên.");
       return;
     }
 
     if (!profileForm.email.trim()) {
-      showToast("Vui lòng nhập địa chỉ email.", "error");
+      toast.error("Vui lòng nhập địa chỉ email.");
       return;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profileForm.email.trim())) {
-      showToast("Địa chỉ email không đúng định dạng.", "error");
+      toast.error("Địa chỉ email không đúng định dạng.");
       return;
     }
 
     if (profileForm.phoneNumber && !/^0[35789][0-9]{8}$/.test(profileForm.phoneNumber.trim())) {
-      showToast("Số điện thoại phải có 10 chữ số chuẩn Việt Nam (03x, 05x, 07x, 08x, 09x).", "error");
+      toast.error("Số điện thoại phải có 10 chữ số chuẩn Việt Nam (03x, 05x, 07x, 08x, 09x).");
       return;
     }
 
@@ -67,11 +67,11 @@ export function useProfile() {
       });
       setProfileForm(null);
 
-      showToast("Cập nhật thông tin hồ sơ thành công!", "success");
+      toast.success("Cập nhật thông tin hồ sơ thành công!");
       await refreshUserProfile();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Cập nhật hồ sơ thất bại.";
-      showToast(msg, "error");
+      toast.error(msg);
     } finally {
       setSavingProfile(false);
     }
@@ -83,27 +83,27 @@ export function useProfile() {
     const isCreating = user?.hasPassword === false;
 
     if (!isCreating && !passwordForm.currentPassword) {
-      showToast("Vui lòng nhập mật khẩu hiện tại.", "error");
+      toast.error("Vui lòng nhập mật khẩu hiện tại.");
       return;
     }
 
     if (!passwordForm.newPassword) {
-      showToast("Vui lòng nhập mật khẩu mới.", "error");
+      toast.error("Vui lòng nhập mật khẩu mới.");
       return;
     }
 
     if (passwordForm.newPassword.length < 6) {
-      showToast("Mật khẩu mới phải có tối thiểu 6 ký tự.", "error");
+      toast.error("Mật khẩu mới phải có tối thiểu 6 ký tự.");
       return;
     }
 
     if (!passwordForm.confirmNewPassword) {
-      showToast("Vui lòng nhập lại mật khẩu xác nhận.", "error");
+      toast.error("Vui lòng nhập lại mật khẩu xác nhận.");
       return;
     }
 
     if (passwordForm.newPassword !== passwordForm.confirmNewPassword) {
-      showToast("Mật khẩu xác nhận mới không trùng khớp.", "error");
+      toast.error("Mật khẩu xác nhận mới không trùng khớp.");
       return;
     }
 
@@ -115,17 +115,17 @@ export function useProfile() {
         confirmNewPassword: passwordForm.confirmNewPassword,
       });
 
-      showToast(isCreating ? "Tạo mật khẩu thành công!" : "Đổi mật khẩu thành công!", "success");
+      toast.success( isCreating? "Tạo mật khẩu thành công" : "Đổi mật khẩu thành công!");
       setPasswordForm({
         currentPassword: "",
         newPassword: "",
-        confirmNewPassword: "",
+        confirmNewPassword: ""
       });
       // Refresh để cập nhật hasPassword = true
       await refreshUserProfile();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : isCreating ? "Tạo mật khẩu thất bại." : "Đổi mật khẩu thất bại.";
-      showToast(msg, "error");
+      toast.error(msg);
     } finally {
       setSavingPassword(false);
     }
@@ -136,8 +136,6 @@ export function useProfile() {
 
   return {
     user,
-    toasts,
-    removeToast,
     profileForm,
     setProfileForm,
     savingProfile,

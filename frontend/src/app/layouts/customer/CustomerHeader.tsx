@@ -1,7 +1,7 @@
 // Thanh đầu trang khách hàng dùng phiên đăng nhập chung của FutaBus.
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { BusFront, ChevronDown, ContactRound, LogOut, Search, ShieldCheck, Ticket, User } from "lucide-react";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { ArrowLeft, BusFront, ChevronDown, ContactRound, LogOut, Search, ShieldCheck, Ticket, User } from "lucide-react";
 import { useUser } from "@/features/auth";
 import "./CustomerHeader.css";
 
@@ -9,6 +9,8 @@ import "./CustomerHeader.css";
 export default function CustomerHeader({ booking = false }: { booking?: boolean }) {
   const { user, isAuthenticated, logoutClient } = useUser();
   const navigate = useNavigate();
+  const location = useLocation();
+  const canGoBack = location.pathname !== "/";
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -37,11 +39,23 @@ export default function CustomerHeader({ booking = false }: { booking?: boolean 
     }
   };
 
+  // Quay về trang trước; nếu mở trực tiếp (không có lịch sử) thì về trang chủ
+  const goBack = () => {
+    if ((window.history.state?.idx ?? 0) > 0) navigate(-1);
+    else navigate("/");
+  };
+
   const displayName = user?.fullName || user?.username || "Khách hàng";
   const initialLetter = displayName.split(" ").filter(Boolean).pop()?.charAt(0).toUpperCase() || "U";
 
   return (
     <header className="app-header">
+      {canGoBack && (
+            <button type="button" className="header-back" onClick={goBack} aria-label="Quay lại trang trước">
+              <ArrowLeft size={18} />
+              <span>Quay lại</span>
+            </button>
+      )}
       <Link to="/" className="brand-logo">
         <div className="brand-icon">
           <BusFront size={20} />
@@ -52,10 +66,25 @@ export default function CustomerHeader({ booking = false }: { booking?: boolean 
         </div>
       </Link>
 
+      {!booking && (
+        <nav className="header-nav" aria-label="Điều hướng chính">
+          <NavLink to="/" end className={({ isActive }) => `header-nav-link ${isActive ? "active" : ""}`}>
+            <Search size={15} />
+              Tìm chuyến
+          </NavLink>
+          {isAuthenticated && user && (
+            <NavLink to="/my-tickets" className={({ isActive }) => `header-nav-link ${isActive ? "active" : ""}`}>
+              <Ticket size={15} />
+              Vé của tôi
+            </NavLink>
+          )}
+        </nav>
+      )}
+
       {booking ? (
         <div className="header-badge">
           <ShieldCheck size={14} />
-          <span>Thanh toán an toàn MoMo</span>
+          <span>Thanh toán an toàn PayOS</span>
         </div>
       ) : isAuthenticated && user ? (
         <div className="user-menu-container" ref={ref}>
@@ -93,40 +122,12 @@ export default function CustomerHeader({ booking = false }: { booking?: boolean 
           </div>
         </div>
       ) : (
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <Link
-            to="/login"
-            style={{
-              padding: "7px 16px",
-              fontSize: "13px",
-              fontWeight: 700,
-              color: "var(--primary)",
-              background: "var(--primary-light)",
-              borderRadius: "var(--radius-full)",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              textDecoration: "none",
-              transition: "all 0.2s ease",
-            }}
-          >
+        <div className="header-auth">
+          <Link to="/login" className="header-login">
             <User size={15} />
             <span>Đăng nhập</span>
           </Link>
-          <Link
-            to="/register"
-            style={{
-              padding: "7px 16px",
-              fontSize: "13px",
-              fontWeight: 700,
-              color: "#ffffff",
-              background: "linear-gradient(135deg, var(--primary), var(--primary-hover))",
-              borderRadius: "var(--radius-full)",
-              boxShadow: "0 4px 12px rgba(249, 87, 33, 0.25)",
-              textDecoration: "none",
-              transition: "all 0.2s ease",
-            }}
-          >
+          <Link to="/register" className="header-register">
             Đăng ký
           </Link>
         </div>

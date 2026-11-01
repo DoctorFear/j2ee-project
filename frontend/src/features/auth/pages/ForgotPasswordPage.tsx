@@ -3,27 +3,26 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { BusFront, Mail, ArrowLeft, Send } from "lucide-react";
 import { useAuthAction } from "@/features/auth/useAuthAction";
-import { useToastNotifications } from "@/lib/useToastNotifications";
-import { ToastNotification } from "@/components/shared/ToastNotification";
+import { useToast } from "@/components/shared/toast/toast-context.ts";
 import styles from "@/features/auth/pages/LoginPage.module.css";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  const { toasts, showToast, removeToast } = useToastNotifications();
-  const { submitting, handleForgotPassword } = useAuthAction(showToast);
+  const toast = useToast();
+  const { submitting, handleForgotPassword } = useAuthAction(toast);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!email.trim()) {
-      showToast("Vui lòng nhập địa chỉ email tài khoản của bạn.", "error");
+      toast.error("Vui lòng nhập địa chỉ email tài khoản của bạn.");
       return;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      showToast("Địa chỉ email không đúng định dạng.", "error");
+      toast.error("Địa chỉ email không đúng định dạng.");
       return;
     }
 
@@ -35,8 +34,6 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className={styles.authContainer}>
-      <ToastNotification toasts={toasts} onClose={removeToast} />
-
       <div className={styles.authCard}>
         <div className={styles.authHeader}>
           <Link to="/" className={styles.logoWrapper}>

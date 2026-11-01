@@ -1,5 +1,5 @@
 // Trang tìm kiếm chuyến xe khách hàng
-import { Frown } from "lucide-react";
+import { Frown, ShieldCheck, Ticket, Headset } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@/features/auth";
@@ -33,16 +33,25 @@ export default function SearchTripPage({ header }: { header: ReactNode }) {
   }, [isAuthenticated, user?.role, navigate]);
   const { origin, destination, criteria, results, modal, setModal } = model;
   const counts = [0, 1, 2, 3].map(
-    (range) =>
-      results.filter(
-        (t) =>
-          Math.floor(Number(time(atStop(t, origin)).split(":")[0]) / 6) ===
-          range,
-      ).length,
+      (range) =>
+          results.filter(
+              (t) =>
+                  Math.floor(Number(time(atStop(t, origin)).split(":")[0]) / 6) ===
+                  range,
+          ).length,
   );
   return (
     <div className="search-page">
       {header}
+      <section className="search-hero">
+        <h1>Đặt vé xe khách nhanh chóng, an toàn</h1>
+        <p>Chọn điểm đi, điểm đến và ngày khởi hành để xem các chuyến xe phù hợp.</p>
+        <ul>
+          <li><Ticket size={15} /> Vé điện tử, không cần in</li>
+          <li><ShieldCheck size={15} /> Thanh toán VietQR an toàn</li>
+          <li><Headset size={15} /> Hỗ trợ 24/7</li>
+        </ul>
+      </section>
       <SearchForm
         form={model.form}
         setForm={model.setForm}

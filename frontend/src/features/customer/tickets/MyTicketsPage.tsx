@@ -2,6 +2,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Ticket as TicketIcon } from "lucide-react";
 import type { ReactNode } from "react";
+import { Link } from "react-router-dom";
+import PageHero from "@/features/customer/components/PageHero";
 import TicketCard from "./components/TicketCard";
 import TicketTabs from "./components/TicketTabs";
 import TicketDetailModal from "./components/TicketDetailModal";
@@ -25,7 +27,7 @@ export default function MyTicketsPage({ header }: { header: ReactNode }) {
         })
         .catch((error) => setError(error.message))
         .finally(() => setLoading(false)),
-    [],
+      [],
   );
   useEffect(() => {
     load();
@@ -47,20 +49,20 @@ export default function MyTicketsPage({ header }: { header: ReactNode }) {
       .reduce((groups, ticket) => {
         const key = ticket.bookingId || ticket.code;
         groups.set(key, [...(groups.get(key) ?? []), ticket]);
-        return groups;
-      }, new Map<string, CustomerTicket[]>)
+          return groups;}, new Map<string, CustomerTicket[]>)
       .entries(),
   );
   return (
     <div className="tickets-page">
       {header}
+      <PageHero
+        icon={<TicketIcon size={26} />}
+        title="Danh sách vé của tôi"
+        subtitle="Xem, quản lý và hiển thị mã QR lên xe cho các chuyến đã đặt."
+      >
+        <span className="hero-chip">{tickets.filter((t) => t.status === "PAID").length} vé sắp đi</span>
+      </PageHero>
       <div className="ticket-history-wrapper">
-        <div className="page-title-row">
-          <h1 className="page-title">
-            <TicketIcon size={26} />
-            Danh sách vé của tôi
-          </h1>
-        </div>
         <TicketTabs
           tab={tab}
           onChange={setTab}
@@ -69,6 +71,14 @@ export default function MyTicketsPage({ header }: { header: ReactNode }) {
         />
         {loading && <p role="status">Đang tải vé...</p>}
         {error && <p role="alert">{error}</p>}
+        {!loading && !error && bookingGroups.length === 0 && (
+          <div className="ticket-empty">
+            <TicketIcon size={42} />
+            <strong>{tab === "PAID" ? "Bạn chưa có vé sắp đi" : "Chưa có vé trong lịch sử"}</strong>
+            <p>Tìm chuyến xe phù hợp và đặt vé chỉ trong vài bước.</p>
+            <Link to="/" className="ticket-empty-btn">Tìm chuyến xe</Link>
+          </div>
+        )}
         <div className="ticket-list">
           {bookingGroups.map(([bookingId, bookingTickets]) => (
               <TicketCard
@@ -78,7 +88,7 @@ export default function MyTicketsPage({ header }: { header: ReactNode }) {
                 onDetail={(ticket) => setModal({ ticket, qr: false })}
                 onQr={(ticket) => setModal({ ticket, qr: true })}
               />
-            ))}
+          ))}
         </div>
       </div>
       {modal &&

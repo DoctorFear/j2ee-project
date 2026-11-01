@@ -1187,3 +1187,46 @@
     justify-content: center;
   }
 }
+.search-hero {
+  text-align: center;
+  color: #fff;
+  padding: 34px 20px 26px;
+  background: linear-gradient(120deg, #f95721 0%, #fb7a3c 60%, #fdab6b 100%);
+}
+.search-hero h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  color: #fff;
+}
+.search-hero p {
+  margin: 8px 0 14px;
+  font-size: 14.5px;
+  opacity: 0.93;
+}
+.search-hero ul {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.search-hero li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.2);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+@media (max-width: 640px) {
+  .search-hero h1 {
+    font-size: 21px;
+  }
+}
+
