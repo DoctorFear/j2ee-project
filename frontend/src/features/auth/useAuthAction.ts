@@ -7,7 +7,14 @@ import { authFormsApi } from "./api";
 import type { ForgotPasswordRequestDto, RegisterRequestDto, ResetPasswordRequestDto } from "@/features/auth/types";
 import type { LoginRequestDto } from "./types";
 
-export function useAuthAction(showToast?: (msg: string, type: "success" | "error" | "info") => void) {
+interface ToastApi {
+  success: (msg: string) => void;
+  error: (msg: string) => void;
+  info: (msg: string) => void;
+  warning?: (msg: string) => void;
+}
+
+export function useAuthAction(toast?: ToastApi) {
   const { loginSuccess, logoutClient } = useUser();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState<boolean>(false);
@@ -18,11 +25,11 @@ export function useAuthAction(showToast?: (msg: string, type: "success" | "error
     try {
       const res = await sessionApi.login(payload);
       loginSuccess(res, rememberMe);
-      showToast?.("Đăng nhập thành công! Chào mừng quý khách.", "success");
+      toast?.success("Đăng nhập thành công! Chào mừng quý khách.");
       return true;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Đăng nhập thất bại. Vui lòng thử lại.";
-      showToast?.(msg, "error");
+      toast?.error(msg);
       return false;
     } finally {
       setSubmitting(false);
@@ -34,12 +41,12 @@ export function useAuthAction(showToast?: (msg: string, type: "success" | "error
     setSubmitting(true);
     try {
       await authFormsApi.register(payload);
-      showToast?.("Đăng ký tài khoản FutaBus thành công! Vui lòng đăng nhập.", "success");
+      toast?.success("Đăng ký tài khoản FutaBus thành công! Vui lòng đăng nhập.");
       navigate("/login");
       return true;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.";
-      showToast?.(msg, "error");
+      toast?.error(msg);
       return false;
     } finally {
       setSubmitting(false);
@@ -50,7 +57,7 @@ export function useAuthAction(showToast?: (msg: string, type: "success" | "error
   const handleLogout = async () => {
     try {
       await logoutClient();
-      showToast?.("Bạn đã đăng xuất khỏi hệ thống.", "info");
+      toast?.info("Bạn đã đăng xuất khỏi hệ thống.");
       navigate("/login");
     } catch {
       navigate("/login");
@@ -62,11 +69,11 @@ export function useAuthAction(showToast?: (msg: string, type: "success" | "error
     setSubmitting(true);
     try {
       await authFormsApi.forgotPassword(payload);
-      showToast?.("Liên kết đặt lại mật khẩu đã được gửi đến email của bạn.", "success");
+      toast?.success("Liên kết đặt lại mật khẩu đã được gửi đến email của bạn.");
       return true;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Không thể gửi yêu cầu đặt lại mật khẩu.";
-      showToast?.(msg, "error");
+      toast?.error(msg);
       return false;
     } finally {
       setSubmitting(false);
@@ -78,12 +85,12 @@ export function useAuthAction(showToast?: (msg: string, type: "success" | "error
     setSubmitting(true);
     try {
       await authFormsApi.resetPassword(payload);
-      showToast?.("Đặt lại mật khẩu thành công! Vui lòng đăng nhập bằng mật khẩu mới.", "success");
+      toast?.success("Đặt lại mật khẩu thành công! Vui lòng đăng nhập bằng mật khẩu mới.");
       navigate("/login");
       return true;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Đặt lại mật khẩu thất bại. Mã xác nhận có thể đã hết hạn.";
-      showToast?.(msg, "error");
+      toast?.error(msg);
       return false;
     } finally {
       setSubmitting(false);

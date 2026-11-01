@@ -9,7 +9,6 @@ import {
 import { Armchair, Ban, Check } from "lucide-react";
 import type { ReactNode } from "react";
 import SeatGrid from "@/features/customer/booking/components/SeatGrid";
-import Toast from "@/features/customer/components/Toast";
 import ContactForm from "./components/ContactForm";
 import PickupDropSection from "./components/PickupDropSection";
 import PriceSummary from "./components/PriceSummary";
@@ -219,7 +218,6 @@ function BookingContent({
           onClose={model.cancelPayment}
         />
       )}
-      <Toast message={model.message} onClose={() => model.setMessage("")} />
     </div>
   );
 }

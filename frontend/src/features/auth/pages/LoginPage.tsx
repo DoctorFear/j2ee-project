@@ -5,8 +5,7 @@ import { BusFront, User, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { GoogleLogin } from "@react-oauth/google";
 import { useUser } from "../useUser";
 import { useAuthAction } from "@/features/auth/useAuthAction";
-import { useToastNotifications } from "@/lib/useToastNotifications";
-import { ToastNotification } from "@/components/shared/ToastNotification";
+import { useToast } from "@/components/shared/toast/toast-context.ts";
 import { sessionApi } from "../session-api";
 import { getLoginDestination } from "../role-home";
 import { env } from "@/lib/env";
@@ -18,8 +17,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
-  const { toasts, showToast, removeToast } = useToastNotifications();
-  const { submitting, handleLogin } = useAuthAction(showToast);
+  const toast = useToast();
+  const { submitting, handleLogin } = useAuthAction(toast);
   const { user, isAuthenticated, loginSuccess } = useUser();
   const location = useLocation();
   const from = (location.state as { from?: { pathname: string; search?: string; hash?: string } } | null)?.from;
@@ -33,11 +32,11 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim()) {
-      showToast("Vui lòng nhập tên đăng nhập hoặc email.", "error");
+      toast.error("Vui lòng nhập tên đăng nhập hoặc email.");
       return;
     }
     if (!password) {
-      showToast("Vui lòng nhập mật khẩu.", "error");
+      toast.error("Vui lòng nhập mật khẩu.");
       return;
     }
     await handleLogin({ username: username.trim(), password }, rememberMe);
@@ -50,7 +49,6 @@ export default function LoginPage() {
 
   return (
     <div className={styles.authContainer}>
-      <ToastNotification toasts={toasts} onClose={removeToast} />
 
       <div className={styles.authCard}>
         <div className={styles.authHeader}>
@@ -161,10 +159,10 @@ export default function LoginPage() {
                   loginSuccess(data, rememberMe);
                 } catch (err) {
                   const msg = err instanceof Error ? err.message : "Đăng nhập Google thất bại.";
-                  showToast(msg, "error");
+                  toast.error(msg);
                 }
               }}
-              onError={() => showToast("Đăng nhập Google bị từ chối.", "error")}
+              onError={() => toast.error("Đăng nhập Google bị từ chối.")}
               useOneTap={false}
               width="100%"
               text="signin_with"

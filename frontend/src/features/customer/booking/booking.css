@@ -702,28 +702,6 @@
     font-size: 13px;
   }
 
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: #0f172a;
-    color: #fff;
-    padding: 10px 20px;
-    border-radius: var(--radius-full);
-    font-size: 13.5px;
-    font-weight: 600;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.2s ease;
-    z-index: 2000;
-  }
-  .toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-
   @media (max-width: 960px) {
     .checkout-container {
       grid-template-columns: 1fr;
@@ -814,11 +792,6 @@
     border-radius: 8px;
     color: var(--text-muted);
     font-size: 12px;
-  }
-  .toast {
-    display: flex;
-    align-items: center;
-    gap: 8px;
   }
   .seat-slot svg {
     margin-bottom: 1px;

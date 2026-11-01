@@ -10,6 +10,7 @@ import { bookingApi } from "@/features/customer/api/bookingApi";
 import { useUser } from "@/features/auth";
 import { atStop, segment } from "@/features/customer/model/trip";
 import { fare } from "@/features/customer/model/pricing";
+import {useToast} from "@/components/shared/toast/toast-context.ts";
 
 // Kiểm tra thông tin đặt vé và giới hạn năm ghế mỗi đơn
 export default function useBooking(
@@ -28,7 +29,6 @@ export default function useBooking(
   });
   const [error, setError] = useState("");
   const [transitSelected, setTransitSelected] = useState(false);
-  const [message, setMessage] = useState("");
   const [order, setOrder] = useState<BookingOrder | null>(null);
   const [payment, setPayment] = useState<PaymentSession | null>(null);
   const [remaining, setRemaining] = useState(600);
@@ -36,6 +36,7 @@ export default function useBooking(
   const key = `futa-booking:${trip.code}`;
   const success = order?.status === "PAID";
   const expiresAt = order ? new Date(order.expiresAt).getTime() : null;
+  const toast = useToast();
 
   // Khôi phục phiên chưa kết thúc khi tải lại trang
   useEffect(() => {
@@ -93,7 +94,7 @@ export default function useBooking(
           setOrder(current);
           serverOffset = new Date(current.serverTime).getTime() - Date.now();
           if (["EXPIRED", "CANCELLED"].includes(current.status)) {
-            setMessage("Phiên giữ chỗ đã kết thúc. Vui lòng chọn ghế lại.");
+            toast.info("Phiên giữ chỗ đã kết thúc. Vui lòng chọn ghế lại.");
             setOrder(null);
             setPayment(null);
             setSelected([]);
@@ -141,7 +142,7 @@ export default function useBooking(
     if (selected.includes(seat))
       setSelected(selected.filter((s) => s !== seat));
     else if (selected.length >= 5)
-      setMessage("Mỗi đơn chỉ được chọn tối đa 5 ghế.");
+      toast.warning("Mỗi đơn chỉ được chọn tối đa 5 ghế.");
     else {
       setSelected([...selected, seat]);
       setError("");
@@ -194,9 +195,7 @@ export default function useBooking(
       sessionStorage.setItem(key, current.id);
       const session = await bookingApi.pay(current.id);
       setPayment(session);
-      setMessage(
-          "Ghế được giữ tối đa 10 phút. Quét mã VietQR bằng App Ngân hàng hoặc Ví điện tử để thanh toán.",
-      );
+      toast.info( "Ghế được giữ tối đa 10 phút. Quét mã VietQR bằng App Ngân hàng hoặc Ví điện tử để thanh toán.");
     } catch (error) {
       setError(
           error instanceof Error
@@ -218,7 +217,7 @@ export default function useBooking(
       setOrder(null);
       setPayment(null);
       setSelected([]);
-      setMessage("Giao dịch đã được hủy thành công.");
+      toast.success("Giao dịch đã được hủy thành công.");
     } catch (error) {
       setError(
           error instanceof Error
@@ -237,8 +236,6 @@ export default function useBooking(
     contact,
     setContact,
     error,
-    message,
-    setMessage,
     remaining,
     success,
     expiresAt,

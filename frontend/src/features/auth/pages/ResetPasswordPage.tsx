@@ -3,8 +3,7 @@ import React, { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { BusFront, Lock, KeyRound, Eye, EyeOff, CheckCircle2, ArrowLeft } from "lucide-react";
 import { useAuthAction } from "@/features/auth/useAuthAction";
-import { useToastNotifications } from "@/lib/useToastNotifications";
-import { ToastNotification } from "@/components/shared/ToastNotification";
+import { useToast } from "@/components/shared/toast/toast-context.ts";
 import styles from "@/features/auth/pages/LoginPage.module.css";
 
 export default function ResetPasswordPage() {
@@ -17,34 +16,34 @@ export default function ResetPasswordPage() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const { toasts, showToast, removeToast } = useToastNotifications();
-  const { submitting, handleResetPassword } = useAuthAction(showToast);
+  const toast = useToast();
+  const { submitting, handleResetPassword } = useAuthAction(toast);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!token.trim()) {
-      showToast("Thiếu mã xác nhận đặt lại mật khẩu (Token).", "error");
+      toast.error("Thiếu mã xác nhận đặt lại mật khẩu (Token).");
       return;
     }
 
     if (!newPassword) {
-      showToast("Vui lòng nhập mật khẩu mới.", "error");
+      toast.error("Vui lòng nhập mật khẩu mới.");
       return;
     }
 
     if (newPassword.length < 6) {
-      showToast("Mật khẩu mới phải có ít nhất 6 ký tự.", "error");
+      toast.error("Mật khẩu mới phải có ít nhất 6 ký tự.");
       return;
     }
 
     if (!confirmPassword) {
-      showToast("Vui lòng nhập lại mật khẩu xác nhận.", "error");
+      toast.error("Vui lòng nhập lại mật khẩu xác nhận.");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      showToast("Mật khẩu xác nhận không trùng khớp.", "error");
+      toast.error("Mật khẩu xác nhận không trùng khớp.");
       return;
     }
 
@@ -57,7 +56,6 @@ export default function ResetPasswordPage() {
 
   return (
     <div className={styles.authContainer}>
-      <ToastNotification toasts={toasts} onClose={removeToast} />
 
       <div className={styles.authCard}>
         <div className={styles.authHeader}>

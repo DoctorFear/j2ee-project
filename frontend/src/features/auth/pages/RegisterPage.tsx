@@ -4,8 +4,7 @@ import { Link, Navigate } from "react-router-dom";
 import { BusFront, User, Mail, Phone, Lock, Eye, EyeOff, UserPlus } from "lucide-react";
 import { useUser } from "../useUser";
 import { useAuthAction } from "@/features/auth/useAuthAction";
-import { useToastNotifications } from "@/lib/useToastNotifications";
-import { ToastNotification } from "@/components/shared/ToastNotification";
+import { useToast} from "@/components/shared/toast/toast-context.ts";
 import styles from "@/features/auth/pages/LoginPage.module.css";
 
 export default function RegisterPage() {
@@ -23,8 +22,8 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const { toasts, showToast, removeToast } = useToastNotifications();
-  const { submitting, handleRegister } = useAuthAction(showToast);
+  const toast = useToast();
+  const { submitting, handleRegister } = useAuthAction(toast);
 
   if (isAuthenticated && user) {
     if (user.role === "Admin") return <Navigate to="/admin/routes" replace />;
@@ -43,52 +42,52 @@ export default function RegisterPage() {
     e.preventDefault();
 
     if (!formData.username.trim()) {
-      showToast("Vui lòng nhập tên đăng nhập.", "error");
+      toast.error("Vui lòng nhập tên đăng nhập.");
       return;
     }
 
     if (formData.username.trim().length < 3) {
-      showToast("Tên đăng nhập phải có ít nhất 3 ký tự.", "error");
+      toast.error("Tên đăng nhập phải có ít nhất 3 ký tự.");
       return;
     }
 
     if (!formData.fullName.trim()) {
-      showToast("Vui lòng nhập họ và tên.", "error");
+      toast.error("Vui lòng nhập họ và tên.");
       return;
     }
 
     if (!formData.email.trim()) {
-      showToast("Vui lòng nhập địa chỉ email.", "error");
+      toast.error("Vui lòng nhập địa chỉ email.");
       return;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
-      showToast("Địa chỉ email không đúng định dạng (ví dụ: ten@gmail.com).", "error");
+      toast.error("Địa chỉ email không đúng định dạng (ví dụ: ten@gmail.com).");
       return;
     }
 
     if (formData.phoneNumber && !/^0[35789][0-9]{8}$/.test(formData.phoneNumber.trim())) {
-      showToast("Số điện thoại phải có 10 chữ số chuẩn Việt Nam (03x, 05x, 07x, 08x, 09x).", "error");
+      toast.error("Số điện thoại phải có 10 chữ số chuẩn Việt Nam (03x, 05x, 07x, 08x, 09x).");
       return;
     }
 
     if (!formData.password) {
-      showToast("Vui lòng nhập mật khẩu.", "error");
+      toast.error("Vui lòng nhập mật khẩu.");
       return;
     }
 
     if (formData.password.length < 6) {
-      showToast("Mật khẩu phải có độ dài tối thiểu 6 ký tự.", "error");
+      toast.error("Mật khẩu phải có độ dài tối thiểu 6 ký tự.");
       return;
     }
 
     if (!formData.confirmPassword) {
-      showToast("Vui lòng nhập lại mật khẩu xác nhận.", "error");
+      toast.error("Vui lòng nhập lại mật khẩu xác nhận.");
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      showToast("Mật khẩu xác nhận không trùng khớp.", "error");
+      toast.error("Mật khẩu xác nhận không trùng khớp.");
       return;
     }
 
@@ -104,7 +103,6 @@ export default function RegisterPage() {
 
   return (
     <div className={styles.authContainer}>
-      <ToastNotification toasts={toasts} onClose={removeToast} />
 
       <div className={`${styles.authCard} ${styles.authCardWide}`}>
         <div className={styles.authHeader}>
