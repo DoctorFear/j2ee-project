@@ -383,7 +383,8 @@ public class DatabaseSeeder implements ApplicationRunner {
       trip.setEstimatedDepartureAt(trip.getDepartureAt());
       trip.setEstimatedArrivalAt(trip.getArrivalAt());
       trip.setCapacitySnapshot(vehicle.getCapacity());
-      trip.setTicketPrice(BigDecimal.valueOf(d.price()));
+      trip.setTicketPrice(
+           BigDecimal.valueOf(java.util.concurrent.ThreadLocalRandom.current().nextInt(10, 100) * 100L));
       trip.setStatus(d.status());
       trip.setSaleStatus(d.saleStatus());
       trip.setActualDepartureAt(null);
