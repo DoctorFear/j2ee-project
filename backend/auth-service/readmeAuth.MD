@@ -158,8 +158,8 @@ Khi ứng dụng khởi chạy và kết nối Database thành công, seeder s�
 ### c. 5 Tài khoản Tài xế / Shiper (Driver) - Mật khẩu: `Driver@123`
 | Username | Email | Họ và tên | SĐT | Vai trò |
 | :--- | :--- | :--- | :--- | :--- |
-| `driver1` | `driver1@futabus.vn` | Bác tài Trần Văn Hùng | 0983456701 | Driver |
-| `driver2` | `driver2@futabus.vn` | Bác tài Nguyễn Thành Nam | 0983456702 | Driver |
-| `driver3` | `driver3@futabus.vn` | Bác tài Lê Minh Tuấn | 0983456703 | Driver |
-| `driver4` | `driver4@futabus.vn` | Bác tài Phạm Quốc Việt | 0983456704 | Driver |
-| `driver5` | `driver5@futabus.vn` | Bác tài Đỗ Hải Đăng | 0983456705 | Driver |
+| `driver1` | `driver1@futabus.vn` | Nguyễn Văn Minh 1 | 0909000001 | Driver |
+| `driver2` | `driver2@futabus.vn` | Trần Quốc Hùng 1 | 0909000002 | Driver |
+| `driver3` | `driver3@futabus.vn` | Lê Hoàng Nam 1 | 0909000003 | Driver |
+| `driver4` | `driver4@futabus.vn` | Phạm Thanh Sơn 1 | 0909000004 | Driver |
+| `driver5` | `driver5@futabus.vn` | Võ Đức Thành 1 | 0909000005 | Driver |

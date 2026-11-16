@@ -13,4 +13,6 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
   Optional<Booking> lock(@Param("id") String id);
 
   List<Booking> findByStatusAndExpiresAtBefore(String status, java.time.Instant now);
+
+  List<Booking> findByTripCode(String tripCode);
 }

@@ -16,6 +16,8 @@ const ForgotPasswordPage = lazy(() => import("@/features/auth/pages/ForgotPasswo
 const ResetPasswordPage = lazy(() => import("@/features/auth/pages/ResetPasswordPage"));
 const ProfilePage = lazy(() => import("@/features/account/ProfilePage"));
 const DriverPage = lazy(() => import("@/features/driver/DriverPage"));
+const DriverPassengersPage = lazy(() => import("@/features/driver/pages/DriverPassengersPage"));
+const DriverScanPage = lazy(() => import("@/features/driver/pages/DriverScanPage"));
 const DashboardPage = lazy(() => import("@/features/admin/dashboard/DashboardPage"));
 const AdminAccountPage = lazy(() => import("@/features/admin/account/AdminAccountPage"));
 const StationsPage = lazy(() => import("@/features/admin/transport/stations/pages/StationsPage"));
@@ -132,6 +134,22 @@ export function AppRoutes() {
           element={
             <ProtectedRoute requiredRole="Driver">
               <DriverPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/driver/trips/:code/passengers"
+          element={
+            <ProtectedRoute requiredRole="Driver">
+              <DriverPassengersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/driver/trips/:code/scan"
+          element={
+            <ProtectedRoute requiredRole="Driver">
+              <DriverScanPage />
             </ProtectedRoute>
           }
         />

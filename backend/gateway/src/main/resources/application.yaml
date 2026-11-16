@@ -33,24 +33,29 @@ spring:
               predicates:
                 - Path=/api/auth/**, /api/user/**
 
-            # 2. BOOKING SERVICE: Ghế chuyến đi (Phải đặt trước route tổng quát của Transport Service)
+            # 2. BOOKING SERVICE: Soát vé và danh sách hành khách tài xế (Đặt trước route tổng quát của Transport)
+            - id: booking-driver-route
+              uri: http://localhost:8082
+              predicates:
+                - Path=/api/driver/trips/{code}/passengers/**, /api/driver/trips/{code}/passengers, /api/driver/trips/{code}/summary, /api/driver/trips/{code}/tickets/**, /api/driver/trips/{code}/check-in/**, /api/driver/trips/{code}/check-in
+
+            # 3. BOOKING SERVICE: Ghế chuyến đi (Đặt trước route tổng quát của Transport Service)
             - id: booking-trip-seats-route
               uri: http://localhost:8082
               predicates:
                 - Path=/api/trips/{code}/seats/**, /api/trips/{code}/seats
 
-            # 3. BOOKING SERVICE: Đặt chỗ, giữ vé, thanh toán, vé điện tử
+            # 4. BOOKING SERVICE: Đặt chỗ, giữ vé, thanh toán, vé điện tử
             - id: booking-service-route
               uri: http://localhost:8082
               predicates:
                 - Path=/api/bookings/**, /api/tickets/**
 
-            # 4. TRANSPORT SERVICE: Tuyến, trạm, lịch chạy, điều phối, quản trị
+            # 5. TRANSPORT SERVICE: Tuyến, trạm, lịch chạy, điều phối, quản trị, lịch ca trực tài xế
             - id: transport-service-route
               uri: http://localhost:8081
               predicates:
                 - Path=/api/trips/**, /api/trip-drivers/**, /api/trip-statistics/**, /api/stations/**, /api/routes/**, /api/route-stops/**, /api/vehicles/**, /api/drivers/**, /api/admin/**, /api/driver/**
-
 # Chặn truy cập trực tiếp các API nội bộ /internal/** từ Gateway
 futa:
   gateway:

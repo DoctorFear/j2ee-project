@@ -1,0 +1,66 @@
+### ========================================================
+### KIỂM THỬ TỰ ĐỘNG PHÂN HỆ TÀI XẾ (DRIVER) QUA GATEWAY :8080
+### ========================================================
+
+### BƯỚC 1: Đăng nhập tài khoản Tài xế (driver1 / Driver@123)
+# @name loginDriver
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "driver1",
+  "password": "Driver@123"
+}
+
+### Lưu biến Token từ phản hồi của Bước 1 (Nếu dùng tiện ích REST Client VS Code)
+@authToken = {{loginDriver.response.body.data.accessToken}}
+
+### --------------------------------------------------------
+### BƯỚC 2: Lấy lịch trình ca trực của tài xế (Hôm nay)
+GET http://localhost:8080/api/driver/trips
+Authorization: Bearer {{authToken}}
+
+### --------------------------------------------------------
+### BƯỚC 3: Tài xế bắt đầu chuyến xe (Cập nhật sang RUNNING)
+PUT http://localhost:8080/api/driver/trips/SEED-01/status?status=RUNNING
+Authorization: Bearer {{authToken}}
+
+### --------------------------------------------------------
+### BƯỚC 4: Lấy danh sách hành khách đón/trả của chuyến SEED-01
+GET http://localhost:8080/api/driver/trips/SEED-01/passengers
+Authorization: Bearer {{authToken}}
+
+### --------------------------------------------------------
+### BƯỚC 5: Lấy bộ đếm tóm tắt tiến độ lên xe (vd: 18/28 khách)
+GET http://localhost:8080/api/driver/trips/SEED-01/summary
+Authorization: Bearer {{authToken}}
+
+### --------------------------------------------------------
+### BƯỚC 6: Soát vé bằng cách quét mã QR hoặc mã vé
+POST http://localhost:8080/api/driver/trips/SEED-01/check-in
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "ticketCode": "FUTA-SEED-01"
+}
+
+### --------------------------------------------------------
+### BƯỚC 7: Soát vé bằng cách nhập 4 số cuối SĐT khách hàng
+POST http://localhost:8080/api/driver/trips/SEED-01/check-in
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "last4Phone": "5601"
+}
+
+### --------------------------------------------------------
+### BƯỚC 8: Đổi trạng thái đón/trả 1 chạm thủ công (Toggle)
+POST http://localhost:8080/api/driver/trips/SEED-01/passengers/FUTA-SEED-01/toggle
+Authorization: Bearer {{authToken}}
+
+### --------------------------------------------------------
+### BƯỚC 9: Tài xế kết thúc chuyến xe (Cập nhật sang COMPLETED)
+PUT http://localhost:8080/api/driver/trips/SEED-01/status?status=COMPLETED
+Authorization: Bearer {{authToken}}

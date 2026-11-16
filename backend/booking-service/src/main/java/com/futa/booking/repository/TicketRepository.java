@@ -3,6 +3,7 @@ package com.futa.booking.repository;
 
 import com.futa.booking.entity.Ticket;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TicketRepository extends JpaRepository<Ticket, String> {
@@ -13,4 +14,6 @@ public interface TicketRepository extends JpaRepository<Ticket, String> {
   List<Ticket> findByBookingId(String bookingId);
 
   List<Ticket> findByTripCode(String tripCode);
+
+  Optional<Ticket> findByQrToken(String qrToken);
 }

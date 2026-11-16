@@ -39,4 +39,13 @@ public class Ticket {
 
   @Column(nullable = false)
   private Instant issuedAt;
+
+  @Column(name = "is_boarded", nullable = false)
+  private boolean isBoarded = false;
+
+  @Column(name = "boarded_at")
+  private Instant boardedAt;
+
+  @Column(name = "boarded_by", length = 255)
+  private String boardedBy;
 }

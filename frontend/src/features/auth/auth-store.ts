@@ -101,6 +101,8 @@ export const useAuthStore = create<AuthState>()((set, get) => {
           hasPassword: loginData.hasPassword ?? true,
         },
       });
+      // Tự động tải bổ sung profile (để có đầy đủ phoneNumber cho tài xế)
+      void get().refreshUserProfile();
     },
 
     clearSession: () => {

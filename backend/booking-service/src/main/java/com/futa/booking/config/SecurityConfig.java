@@ -57,6 +57,8 @@ public class SecurityConfig {
                                     .permitAll()
                                     .requestMatchers("/internal/**")
                                     .permitAll()
+                                    .requestMatchers("/api/driver/**")
+                                    .hasAnyRole("Driver", "Admin")
                                     .anyRequest()
                                     .hasRole("Member"))
             .oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(converter)))

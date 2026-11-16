@@ -106,13 +106,13 @@ public static class DatabaseSeeder
                 Role = UserRole.Member
             },
 
-            // 5 Tài khoản Tài xế / Shiper (Driver) - Mật khẩu: Driver@123
+            // 5 Tài khoản Tài xế (Driver) đồng bộ với 5 tài xế đầu trong Admin Transport - Mật khẩu: Driver@123
             new User
             {
                 Username = "driver1",
                 Email = "driver1@futabus.vn",
-                FullName = "Bác tài Trần Văn Hùng",
-                PhoneNumber = "0983456701",
+                FullName = "Nguyễn Văn Minh 1",
+                PhoneNumber = "0909000001",
                 PasswordHash = passwordHasher.HashPassword("Driver@123"),
                 Role = UserRole.Driver
             },
@@ -120,8 +120,8 @@ public static class DatabaseSeeder
             {
                 Username = "driver2",
                 Email = "driver2@futabus.vn",
-                FullName = "Bác tài Nguyễn Thành Nam",
-                PhoneNumber = "0983456702",
+                FullName = "Trần Quốc Hùng 1",
+                PhoneNumber = "0909000002",
                 PasswordHash = passwordHasher.HashPassword("Driver@123"),
                 Role = UserRole.Driver
             },
@@ -129,8 +129,8 @@ public static class DatabaseSeeder
             {
                 Username = "driver3",
                 Email = "driver3@futabus.vn",
-                FullName = "Bác tài Lê Minh Tuấn",
-                PhoneNumber = "0983456703",
+                FullName = "Lê Hoàng Nam 1",
+                PhoneNumber = "0909000003",
                 PasswordHash = passwordHasher.HashPassword("Driver@123"),
                 Role = UserRole.Driver
             },
@@ -138,8 +138,8 @@ public static class DatabaseSeeder
             {
                 Username = "driver4",
                 Email = "driver4@futabus.vn",
-                FullName = "Bác tài Phạm Quốc Việt",
-                PhoneNumber = "0983456704",
+                FullName = "Phạm Thanh Sơn 1",
+                PhoneNumber = "0909000004",
                 PasswordHash = passwordHasher.HashPassword("Driver@123"),
                 Role = UserRole.Driver
             },
@@ -147,24 +147,32 @@ public static class DatabaseSeeder
             {
                 Username = "driver5",
                 Email = "driver5@futabus.vn",
-                FullName = "Bác tài Đỗ Hải Đăng",
-                PhoneNumber = "0983456705",
+                FullName = "Võ Đức Thành 1",
+                PhoneNumber = "0909000005",
                 PasswordHash = passwordHasher.HashPassword("Driver@123"),
                 Role = UserRole.Driver
             }
         };
 
-        bool hasNewUsers = false;
+        bool hasChanges = false;
         foreach (var user in seedUsers)
         {
-            if (!await context.Users.AnyAsync(u => u.Username == user.Username))
+            var existing = await context.Users.FirstOrDefaultAsync(u => u.Username == user.Username);
+            if (existing == null)
             {
                 await context.Users.AddAsync(user);
-                hasNewUsers = true;
+                hasChanges = true;
+            }
+            else if (user.Role == UserRole.Driver &&
+                     (existing.FullName != user.FullName || existing.PhoneNumber != user.PhoneNumber))
+            {
+                existing.FullName = user.FullName;
+                existing.PhoneNumber = user.PhoneNumber;
+                hasChanges = true;
             }
         }
 
-        if (hasNewUsers)
+        if (hasChanges)
         {
             await context.SaveChangesAsync();
         }

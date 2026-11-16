@@ -4,6 +4,8 @@ import com.futabus.transport.trip.entity.TripDriver;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface TripDriverRepository extends JpaRepository<TripDriver, Long> {
     boolean existsByTripIdAndDriverId(Long tripId, Long driverId);
@@ -11,4 +13,6 @@ public interface TripDriverRepository extends JpaRepository<TripDriver, Long> {
     boolean existsByTripId(Long tripId);
 
     void deleteByTripId(Long tripId);
+
+    List<TripDriver> findByDriverId(Long driverId);
 }
