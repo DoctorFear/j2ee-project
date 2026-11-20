@@ -1,6 +1,6 @@
 package com.futabus.transport.statistics.service;
 
-import com.futabus.transport.exception.BusinessException;
+import com.futabus.transport.common.exception.BusinessException;
 import com.futabus.transport.statistics.dto.request.TripStatisticCreationRequest;
 import com.futabus.transport.statistics.dto.response.TripStatisticResponse;
 import com.futabus.transport.statistics.entity.TripStatistic;

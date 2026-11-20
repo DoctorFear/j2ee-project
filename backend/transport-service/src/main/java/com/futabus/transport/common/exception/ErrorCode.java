@@ -1,4 +1,4 @@
-package com.futabus.transport.exception;
+package com.futabus.transport.common.exception;
 
 import org.springframework.http.HttpStatus;
 

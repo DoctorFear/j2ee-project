@@ -1,7 +1,7 @@
 // Xử lý nghiệp vụ lịch ca trực và trạng thái vận hành chuyến xe cho tài xế
 package com.futabus.transport.trip.service;
 
-import com.futabus.transport.exception.BusinessException;
+import com.futabus.transport.common.exception.BusinessException;
 import com.futabus.transport.resource.entity.Driver;
 import com.futabus.transport.resource.repository.DriverRepository;
 import com.futabus.transport.route.entity.RouteStop;

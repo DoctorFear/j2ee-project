@@ -1,6 +1,6 @@
 package com.futabus.transport;
 
-import com.futabus.transport.handler.GlobalExceptionHandler;
+import com.futabus.transport.common.handler.GlobalExceptionHandler;
 import com.futabus.transport.trip.controller.DriverTripController;
 import com.futabus.transport.trip.service.DriverTripService;
 import org.junit.jupiter.api.Test;

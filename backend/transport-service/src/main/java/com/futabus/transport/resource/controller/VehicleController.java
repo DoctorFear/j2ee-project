@@ -1,6 +1,6 @@
 package com.futabus.transport.resource.controller;
 
-import com.futabus.transport.response.ApiResponse;
+import com.futabus.transport.common.response.ApiResponse;
 import com.futabus.transport.resource.dto.request.VehicleCreationRequest;
 import com.futabus.transport.resource.dto.response.VehicleResponse;
 import com.futabus.transport.resource.service.VehicleService;

@@ -1,8 +1,8 @@
-package com.futabus.transport.handler;
+package com.futabus.transport.common.handler;
 
-import com.futabus.transport.exception.BusinessException;
-import com.futabus.transport.exception.CommonErrorCode;
-import com.futabus.transport.exception.ErrorCode;
+import com.futabus.transport.common.exception.BusinessException;
+import com.futabus.transport.common.exception.CommonErrorCode;
+import com.futabus.transport.common.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;

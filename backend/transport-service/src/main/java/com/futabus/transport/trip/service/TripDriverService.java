@@ -1,6 +1,6 @@
 package com.futabus.transport.trip.service;
 
-import com.futabus.transport.exception.BusinessException;
+import com.futabus.transport.common.exception.BusinessException;
 import com.futabus.transport.resource.entity.Driver;
 import com.futabus.transport.resource.exception.ResourceErrorCode;
 import com.futabus.transport.resource.repository.DriverRepository;

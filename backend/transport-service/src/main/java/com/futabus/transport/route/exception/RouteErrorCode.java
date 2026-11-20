@@ -1,6 +1,6 @@
 package com.futabus.transport.route.exception;
 
-import com.futabus.transport.exception.ErrorCode;
+import com.futabus.transport.common.exception.ErrorCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

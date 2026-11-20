@@ -1,6 +1,6 @@
 package com.futabus.transport.resource.service;
 
-import com.futabus.transport.exception.BusinessException;
+import com.futabus.transport.common.exception.BusinessException;
 import com.futabus.transport.resource.dto.request.DriverCreationRequest;
 import com.futabus.transport.resource.dto.response.DriverResponse;
 import com.futabus.transport.resource.entity.Driver;

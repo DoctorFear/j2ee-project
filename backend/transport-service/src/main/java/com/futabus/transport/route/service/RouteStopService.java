@@ -1,6 +1,6 @@
 package com.futabus.transport.route.service;
 
-import com.futabus.transport.exception.BusinessException;
+import com.futabus.transport.common.exception.BusinessException;
 import com.futabus.transport.route.dto.request.RouteStopCreationRequest;
 import com.futabus.transport.route.dto.response.RouteStopResponse;
 import com.futabus.transport.route.entity.Route;

@@ -1,6 +1,6 @@
 package com.futabus.transport.route.controller;
 
-import com.futabus.transport.response.ApiResponse;
+import com.futabus.transport.common.response.ApiResponse;
 import com.futabus.transport.route.dto.request.RouteCreationRequest;
 import com.futabus.transport.route.dto.response.RouteResponse;
 import com.futabus.transport.route.service.RouteService;

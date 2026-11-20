@@ -1,6 +1,6 @@
 package com.futabus.transport.resource.service;
 
-import com.futabus.transport.exception.BusinessException;
+import com.futabus.transport.common.exception.BusinessException;
 import com.futabus.transport.resource.dto.request.VehicleCreationRequest;
 import com.futabus.transport.resource.dto.response.VehicleResponse;
 import com.futabus.transport.resource.entity.Vehicle;

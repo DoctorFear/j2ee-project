@@ -1,6 +1,6 @@
 package com.futabus.transport.trip.controller;
 
-import com.futabus.transport.response.ApiResponse;
+import com.futabus.transport.common.response.ApiResponse;
 import com.futabus.transport.trip.dto.request.TripCreationRequest;
 import com.futabus.transport.trip.dto.response.TripResponse;
 import com.futabus.transport.trip.service.TripService;

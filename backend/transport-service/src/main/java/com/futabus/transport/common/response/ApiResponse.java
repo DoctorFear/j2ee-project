@@ -1,4 +1,4 @@
-package com.futabus.transport.response;
+package com.futabus.transport.common.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
