@@ -1,8 +1,8 @@
 package com.futabus.transport.route.controller;
 
+import com.futabus.transport.response.ApiResponse;
 import com.futabus.transport.route.dto.request.StationCreationRequest;
 import com.futabus.transport.route.dto.request.StationUpdateRequest;
-import com.futabus.transport.route.dto.response.ApiResponse;
 import com.futabus.transport.route.dto.response.StationResponse;
 import com.futabus.transport.route.service.StationService;
 import jakarta.validation.Valid;

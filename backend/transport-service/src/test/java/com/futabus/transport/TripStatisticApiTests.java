@@ -105,9 +105,10 @@ class TripStatisticApiTests {
         assertFalse(statistics.existsById(trip.getId()));
         assertTrue(trips.existsById(trip.getId()));
         mvc.perform(get(location)).andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.success").value(false));
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.errorCode").value("TRANSPORT_TRIP_STATISTIC_NOT_FOUND"));
         mvc.perform(delete(location)).andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.success").value(false));
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
     }
 
     @Test
@@ -116,7 +117,8 @@ class TripStatisticApiTests {
         mvc.perform(post("/api/trip-statistics").contentType(MediaType.APPLICATION_JSON)
                         .content(body(trip.getId()).replace("2500000", "999")))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.success").value(false));
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.errorCode").value("TRANSPORT_TRIP_STATISTIC_ALREADY_EXISTS"));
         mvc.perform(get(location)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.collectedAmount").value(2500000));
         assertEquals(1, statistics.count());
@@ -140,7 +142,7 @@ class TripStatisticApiTests {
                 valid.replace("\"refundedAmount\":0", "\"refundedAmount\":1000000000000000"))) {
             mvc.perform(post("/api/trip-statistics").contentType(MediaType.APPLICATION_JSON).content(invalid))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.success").value(false));
+                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
         }
         assertEquals(0, statistics.count());
     }
@@ -150,11 +152,11 @@ class TripStatisticApiTests {
         mvc.perform(post("/api/trip-statistics").contentType(MediaType.APPLICATION_JSON)
                         .content(body(999999L)))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.success").value(false));
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
         mvc.perform(get("/api/trip-statistics/999999")).andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.success").value(false));
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
         mvc.perform(delete("/api/trip-statistics/999999")).andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.success").value(false));
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
         mvc.perform(put("/api/trip-statistics/{tripId}", trip.getId())
                         .contentType(MediaType.APPLICATION_JSON).content(body(trip.getId())))
                 .andExpect(status().isMethodNotAllowed());

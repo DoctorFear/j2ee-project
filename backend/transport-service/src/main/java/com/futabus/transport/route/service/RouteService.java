@@ -1,9 +1,11 @@
 package com.futabus.transport.route.service;
 
+import com.futabus.transport.exception.BusinessException;
 import com.futabus.transport.route.dto.request.RouteCreationRequest;
 import com.futabus.transport.route.dto.response.RouteResponse;
 import com.futabus.transport.route.entity.Route;
 import com.futabus.transport.route.enums.RouteStatus;
+import com.futabus.transport.route.exception.RouteErrorCode;
 import com.futabus.transport.route.mapper.RouteMapper;
 import com.futabus.transport.route.repository.RouteRepository;
 import com.futabus.transport.route.repository.RouteStopRepository;
@@ -12,12 +14,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
-import static org.springframework.http.HttpStatus.*;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +31,7 @@ public class RouteService {
         validateEffectiveDates(request.getEffectiveFromAt(), request.getEffectiveToAt());
 
         if (routeRepository.existsByCodeAndVersionNo(request.getCode(), request.getVersionNo())) {
-            throw new ResponseStatusException(CONFLICT, "Route code and version already exist");
+            throw new BusinessException(RouteErrorCode.TRANSPORT_ROUTE_VERSION_EXISTS);
         }
 
         Route route = routeMapper.toRoute(request);
@@ -59,7 +58,7 @@ public class RouteService {
         Route route = getRoute(id);
 
         if (routeStopRepository.existsByRouteId(id)) {
-            throw new ResponseStatusException(CONFLICT, "Delete the route stops before deleting this route");
+            throw new BusinessException(RouteErrorCode.TRANSPORT_ROUTE_HAS_STOPS);
         }
 
         routeRepository.delete(route);
@@ -67,12 +66,12 @@ public class RouteService {
 
     private Route getRoute(Long id) {
         return routeRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Route not found: " + id));
+                .orElseThrow(() -> new BusinessException(RouteErrorCode.TRANSPORT_ROUTE_NOT_FOUND));
     }
 
     private void validateEffectiveDates(LocalDateTime effectiveFromAt, LocalDateTime effectiveToAt) {
         if (effectiveToAt != null && !effectiveToAt.isAfter(effectiveFromAt)) {
-            throw new ResponseStatusException(BAD_REQUEST, "effectiveToAt must be after effectiveFromAt");
+            throw new BusinessException(RouteErrorCode.TRANSPORT_ROUTE_INVALID_EFFECTIVE_PERIOD);
         }
     }
 }

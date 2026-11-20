@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -41,6 +42,8 @@ class StationControllerTests {
                 .andExpect(status().isCreated())
                 .andExpect(header().exists("Location"))
                 .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.errorCode").doesNotExist())
+                .andExpect(jsonPath("$.errors").doesNotExist())
                 .andExpect(jsonPath("$.data.status").value("INACTIVE"));
 
         Long id = repository.findAll().getFirst().getId();
@@ -70,7 +73,7 @@ class StationControllerTests {
 
         mvc.perform(get("/api/stations/{id}", id))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.success").value(false));
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
     }
 
     @Test
@@ -81,8 +84,10 @@ class StationControllerTests {
                                 {"name":" ","address":"TP HCM","type":"TERMINAL"}
                                 """))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").exists());
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.errorCode").value("COMMON_VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.detail").value(startsWith("name: ")))
+                .andExpect(jsonPath("$.errors.name[0]").isString());
 
         mvc.perform(post("/api/stations")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -90,7 +95,8 @@ class StationControllerTests {
                                 {"name":"Ben xe","address":"TP HCM","type":"UNKNOWN"}
                                 """))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.success").value(false));
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.errorCode").value("COMMON_INVALID_JSON"));
 
         mvc.perform(put("/api/stations/999")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -98,10 +104,55 @@ class StationControllerTests {
                                 {"name":"Ben xe","address":"TP HCM","type":"TERMINAL","status":"ACTIVE"}
                                 """))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.success").value(false));
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.errorCode").value("TRANSPORT_STATION_NOT_FOUND"));
 
         mvc.perform(delete("/api/stations/999"))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.success").value(false));
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+    }
+
+    @Test
+    void validationReturnsErrorsForAllInvalidFields() throws Exception {
+        mvc.perform(post("/api/stations").contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.title").value("Bad Request"))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.instance").value("/api/stations"))
+                .andExpect(jsonPath("$.errorCode").value("COMMON_VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.errors.name[0]").isString())
+                .andExpect(jsonPath("$.errors.address[0]").isString())
+                .andExpect(jsonPath("$.errors.type[0]").isString())
+                .andExpect(jsonPath("$.success").doesNotHaveJsonPath())
+                .andExpect(jsonPath("$.data").doesNotHaveJsonPath())
+                .andExpect(jsonPath("$.message").doesNotHaveJsonPath());
+    }
+
+    @Test
+    void springMvcErrorsUseTheSameEnvelopeAndPreserveProtocolHeaders() throws Exception {
+        mvc.perform(get("/api/stations/invalid-id"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode").value("COMMON_INVALID_PARAMETER"))
+                .andExpect(jsonPath("$.errors.id[0]").isString());
+
+        mvc.perform(get("/api/unknown-endpoint"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.errorCode").value("COMMON_NOT_FOUND"));
+
+        mvc.perform(patch("/api/stations/1"))
+                .andExpect(status().isMethodNotAllowed())
+                .andExpect(header().exists("Allow"))
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.errorCode").value("COMMON_METHOD_NOT_ALLOWED"));
+
+        mvc.perform(post("/api/stations").contentType(MediaType.TEXT_PLAIN).content("invalid"))
+                .andExpect(status().isUnsupportedMediaType())
+                .andExpect(header().exists("Accept"))
+                .andExpect(jsonPath("$.errorCode").value("COMMON_UNSUPPORTED_MEDIA_TYPE"));
+
+        mvc.perform(get("/api/stations").accept(MediaType.TEXT_PLAIN))
+                .andExpect(status().isNotAcceptable())
+                .andExpect(jsonPath("$.errorCode").value("COMMON_NOT_ACCEPTABLE"));
     }
 }

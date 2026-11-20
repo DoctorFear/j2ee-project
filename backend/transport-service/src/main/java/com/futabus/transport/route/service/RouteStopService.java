@@ -1,10 +1,12 @@
 package com.futabus.transport.route.service;
 
+import com.futabus.transport.exception.BusinessException;
 import com.futabus.transport.route.dto.request.RouteStopCreationRequest;
 import com.futabus.transport.route.dto.response.RouteStopResponse;
 import com.futabus.transport.route.entity.Route;
 import com.futabus.transport.route.entity.RouteStop;
 import com.futabus.transport.route.entity.Station;
+import com.futabus.transport.route.exception.RouteErrorCode;
 import com.futabus.transport.route.mapper.RouteStopMapper;
 import com.futabus.transport.route.repository.RouteRepository;
 import com.futabus.transport.route.repository.RouteStopRepository;
@@ -14,12 +16,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-
-import static org.springframework.http.HttpStatus.CONFLICT;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +34,7 @@ public class RouteStopService {
         Station station = getStation(request.getStationId());
 
         if (routeStopRepository.existsByRouteIdAndStopOrder(request.getRouteId(), request.getStopOrder())) {
-            throw new ResponseStatusException(CONFLICT, "Stop order already exists in this route");
+            throw new BusinessException(RouteErrorCode.TRANSPORT_ROUTE_STOP_ORDER_EXISTS);
         }
 
         RouteStop routeStop = routeStopMapper.toRouteStop(request);
@@ -73,16 +71,16 @@ public class RouteStopService {
 
     private RouteStop getRouteStop(Long id) {
         return routeStopRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Route stop not found: " + id));
+                .orElseThrow(() -> new BusinessException(RouteErrorCode.TRANSPORT_ROUTE_STOP_NOT_FOUND));
     }
 
     private Route getRoute(Long id) {
         return routeRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Route not found: " + id));
+                .orElseThrow(() -> new BusinessException(RouteErrorCode.TRANSPORT_ROUTE_NOT_FOUND));
     }
 
     private Station getStation(Long id) {
         return stationRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Station not found: " + id));
+                .orElseThrow(() -> new BusinessException(RouteErrorCode.TRANSPORT_STATION_NOT_FOUND));
     }
 }

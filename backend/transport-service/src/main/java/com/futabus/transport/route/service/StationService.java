@@ -1,10 +1,12 @@
 package com.futabus.transport.route.service;
 
+import com.futabus.transport.exception.BusinessException;
 import com.futabus.transport.route.dto.request.StationCreationRequest;
 import com.futabus.transport.route.dto.request.StationUpdateRequest;
 import com.futabus.transport.route.dto.response.StationResponse;
 import com.futabus.transport.route.entity.Station;
 import com.futabus.transport.route.enums.StationStatus;
+import com.futabus.transport.route.exception.RouteErrorCode;
 import com.futabus.transport.route.mapper.StationMapper;
 import com.futabus.transport.route.repository.StationRepository;
 import lombok.AccessLevel;
@@ -12,11 +14,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -64,6 +63,6 @@ public class StationService {
 
     private Station getStation(Long id) {
         return stationRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Station not found: " + id));
+                .orElseThrow(() -> new BusinessException(RouteErrorCode.TRANSPORT_STATION_NOT_FOUND));
     }
 }

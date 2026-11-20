@@ -45,17 +45,17 @@ class ResourceApiTests {
         return Stream.of(
                 new String[]{"vehicles", """
                         {"licensePlate":"51B-12345","type":"SEAT","capacity":45}
-                        """},
+                        """, "TRANSPORT_VEHICLE_NOT_FOUND"},
                 new String[]{"drivers", """
                         {"fullName":"Nguyen Van A","phone":"0901234567","licenseNumber":"GPLX123",
                          "licenseClass":"D","licenseExpiryOn":"2030-01-01T00:00:00"}
-                        """}
+                        """, "TRANSPORT_DRIVER_NOT_FOUND"}
         );
     }
 
     @ParameterizedTest
     @MethodSource("resources")
-    void createReadAndDeleteUseStationResponseContract(String resource, String body) throws Exception {
+    void createReadAndDeleteUseStationResponseContract(String resource, String body, String notFoundCode) throws Exception {
         String path = "/api/" + resource;
 
         mvc.perform(get(path))
@@ -95,10 +95,11 @@ class ResourceApiTests {
 
         mvc.perform(get(location))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.success").value(false));
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.errorCode").value(notFoundCode));
         mvc.perform(delete(location))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.success").value(false));
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
         mvc.perform(get(path))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").isEmpty());
@@ -120,8 +121,8 @@ class ResourceApiTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").exists());
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.detail").exists());
 
         mvc.perform(get("/api/" + resource))
                 .andExpect(status().isOk())

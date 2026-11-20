@@ -1,22 +1,24 @@
-# Route and RouteStop API
+# API tuyến và điểm dừng
 
-Base URL: `http://localhost:8081`, or `http://localhost:8080` through Gateway.
-These endpoints use the same `ApiResponse` envelope as Station:
-`{"success":true,"data":...,"timestamp":"..."}`.
-Errors use `{"success":false,"message":"...","timestamp":"..."}`.
+Dùng URL `http://localhost:8081` khi gọi trực tiếp hoặc `http://localhost:8080` khi gọi qua Gateway.
+Phản hồi thành công có nội dung dùng `ApiResponse` với các trường `success`, `data` và `timestamp`.
+Khi có lỗi, Spring trả trực tiếp `ProblemDetail` với `Content-Type: application/problem+json` và
+các trường `status`, `detail`, `errorCode`. Với lỗi kiểm tra dữ liệu đầu vào,
+trường `errors` chứa danh sách thông báo cho từng trường có lỗi.
 
-| Resource  | Create                  | List                   | Detail                      | Replace                     | Delete                         |
-| --------- | ----------------------- | ---------------------- | --------------------------- | --------------------------- | ------------------------------ |
-| Route     | `POST /api/routes`      | `GET /api/routes`      | `GET /api/routes/{id}`      | `PUT /api/routes/{id}`      | `DELETE /api/routes/{id}`      |
-| RouteStop | `POST /api/route-stops` | `GET /api/route-stops` | `GET /api/route-stops/{id}` | `PUT /api/route-stops/{id}` | `DELETE /api/route-stops/{id}` |
+| Tài nguyên | Tạo | Danh sách | Chi tiết | Cập nhật | Xóa |
+| ---------- | --- | --------- | -------- | -------- | --- |
+| Tuyến (`Route`) | `POST /api/routes` | `GET /api/routes` | `GET /api/routes/{id}` | `PUT /api/routes/{id}` | `DELETE /api/routes/{id}` |
+| Điểm dừng (`RouteStop`) | `POST /api/route-stops` | `GET /api/route-stops` | `GET /api/route-stops/{id}` | `PUT /api/route-stops/{id}` | `DELETE /api/route-stops/{id}` |
 
-Create returns **201** and a `Location` header; reads and updates return **200**;
-delete returns **204** with no body. No pagination is applied, matching Station.
-No additional authentication is introduced by these controllers.
+Khi tạo thành công, API trả **201** và header `Location`. Thao tác đọc và cập nhật
+trả **200**. Thao tác xóa trả **204** với thân phản hồi rỗng. Danh sách trả toàn bộ
+kết quả trong một lần, giống API trạm (`Station)). Các controller này không áp dụng
+thêm bước xác thực.
 
-## Route
+## Tuyến (`Route`)
 
-Create body:
+Thân yêu cầu khi tạo tuyến
 
 ```json
 {
@@ -29,23 +31,24 @@ Create body:
 }
 ```
 
-All fields except `effectiveToAt` are required. `code` and `name` must be nonblank,
-at most 255 characters. `versionNo` must be positive. `basePrice` must be
-nonnegative, at most 15 integer digits, with no fractional amount.
-Dates use local date/time without a timezone. If supplied, `effectiveToAt` must
-be strictly after `effectiveFromAt`.
+Các trường đều bắt buộc ngoại trừ `effectiveToAt`. `code` và `name` phải có nội dung
+và dài tối đa 255 ký tự. `versionNo` phải lớn hơn 0. `basePrice` là số nguyên
+không âm, tối đa 15 chữ số. Giá trị ngày giờ dùng định dạng giờ địa phương,
+không kèm múi giờ. Nếu gửi `effectiveToAt`, giá trị này phải sau `effectiveFromAt`.
 
-A route starts with `status: "INACTIVE"`. PUT requires the same fields plus
-`status: "ACTIVE"` or `"INACTIVE"`. Omit or set `effectiveToAt` to null to remove
-its previous value. Responses contain these fields plus `id` and `status`.
+Tuyến mới có `status: "INACTIVE"`. Yêu cầu PUT dùng các trường như khi tạo tuyến
+và thêm `status: "ACTIVE"` hoặc `"INACTIVE"`. Bỏ qua `effectiveToAt`
+hoặc gửi giá trị `null` để xóa thời điểm kết thúc hiệu lực đã lưu. Phản hồi
+chứa các trường lúc tạo cùng với `id` và `status`.
 
-The `(code, versionNo)` pair is unique. Duplicate creation or updates return
-**409**. A route with existing stops cannot be deleted (**409**); delete its
-stops first. Missing resource IDs return **404**. Invalid bodies return **400**.
+Mỗi cặp `(code, versionNo)` là duy nhất. Tạo hoặc cập nhật trùng cặp giá trị
+này trả **409**. Cần xóa các điểm dừng trước khi xóa tuyến. Nếu tuyến vẫn còn
+điểm dừng, API trả **409**. ID tài nguyên không tồn tại trả **404**. Thân yêu cầu
+không hợp lệ trả **400**.
 
-## RouteStop
+## Điểm dừng (`RouteStop`)
 
-Both POST and PUT require every field below (including both booleans):
+POST và PUT yêu cầu tất cả các trường dưới đây, kể cả hai trường kiểu boolean.
 
 ```json
 {
@@ -59,41 +62,43 @@ Both POST and PUT require every field below (including both booleans):
 }
 ```
 
-`routeId` and `stationId` must be positive IDs of existing records; missing
-references return **404**. `stopOrder` and `offsetMinutes` are nonnegative
-integers. `distanceKm` is nonnegative, with at most 8 integer and 2 fractional
-digits. Distance and offset describe cumulative values from the route origin;
-this CRUD does not enforce monotonicity between different stops or renumber them.
+`routeId` và `stationId` phải là ID dương của bản ghi đang tồn tại. Nếu tuyến
+hoặc trạm được tham chiếu không tồn tại, API trả **404**. `stopOrder` và
+`offsetMinutes` là số nguyên không âm. `distanceKm` là số không âm với tối đa
+8 chữ số ở phần nguyên và 2 chữ số ở phần thập phân. Khoảng cách và số phút di chuyển
+được tính lũy kế từ đầu tuyến. API không kiểm tra các giá trị này có tăng dần
+giữa các điểm dừng hay không và không tự đánh lại thứ tự điểm dừng.
 
-Responses contain the fields above plus `id`; they do not serialize JPA entities.
-PUT can change the route or station reference. `(routeId, stopOrder)` must be
-unique; conflicts return **409**, including when moving a stop to another route.
-The same station can appear in multiple stops. Invalid bodies return **400**.
+Phản hồi trả các trường trên cùng với `id` dưới dạng JSON từ DTO. PUT có thể thay đổi tuyến hoặc trạm
+của điểm dừng. Cặp `(routeId, stopOrder)` phải duy nhất. Nếu bị trùng, API trả
+**409**, kể cả khi chuyển điểm dừng sang tuyến khác. Một trạm có thể xuất hiện
+ở nhiều điểm dừng. Thân yêu cầu không hợp lệ trả **400**.
 
-`GET /api/route-stops?routeId=1` lists one route's stops by ascending `stopOrder`.
-A nonexistent route returns **404**; an existing route with no stops returns an
-empty array. Without the filter, results are ordered by `routeId`, then
-`stopOrder`. Missing stop IDs return **404**. Deleting a stop preserves its route
-and station. A station referenced by a stop cannot be deleted (**409**).
+`GET /api/route-stops?routeId=1` liệt kê các điểm dừng của tuyến theo thứ tự
+`stopOrder` tăng dần. Tuyến không tồn tại trả **404**. Tuyến chưa có điểm dừng
+trả mảng rỗng. Khi không lọc theo tuyến, kết quả được sắp xếp theo `routeId`,
+sau đó theo `stopOrder`. ID điểm dừng không tồn tại trả **404**. Xóa điểm dừng
+chỉ xóa bản ghi điểm dừng. Nếu một trạm còn được điểm dừng tham chiếu, yêu cầu
+xóa trạm trả **409**.
 
-The existing Postman collection in `../postman` includes requests for both
-resources, directly and through Gateway. Create a station and route before
-creating a stop; delete stops before deleting their parent records.
+Bộ sưu tập Postman trong `../postman` có yêu cầu mẫu cho cả hai tài nguyên,
+gồm gọi trực tiếp và gọi qua Gateway. Hãy tạo trạm và tuyến trước khi tạo
+điểm dừng. Khi xóa, hãy xóa điểm dừng trước khi xóa bản ghi cha.
 
-Run `./mvnw test` (Windows: `.\mvnw.cmd test`) to verify the API against H2.
+Chạy `./mvnw test` để kiểm thử API với H2. Trên Windows, chạy `.\mvnw.cmd test`.
 
-## Vehicle and Driver
+## Xe và tài xế (`Vehicle` và `Driver`)
 
-These resources follow Station's response envelope and status codes, with only
-create, list, detail, and delete operations. PUT and PATCH are not supported.
-Both resources are also routed through Gateway.
+API xe và tài xế dùng cùng cấu trúc phản hồi và mã HTTP như API trạm. Hai API
+chỉ hỗ trợ tạo, xem danh sách, xem chi tiết và xóa. PUT và PATCH không được hỗ trợ.
+Có thể gọi cả hai API qua Gateway.
 
-| Resource | Create | List | Detail | Delete |
-| -------- | ------ | ---- | ------ | ------ |
-| Vehicle | `POST /api/vehicles` | `GET /api/vehicles` | `GET /api/vehicles/{id}` | `DELETE /api/vehicles/{id}` |
-| Driver | `POST /api/drivers` | `GET /api/drivers` | `GET /api/drivers/{id}` | `DELETE /api/drivers/{id}` |
+| Tài nguyên | Tạo | Danh sách | Chi tiết | Xóa |
+| ---------- | --- | --------- | -------- | --- |
+| Xe (`Vehicle`) | `POST /api/vehicles` | `GET /api/vehicles` | `GET /api/vehicles/{id}` | `DELETE /api/vehicles/{id}` |
+| Tài xế (`Driver`) | `POST /api/drivers` | `GET /api/drivers` | `GET /api/drivers/{id}` | `DELETE /api/drivers/{id}` |
 
-Vehicle create body (all fields required):
+Tất cả các trường trong thân yêu cầu tạo xe đều bắt buộc.
 
 ```json
 {
@@ -103,10 +108,10 @@ Vehicle create body (all fields required):
 }
 ```
 
-`licensePlate` must be nonblank, at most 255 characters. `type` accepts `SEAT`,
-`BERTH`, or `LIMOUSINE`; `capacity` must be a positive integer.
+`licensePlate` phải có nội dung và dài tối đa 255 ký tự. `type` nhận một trong
+ba giá trị `SEAT`, `BERTH` và `LIMOUSINE`. `capacity` là số nguyên dương.
 
-Driver create body:
+Thân yêu cầu khi tạo tài xế
 
 ```json
 {
@@ -118,30 +123,30 @@ Driver create body:
 }
 ```
 
-`fullName` and `phone` are required and nonblank. All string fields have a
-255-character limit. License fields are optional; `licenseExpiryOn` uses local
-date/time without a timezone.
+`fullName` và `phone` là trường bắt buộc và phải có nội dung. Mọi trường kiểu
+chuỗi dài tối đa 255 ký tự. Các trường về giấy phép lái xe là tùy chọn.
+`licenseExpiryOn` dùng ngày giờ địa phương, không kèm múi giờ.
 
-New vehicles and drivers start with `status: "INACTIVE"`. Responses contain the
-creation fields plus `id` and `status`. POST returns **201** with a `Location`
-header, GET returns **200**, and DELETE returns **204** with no body. Lists have
-no pagination. Invalid input returns **400**; reading or deleting a missing ID
-returns **404**.
+Xe và tài xế mới có `status: "INACTIVE"`. Phản hồi chứa các trường lúc tạo
+cùng với `id` và `status`. POST trả **201** và header `Location`. GET trả
+**200**. DELETE trả **204** với thân phản hồi rỗng. Danh sách trả toàn bộ kết
+quả trong một lần. Dữ liệu đầu vào không hợp lệ trả **400**. Xem hoặc xóa một
+ID không tồn tại trả **404**.
 
-## Trip and TripDriver
+## Chuyến xe và phân công tài xế (`Trip` và `TripDriver`)
 
-These resources follow Station's response envelope: POST returns **201** with a
-`Location` header, GET returns **200**, and DELETE returns **204** with no body.
-Only create, list, detail, and delete are supported; PUT and PATCH return **405**.
+Hai API dùng cùng cấu trúc phản hồi như API trạm. POST trả **201** và header
+`Location`. GET trả **200**. DELETE trả **204** với thân phản hồi rỗng. API
+chỉ hỗ trợ tạo, xem danh sách, xem chi tiết và xóa. PUT và PATCH trả **405**.
 
-| Resource | Create / List | Detail / Delete |
-| -------- | ------------- | --------------- |
-| Trip | `POST /api/trips`, `GET /api/trips` | `GET /api/trips/{id}`, `DELETE /api/trips/{id}` |
-| TripDriver | `POST /api/trip-drivers`, `GET /api/trip-drivers` | `GET /api/trip-drivers/{id}`, `DELETE /api/trip-drivers/{id}` |
+| Tài nguyên | Tạo / Danh sách | Chi tiết / Xóa |
+| ---------- | --------------- | -------------- |
+| Chuyến xe (`Trip`) | `POST /api/trips`, `GET /api/trips` | `GET /api/trips/{id}`, `DELETE /api/trips/{id}` |
+| Phân công tài xế (`TripDriver`) | `POST /api/trip-drivers`, `GET /api/trip-drivers` | `GET /api/trip-drivers/{id}`, `DELETE /api/trip-drivers/{id}` |
 
-Both resources are routed through Gateway. Lists have no pagination.
+Có thể gọi cả hai API qua Gateway. Danh sách trả toàn bộ kết quả trong một lần.
 
-Trip create body (all fields required):
+Tất cả các trường trong thân yêu cầu tạo chuyến xe đều bắt buộc.
 
 ```json
 {
@@ -154,14 +159,15 @@ Trip create body (all fields required):
 }
 ```
 
-`code` must be nonblank and at most 255 characters. Reference IDs must be positive
-and exist. `arrivalAt` must be after `departureAt`; both use local date/time without
-a timezone. `ticketPrice` is nonnegative with at most 15 integer digits and no
-fraction. New trips use `status: "DRAFT"`, `saleStatus: "NOT_OPEN"`, and a
-`capacitySnapshot` copied from the selected vehicle. Responses include these
-fields plus `id` and the estimated/actual timestamps, initially null.
+`code` phải có nội dung và dài tối đa 255 ký tự. ID tham chiếu phải là số dương
+của bản ghi đang tồn tại. `arrivalAt` phải sau `departureAt`. Cả hai trường dùng
+ngày giờ địa phương, không kèm múi giờ. `ticketPrice` là số nguyên không âm,
+tối đa 15 chữ số. Chuyến xe mới có `status: "DRAFT"` và `saleStatus: "NOT_OPEN"`.
+Hệ thống lưu sức chứa của xe được chọn vào `capacitySnapshot` tại thời điểm
+tạo chuyến. Phản hồi cũng có `id` và các mốc thời gian dự kiến, thực tế. Các mốc
+này có giá trị ban đầu là `null`.
 
-TripDriver create body (all fields required):
+Tất cả các trường trong thân yêu cầu phân công tài xế đều bắt buộc.
 
 ```json
 {
@@ -171,11 +177,11 @@ TripDriver create body (all fields required):
 }
 ```
 
-`tripId` and `driverId` must be positive IDs of existing records. `role` accepts
-`PRIMARY` or `RELIEF`. Responses contain these fields plus `id`. Assigning the
-same driver to the same trip again returns **409**, regardless of role.
+`tripId` và `driverId` phải là ID dương của bản ghi đang tồn tại. `role` nhận
+`PRIMARY` hoặc `RELIEF`. Phản hồi chứa các trường này cùng với `id`. Phân
+công lại cùng một tài xế cho cùng chuyến xe trả **409** dù vai trò khác nhau.
 
-Invalid input returns **400**. Missing resources or references return **404**.
-Delete a trip's driver assignments before deleting the trip; otherwise deletion
-returns **409**. Deleting an assignment preserves the trip and driver; deleting
-a trip preserves its route and vehicle.
+Dữ liệu đầu vào không hợp lệ trả **400**. Tài nguyên hoặc bản ghi tham chiếu
+không tồn tại trả **404**. Cần xóa các phân công tài xế trước khi xóa chuyến xe.
+Nếu chuyến xe vẫn còn phân công, API trả **409**. Xóa phân công giữ lại chuyến xe
+và tài xế. Xóa chuyến xe giữ lại tuyến và xe.

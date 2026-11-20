@@ -1,9 +1,9 @@
 package com.futabus.transport.resource.controller;
 
+import com.futabus.transport.response.ApiResponse;
 import com.futabus.transport.resource.dto.request.DriverCreationRequest;
 import com.futabus.transport.resource.dto.response.DriverResponse;
 import com.futabus.transport.resource.service.DriverService;
-import com.futabus.transport.route.dto.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

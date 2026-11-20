@@ -1,6 +1,7 @@
 // Xử lý nghiệp vụ lịch ca trực và trạng thái vận hành chuyến xe cho tài xế
 package com.futabus.transport.trip.service;
 
+import com.futabus.transport.exception.BusinessException;
 import com.futabus.transport.resource.entity.Driver;
 import com.futabus.transport.resource.repository.DriverRepository;
 import com.futabus.transport.route.entity.RouteStop;
@@ -10,6 +11,7 @@ import com.futabus.transport.trip.dto.response.DriverTripStopDto;
 import com.futabus.transport.trip.entity.Trip;
 import com.futabus.transport.trip.entity.TripDriver;
 import com.futabus.transport.trip.enums.TripStatus;
+import com.futabus.transport.trip.exception.TripErrorCode;
 import com.futabus.transport.trip.repository.TripDriverRepository;
 import com.futabus.transport.trip.repository.TripRepository;
 import lombok.RequiredArgsConstructor;
@@ -90,13 +92,13 @@ public class DriverTripService {
     @Transactional
     public DriverTripScheduleResponse updateTripStatus(String tripCode, String statusName) {
         Trip trip = tripRepository.findByCode(tripCode)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy chuyến xe có mã: " + tripCode));
+                .orElseThrow(() -> new BusinessException(TripErrorCode.TRANSPORT_TRIP_CODE_NOT_FOUND));
 
         TripStatus newStatus;
         try {
             newStatus = TripStatus.valueOf(statusName.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Trạng thái chuyến không hợp lệ: " + statusName);
+            throw new BusinessException(TripErrorCode.TRANSPORT_TRIP_INVALID_STATUS);
         }
 
         trip.setStatus(newStatus);

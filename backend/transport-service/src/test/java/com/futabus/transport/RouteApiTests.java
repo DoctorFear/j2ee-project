@@ -94,7 +94,7 @@ class RouteApiTests {
         mvc.perform(delete(location)).andExpect(status().isNoContent()).andExpect(content().string(""));
         assertFalse(routes.existsById(id));
         mvc.perform(get(location)).andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.success").value(false));
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
     }
 
     @Test
@@ -112,15 +112,15 @@ class RouteApiTests {
                 valid.replace("\"effectiveToAt\":null", "\"effectiveToAt\":\"2026-10-21T08:00:00\""))) {
             mvc.perform(post("/api/routes").contentType(MediaType.APPLICATION_JSON).content(invalid))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.success").value(false))
-                    .andExpect(jsonPath("$.message").exists());
+                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                    .andExpect(jsonPath("$.detail").exists());
         }
         Route route = route("HCM-DL", 1);
         for (String invalid : List.of(valid, routeUpdateBody("HCM-DL", 1).replace("ACTIVE", "UNKNOWN"))) {
             mvc.perform(put("/api/routes/{id}", route.getId())
                             .contentType(MediaType.APPLICATION_JSON).content(invalid))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.success").value(false));
+                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
         }
         mvc.perform(put("/api/routes/{id}", route.getId()).contentType(MediaType.APPLICATION_JSON)
                         .content(routeUpdateBody("HCM-DL", 1)
@@ -134,7 +134,7 @@ class RouteApiTests {
         Route first = route("HCM-DL", 1);
         Route second = route("HCM-DL", 2);
         mvc.perform(post("/api/routes").contentType(MediaType.APPLICATION_JSON).content(routeBody("HCM-DL", 1)))
-                .andExpect(status().isConflict()).andExpect(jsonPath("$.success").value(false));
+                .andExpect(status().isConflict()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
         mvc.perform(put("/api/routes/{id}", second.getId()).contentType(MediaType.APPLICATION_JSON)
                         .content(routeUpdateBody("HCM-DL", 1)))
                 .andExpect(status().isConflict());
@@ -149,7 +149,7 @@ class RouteApiTests {
     @Test
     void routeMissingIdsReturnNotFound() throws Exception {
         mvc.perform(get("/api/routes/999999")).andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.success").value(false));
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
         mvc.perform(put("/api/routes/999999").contentType(MediaType.APPLICATION_JSON)
                         .content(routeUpdateBody("HCM-DL", 1)))
                 .andExpect(status().isNotFound());
@@ -201,7 +201,7 @@ class RouteApiTests {
         mvc.perform(delete(location)).andExpect(status().isNoContent()).andExpect(content().string(""));
         assertFalse(routeStops.existsById(id));
         mvc.perform(get(location)).andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.success").value(false));
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
     }
 
     @Test
@@ -241,7 +241,7 @@ class RouteApiTests {
         Long second = createStop(route.getId(), station.getId(), 1);
         mvc.perform(post("/api/route-stops").contentType(MediaType.APPLICATION_JSON)
                         .content(stopBody(route.getId(), station.getId(), 0)))
-                .andExpect(status().isConflict()).andExpect(jsonPath("$.success").value(false));
+                .andExpect(status().isConflict()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
         mvc.perform(put("/api/route-stops/{id}", second).contentType(MediaType.APPLICATION_JSON)
                         .content(stopBody(route.getId(), station.getId(), 0)))
                 .andExpect(status().isConflict());
@@ -258,9 +258,9 @@ class RouteApiTests {
         Long id = createStop(route.getId(), station.getId(), 0);
         for (String body : List.of(stopBody(999999L, station.getId(), 1), stopBody(route.getId(), 999999L, 1))) {
             mvc.perform(post("/api/route-stops").contentType(MediaType.APPLICATION_JSON).content(body))
-                    .andExpect(status().isNotFound()).andExpect(jsonPath("$.success").value(false));
+                    .andExpect(status().isNotFound()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
             mvc.perform(put("/api/route-stops/{id}", id).contentType(MediaType.APPLICATION_JSON).content(body))
-                    .andExpect(status().isNotFound()).andExpect(jsonPath("$.success").value(false));
+                    .andExpect(status().isNotFound()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
         }
         assertEquals(0, routeStops.findById(id).orElseThrow().getStopOrder());
         assertEquals(1, routeStops.count());
@@ -284,9 +284,9 @@ class RouteApiTests {
                 valid.replace("\"allowPickup\":true", "\"allowPickup\":null"),
                 valid.replace(",\"allowDropOff\":false", ""))) {
             mvc.perform(post("/api/route-stops").contentType(MediaType.APPLICATION_JSON).content(invalid))
-                    .andExpect(status().isBadRequest()).andExpect(jsonPath("$.success").value(false));
+                    .andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
             mvc.perform(put("/api/route-stops/{id}", id).contentType(MediaType.APPLICATION_JSON).content(invalid))
-                    .andExpect(status().isBadRequest()).andExpect(jsonPath("$.success").value(false));
+                    .andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
         }
         assertEquals(1, routeStops.count());
         assertEquals(0, routeStops.findById(id).orElseThrow().getStopOrder());
@@ -307,9 +307,14 @@ class RouteApiTests {
         Station station = station("Mien Dong");
         Long id = createStop(route.getId(), station.getId(), 0);
         mvc.perform(delete("/api/routes/{id}", route.getId()))
-                .andExpect(status().isConflict()).andExpect(jsonPath("$.success").value(false));
+                .andExpect(status().isConflict())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.errorCode").value("TRANSPORT_ROUTE_HAS_STOPS"));
         mvc.perform(delete("/api/stations/{id}", station.getId()))
-                .andExpect(status().isConflict()).andExpect(jsonPath("$.success").value(false));
+                .andExpect(status().isConflict())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.errorCode").value("COMMON_DATA_CONFLICT"))
+                .andExpect(jsonPath("$.detail").value("Request conflicts with existing data or references"));
         assertTrue(routes.existsById(route.getId()));
         assertTrue(stations.existsById(station.getId()));
         assertTrue(routeStops.existsById(id));

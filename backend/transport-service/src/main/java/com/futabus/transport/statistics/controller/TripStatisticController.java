@@ -1,6 +1,6 @@
 package com.futabus.transport.statistics.controller;
 
-import com.futabus.transport.route.dto.response.ApiResponse;
+import com.futabus.transport.response.ApiResponse;
 import com.futabus.transport.statistics.dto.request.TripStatisticCreationRequest;
 import com.futabus.transport.statistics.dto.response.TripStatisticResponse;
 import com.futabus.transport.statistics.service.TripStatisticService;

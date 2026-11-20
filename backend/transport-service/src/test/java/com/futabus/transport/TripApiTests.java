@@ -104,8 +104,10 @@ class TripApiTests {
 
         mvc.perform(delete(location)).andExpect(status().isNoContent())
                 .andExpect(content().string(""));
-        mvc.perform(get(location)).andExpect(status().isNotFound());
-        mvc.perform(delete(location)).andExpect(status().isNotFound());
+        mvc.perform(get(location)).andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.errorCode").value("TRANSPORT_TRIP_NOT_FOUND"));
+        mvc.perform(delete(location)).andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.errorCode").value("TRANSPORT_TRIP_NOT_FOUND"));
         assertEquals(0, trips.count());
         assertTrue(routes.existsById(route.getId()));
         assertTrue(vehicles.existsById(vehicle.getId()));
@@ -133,7 +135,9 @@ class TripApiTests {
                 .andExpect(jsonPath("$.data.length()").value(1));
         mvc.perform(post("/api/trip-drivers").contentType(MediaType.APPLICATION_JSON)
                         .content(body.replace("PRIMARY", "RELIEF")))
-                .andExpect(status().isConflict()).andExpect(jsonPath("$.success").value(false));
+                .andExpect(status().isConflict())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.errorCode").value("TRANSPORT_TRIP_DRIVER_ALREADY_ASSIGNED"));
         mvc.perform(delete("/api/trips/{id}", tripId)).andExpect(status().isConflict());
         assertEquals(1, tripDrivers.count());
 
@@ -144,6 +148,28 @@ class TripApiTests {
         assertTrue(trips.existsById(tripId));
         assertTrue(drivers.existsById(driver.getId()));
         mvc.perform(delete("/api/trips/{id}", tripId)).andExpect(status().isNoContent());
+    }
+
+    @Test
+    void driverTripStatusErrorsUseTheGlobalHandler() throws Exception {
+        String path = "/api/driver/trips/{code}/status";
+        mvc.perform(put(path, "missing").param("status", "RUNNING"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.errorCode").value("TRANSPORT_TRIP_CODE_NOT_FOUND"));
+
+        createTrip();
+        mvc.perform(put(path, "HCM-DL-001").param("status", "unknown"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode").value("TRANSPORT_TRIP_INVALID_STATUS"));
+        mvc.perform(put(path, "HCM-DL-001"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode").value("COMMON_MISSING_PARAMETER"))
+                .andExpect(jsonPath("$.errors.status[0]").isString());
+
+        mvc.perform(put(path, "HCM-DL-001").param("status", "RUNNING"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.tripStatus").value("RUNNING"));
     }
 
     @Test
@@ -165,7 +191,7 @@ class TripApiTests {
                 valid.replace("2026-10-23T14:00:00", "2026-10-23T07:00:00"))) {
             mvc.perform(post("/api/trips").contentType(MediaType.APPLICATION_JSON).content(invalid))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.success").value(false));
+                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
         }
         assertEquals(0, trips.count());
     }
@@ -182,7 +208,7 @@ class TripApiTests {
                 valid.replace("PRIMARY", "UNKNOWN"))) {
             mvc.perform(post("/api/trip-drivers").contentType(MediaType.APPLICATION_JSON).content(invalid))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.success").value(false));
+                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
         }
         assertEquals(0, tripDrivers.count());
     }
@@ -191,18 +217,18 @@ class TripApiTests {
     void missingReferencesAndResourcesReturnNotFound() throws Exception {
         for (String body : List.of(tripBody(999999L, vehicle.getId()), tripBody(route.getId(), 999999L))) {
             mvc.perform(post("/api/trips").contentType(MediaType.APPLICATION_JSON).content(body))
-                    .andExpect(status().isNotFound()).andExpect(jsonPath("$.success").value(false));
+                    .andExpect(status().isNotFound()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
         }
         Long tripId = idFromLocation(createTrip());
         for (String body : List.of(assignmentBody(999999L, driver.getId()), assignmentBody(tripId, 999999L))) {
             mvc.perform(post("/api/trip-drivers").contentType(MediaType.APPLICATION_JSON).content(body))
-                    .andExpect(status().isNotFound()).andExpect(jsonPath("$.success").value(false));
+                    .andExpect(status().isNotFound()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
         }
         for (String resource : List.of("trips", "trip-drivers")) {
             mvc.perform(get("/api/" + resource + "/999999")).andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.success").value(false));
+                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
             mvc.perform(delete("/api/" + resource + "/999999")).andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.success").value(false));
+                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
         }
         assertEquals(0, tripDrivers.count());
     }

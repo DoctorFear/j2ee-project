@@ -1,14 +1,18 @@
 package com.futabus.transport.trip.service;
 
+import com.futabus.transport.exception.BusinessException;
 import com.futabus.transport.resource.entity.Vehicle;
+import com.futabus.transport.resource.exception.ResourceErrorCode;
 import com.futabus.transport.resource.repository.VehicleRepository;
 import com.futabus.transport.route.entity.Route;
+import com.futabus.transport.route.exception.RouteErrorCode;
 import com.futabus.transport.route.repository.RouteRepository;
 import com.futabus.transport.trip.dto.request.TripCreationRequest;
 import com.futabus.transport.trip.dto.response.TripResponse;
 import com.futabus.transport.trip.entity.Trip;
 import com.futabus.transport.trip.enums.SaleStatus;
 import com.futabus.transport.trip.enums.TripStatus;
+import com.futabus.transport.trip.exception.TripErrorCode;
 import com.futabus.transport.trip.mapper.TripMapper;
 import com.futabus.transport.trip.repository.TripDriverRepository;
 import com.futabus.transport.trip.repository.TripRepository;
@@ -17,11 +21,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-
-import static org.springframework.http.HttpStatus.*;
 
 @Service
 @RequiredArgsConstructor
@@ -36,13 +37,13 @@ public class TripService {
     @Transactional
     public TripResponse create(TripCreationRequest request) {
         if (!request.getArrivalAt().isAfter(request.getDepartureAt())) {
-            throw new ResponseStatusException(BAD_REQUEST, "arrivalAt must be after departureAt");
+            throw new BusinessException(TripErrorCode.TRANSPORT_TRIP_INVALID_SCHEDULE);
         }
 
         Route route = routeRepository.findById(request.getRouteId())
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Route not found: " + request.getRouteId()));
+                .orElseThrow(() -> new BusinessException(RouteErrorCode.TRANSPORT_ROUTE_NOT_FOUND));
         Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Vehicle not found: " + request.getVehicleId()));
+                .orElseThrow(() -> new BusinessException(ResourceErrorCode.TRANSPORT_VEHICLE_NOT_FOUND));
 
         Trip trip = tripMapper.toTrip(request);
         trip.setRoute(route);
@@ -72,7 +73,7 @@ public class TripService {
         Trip trip = getTrip(id);
 
         if (tripDriverRepository.existsByTripId(id)) {
-            throw new ResponseStatusException(CONFLICT, "Delete the trip drivers before deleting this trip");
+            throw new BusinessException(TripErrorCode.TRANSPORT_TRIP_HAS_DRIVERS);
         }
 
         tripRepository.delete(trip);
@@ -80,6 +81,6 @@ public class TripService {
 
     private Trip getTrip(Long id) {
         return tripRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Trip not found: " + id));
+                .orElseThrow(() -> new BusinessException(TripErrorCode.TRANSPORT_TRIP_NOT_FOUND));
     }
 }

@@ -25,6 +25,7 @@ function normalizeError(error: unknown): Error {
   if (!axios.isAxiosError(error)) return error instanceof Error ? error : new ApiError("Yêu cầu không thành công.");
   const status = error.response?.status;
   const body = error.response?.data;
+  const responseMessage = typeof body?.message === "string" ? body.message : body?.detail;
   const validation = body?.errors;
   const messages: unknown[] = Array.isArray(validation)
     ? validation
@@ -36,8 +37,8 @@ function normalizeError(error: unknown): Error {
       ? "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
       : status === 403
         ? "Bạn không có quyền thực hiện thao tác này."
-        : typeof body?.message === "string"
-          ? body.message
+        : typeof responseMessage === "string"
+          ? responseMessage
           : messages.filter((item): item is string => typeof item === "string").join(", ") ||
             (error.code === "ECONNABORTED"
               ? "Máy chủ phản hồi quá chậm. Vui lòng thử lại."

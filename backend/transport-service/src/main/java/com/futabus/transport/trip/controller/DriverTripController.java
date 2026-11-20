@@ -56,11 +56,7 @@ public class DriverTripController {
             @PathVariable("code") String tripCode,
             @RequestParam String status
     ) {
-        try {
-            DriverTripScheduleResponse response = driverTripService.updateTripStatus(tripCode, status);
-            return ResponseEntity.ok(Map.of("success", true, "data", response));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
-        }
+        DriverTripScheduleResponse response = driverTripService.updateTripStatus(tripCode, status);
+        return ResponseEntity.ok(Map.of("success", true, "data", response));
     }
 }
