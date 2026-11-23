@@ -2,7 +2,7 @@
 GET http://localhost:8080/actuator/health
 
 ### 2. Kiểm tra định tuyến Đăng nhập (Auth Service .NET qua Gateway)
-POST http://localhost:8080/api/auth/login
+POST http://localhost:8080/auth/login
 Content-Type: application/json
 
 {

@@ -2,7 +2,7 @@
   "info": {
     "name": "FUTA - Gateway & Transport Service",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Collection cho endpoint hiện có trong mã nguồn. Gateway chạy tại localhost:8080 và chuyển tiếp Auth (/api/auth/**, /api/user/**) tới Auth Service, Station (/api/stations/**) tới Transport Service. Transport Service chạy trực tiếp tại localhost:8081. Gateway còn cấu hình /api/trips/**, /api/admin/**, /api/driver/** và route Booking (/api/bookings/**, /api/tickets/**, /api/trips/{code}/seats/**), nhưng hiện không có controller tương ứng trong repo nên chưa tạo request giả. Các biến accessToken/refreshToken chỉ là giá trị rỗng ban đầu; không lưu token thật vào Git.\nRoute and RouteStop CRUD are available directly and through Gateway. See transport-service/README.md for required fields and errors. Create parent records before stops; delete stops before their parents."
+    "description": "Collection cho endpoint hiện có trong mã nguồn. Gateway chạy tại localhost:8080 và chuyển tiếp Auth (/api/auth/**, /api/user/**) tới Auth Service, Station (/api/stations/**) tới Transport Service. Transport Service chạy trực tiếp tại localhost:8081/transport-service. Gateway còn cấu hình /api/trips/**, /api/admin/**, /api/driver/** và route Booking (/api/bookings/**, /api/tickets/**, /api/trips/{code}/seats/**), nhưng hiện không có controller tương ứng trong repo nên chưa tạo request giả. Các biến accessToken/refreshToken chỉ là giá trị rỗng ban đầu; không lưu token thật vào Git.\nRoute and RouteStop CRUD are available directly and through Gateway. See transport-service/README.md for required fields and errors. Create parent records before stops; delete stops before their parents."
   },
   "item": [
     {
@@ -321,7 +321,7 @@
                     "value": "application/json"
                   }
                 ],
-                "url": "{{gatewayBaseUrl}}/api/stations",
+                "url": "{{gatewayBaseUrl}}/stations",
                 "description": "Body yêu cầu name, address, type. type: TERMINAL | OFFICE | ROAD_STOP | REST_STOP. Trả 201 với Location và data.status=INACTIVE. Tự lưu id mới vào stationId.",
                 "body": {
                   "mode": "raw",
@@ -356,7 +356,7 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{gatewayBaseUrl}}/api/stations",
+                "url": "{{gatewayBaseUrl}}/stations",
                 "description": "Trả 200, data là mảng trạm."
               },
               "response": []
@@ -366,7 +366,7 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{gatewayBaseUrl}}/api/stations/{{stationId}}",
+                "url": "{{gatewayBaseUrl}}/stations/{{stationId}}",
                 "description": "Trả 200; id không tồn tại trả 404."
               },
               "response": []
@@ -381,7 +381,7 @@
                     "value": "application/json"
                   }
                 ],
-                "url": "{{gatewayBaseUrl}}/api/stations/{{stationId}}",
+                "url": "{{gatewayBaseUrl}}/stations/{{stationId}}",
                 "description": "Yêu cầu đủ name, address, type, status. status: ACTIVE | INACTIVE. Trả 200.",
                 "body": {
                   "mode": "raw",
@@ -400,7 +400,7 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{gatewayBaseUrl}}/api/stations/{{stationId}}",
+                "url": "{{gatewayBaseUrl}}/stations/{{stationId}}",
                 "description": "Trả 204 không có body; id không tồn tại trả 404."
               },
               "response": []
@@ -421,7 +421,7 @@
                     "value": "application/json"
                   }
                 ],
-                "url": "{{gatewayBaseUrl}}/api/routes",
+                "url": "{{gatewayBaseUrl}}/routes",
                 "description": "Required: code, positive versionNo, name, nonnegative integer basePrice (15 digits), effectiveFromAt. Optional effectiveToAt must be after effectiveFromAt. Captures routeId; returns INACTIVE and Location.",
                 "body": {
                   "mode": "raw",
@@ -459,7 +459,7 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{gatewayBaseUrl}}/api/routes",
+                "url": "{{gatewayBaseUrl}}/routes",
                 "description": "Returns an unpaginated array."
               },
               "response": [],
@@ -485,7 +485,7 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{gatewayBaseUrl}}/api/routes/{{routeId}}",
+                "url": "{{gatewayBaseUrl}}/routes/{{routeId}}",
                 "description": "Missing ID returns 404."
               },
               "response": [],
@@ -516,7 +516,7 @@
                     "value": "application/json"
                   }
                 ],
-                "url": "{{gatewayBaseUrl}}/api/routes/{{routeId}}",
+                "url": "{{gatewayBaseUrl}}/routes/{{routeId}}",
                 "description": "All creation fields plus status ACTIVE or INACTIVE. Null effectiveToAt clears its previous value.",
                 "body": {
                   "mode": "raw",
@@ -551,7 +551,7 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{gatewayBaseUrl}}/api/routes/{{routeId}}",
+                "url": "{{gatewayBaseUrl}}/routes/{{routeId}}",
                 "description": "Delete route stops first. Returns 409 while stops reference this route. Missing ID returns 404."
               },
               "response": [],
@@ -583,7 +583,7 @@
                     "value": "application/json"
                   }
                 ],
-                "url": "{{gatewayBaseUrl}}/api/route-stops",
+                "url": "{{gatewayBaseUrl}}/route-stops",
                 "description": "Positive existing routeId/stationId; nonnegative stopOrder, distanceKm (8 integer and 2 fractional digits), offsetMinutes; required allowPickup/allowDropOff. Captures routeStopId. Returns Location and scalar IDs.",
                 "body": {
                   "mode": "raw",
@@ -621,7 +621,7 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{gatewayBaseUrl}}/api/route-stops",
+                "url": "{{gatewayBaseUrl}}/route-stops",
                 "description": "Sorted by routeId then stopOrder, without pagination."
               },
               "response": [],
@@ -647,7 +647,7 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{gatewayBaseUrl}}/api/route-stops?routeId={{routeId}}",
+                "url": "{{gatewayBaseUrl}}/route-stops?routeId={{routeId}}",
                 "description": "Sorted by stopOrder. Empty array for an existing route with no stops; 404 for a missing route."
               },
               "response": [],
@@ -673,7 +673,7 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{gatewayBaseUrl}}/api/route-stops/{{routeStopId}}",
+                "url": "{{gatewayBaseUrl}}/route-stops/{{routeStopId}}",
                 "description": "Missing ID returns 404."
               },
               "response": [],
@@ -704,7 +704,7 @@
                     "value": "application/json"
                   }
                 ],
-                "url": "{{gatewayBaseUrl}}/api/route-stops/{{routeStopId}}",
+                "url": "{{gatewayBaseUrl}}/route-stops/{{routeStopId}}",
                 "description": "All fields required. May change routeId or stationId. The same stop can retain its own order.",
                 "body": {
                   "mode": "raw",
@@ -739,7 +739,7 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{gatewayBaseUrl}}/api/route-stops/{{routeStopId}}",
+                "url": "{{gatewayBaseUrl}}/route-stops/{{routeStopId}}",
                 "description": "Preserves the route and station. Delete stops before deleting a referenced route or station."
               },
               "response": [],
@@ -773,7 +773,7 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{tripBaseUrl}}/api/stations",
+            "url": "{{tripBaseUrl}}/stations",
             "description": "Body yêu cầu name, address, type. type: TERMINAL | OFFICE | ROAD_STOP | REST_STOP. Trả 201 với Location và data.status=INACTIVE. Tự lưu id mới vào stationId.",
             "body": {
               "mode": "raw",
@@ -808,7 +808,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{tripBaseUrl}}/api/stations",
+            "url": "{{tripBaseUrl}}/stations",
             "description": "Trả 200, data là mảng trạm."
           },
           "response": []
@@ -818,7 +818,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{tripBaseUrl}}/api/stations/{{stationId}}",
+            "url": "{{tripBaseUrl}}/stations/{{stationId}}",
             "description": "Trả 200; id không tồn tại trả 404."
           },
           "response": []
@@ -833,7 +833,7 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{tripBaseUrl}}/api/stations/{{stationId}}",
+            "url": "{{tripBaseUrl}}/stations/{{stationId}}",
             "description": "Yêu cầu đủ name, address, type, status. status: ACTIVE | INACTIVE. Trả 200.",
             "body": {
               "mode": "raw",
@@ -852,7 +852,7 @@
           "request": {
             "method": "DELETE",
             "header": [],
-            "url": "{{tripBaseUrl}}/api/stations/{{stationId}}",
+            "url": "{{tripBaseUrl}}/stations/{{stationId}}",
             "description": "Trả 204 không có body; id không tồn tại trả 404."
           },
           "response": []
@@ -871,7 +871,7 @@
                     "value": "application/json"
                   }
                 ],
-                "url": "{{tripBaseUrl}}/api/routes",
+                "url": "{{tripBaseUrl}}/routes",
                 "description": "Required: code, positive versionNo, name, nonnegative integer basePrice (15 digits), effectiveFromAt. Optional effectiveToAt must be after effectiveFromAt. Captures routeId; returns INACTIVE and Location.",
                 "body": {
                   "mode": "raw",
@@ -909,7 +909,7 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{tripBaseUrl}}/api/routes",
+                "url": "{{tripBaseUrl}}/routes",
                 "description": "Returns an unpaginated array."
               },
               "response": [],
@@ -935,7 +935,7 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{tripBaseUrl}}/api/routes/{{routeId}}",
+                "url": "{{tripBaseUrl}}/routes/{{routeId}}",
                 "description": "Missing ID returns 404."
               },
               "response": [],
@@ -966,7 +966,7 @@
                     "value": "application/json"
                   }
                 ],
-                "url": "{{tripBaseUrl}}/api/routes/{{routeId}}",
+                "url": "{{tripBaseUrl}}/routes/{{routeId}}",
                 "description": "All creation fields plus status ACTIVE or INACTIVE. Null effectiveToAt clears its previous value.",
                 "body": {
                   "mode": "raw",
@@ -1001,7 +1001,7 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{tripBaseUrl}}/api/routes/{{routeId}}",
+                "url": "{{tripBaseUrl}}/routes/{{routeId}}",
                 "description": "Delete route stops first. Returns 409 while stops reference this route. Missing ID returns 404."
               },
               "response": [],
@@ -1033,7 +1033,7 @@
                     "value": "application/json"
                   }
                 ],
-                "url": "{{tripBaseUrl}}/api/route-stops",
+                "url": "{{tripBaseUrl}}/route-stops",
                 "description": "Positive existing routeId/stationId; nonnegative stopOrder, distanceKm (8 integer and 2 fractional digits), offsetMinutes; required allowPickup/allowDropOff. Captures routeStopId. Returns Location and scalar IDs.",
                 "body": {
                   "mode": "raw",
@@ -1071,7 +1071,7 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{tripBaseUrl}}/api/route-stops",
+                "url": "{{tripBaseUrl}}/route-stops",
                 "description": "Sorted by routeId then stopOrder, without pagination."
               },
               "response": [],
@@ -1097,7 +1097,7 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{tripBaseUrl}}/api/route-stops?routeId={{routeId}}",
+                "url": "{{tripBaseUrl}}/route-stops?routeId={{routeId}}",
                 "description": "Sorted by stopOrder. Empty array for an existing route with no stops; 404 for a missing route."
               },
               "response": [],
@@ -1123,7 +1123,7 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": "{{tripBaseUrl}}/api/route-stops/{{routeStopId}}",
+                "url": "{{tripBaseUrl}}/route-stops/{{routeStopId}}",
                 "description": "Missing ID returns 404."
               },
               "response": [],
@@ -1154,7 +1154,7 @@
                     "value": "application/json"
                   }
                 ],
-                "url": "{{tripBaseUrl}}/api/route-stops/{{routeStopId}}",
+                "url": "{{tripBaseUrl}}/route-stops/{{routeStopId}}",
                 "description": "All fields required. May change routeId or stationId. The same stop can retain its own order.",
                 "body": {
                   "mode": "raw",
@@ -1189,7 +1189,7 @@
               "request": {
                 "method": "DELETE",
                 "header": [],
-                "url": "{{tripBaseUrl}}/api/route-stops/{{routeStopId}}",
+                "url": "{{tripBaseUrl}}/route-stops/{{routeStopId}}",
                 "description": "Preserves the route and station. Delete stops before deleting a referenced route or station."
               },
               "response": [],
@@ -1217,7 +1217,7 @@
     },
     {
       "key": "tripBaseUrl",
-      "value": "http://localhost:8081"
+      "value": "http://localhost:8081/api/transport-service"
     },
     {
       "key": "stationId",
