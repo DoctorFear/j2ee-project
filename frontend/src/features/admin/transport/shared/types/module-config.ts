@@ -18,6 +18,7 @@ export interface ModuleConfig<K extends Resource = Resource> {
   schema: z.ZodType<FormValues>;
   updateSchema?: z.ZodType<FormValues>;
   defaults: FormValues;
+  canDelete?: boolean;
   statusOptions?: string[];
   note?: string;
 }

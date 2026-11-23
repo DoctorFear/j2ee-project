@@ -22,7 +22,7 @@ export const labels: Record<string, string> = {
   phone: "Số điện thoại",
   licenseNumber: "Số giấy phép lái xe",
   licenseClass: "Hạng giấy phép",
-  licenseExpiryOn: "Ngày giờ hết hạn GPLX",
+  licenseExpiryOn: "Ngày hết hạn GPLX",
   vehicleId: "Phương tiện",
   tripId: "Chuyến xe",
   driverId: "Tài xế",

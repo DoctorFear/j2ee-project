@@ -1,8 +1,16 @@
 import type { ModuleConfig } from "../shared/types/module-config";
 import { transportTitles } from "../navigation";
-import { driverSchema } from "./schema";
+import { driverSchema, driverUpdateSchema } from "./schema";
 import { driversApi } from "./api";
-import { txt, date, active } from "../shared/forms/fields";
+import { txt, dateOnly, select, active } from "../shared/forms/fields";
+
+const fields = [
+  txt("fullName"),
+  txt("phone"),
+  txt("licenseNumber", true),
+  txt("licenseClass", true),
+  dateOnly("licenseExpiryOn", true),
+];
 
 export const driversModule: ModuleConfig<"drivers"> = {
   resource: "drivers",
@@ -11,14 +19,10 @@ export const driversModule: ModuleConfig<"drivers"> = {
   singular: "tài xế",
   description: "Quản lý hồ sơ liên hệ và giấy phép lái xe.",
   columns: ["fullName", "phone", "licenseNumber", "licenseClass", "status"],
-  fields: [
-    txt("fullName"),
-    txt("phone"),
-    txt("licenseNumber", true),
-    txt("licenseClass", true),
-    date("licenseExpiryOn", true),
-  ],
+  fields,
+  updateFields: [...fields, select("status", active)],
   schema: driverSchema,
+  updateSchema: driverUpdateSchema,
   defaults: {
     fullName: "",
     phone: "",

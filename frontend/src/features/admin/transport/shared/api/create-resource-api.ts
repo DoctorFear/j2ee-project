@@ -15,6 +15,7 @@ export function createResourceApi<K extends Resource>(
       }),
     detail: (id, signal) => apiClient<EntityMap[K]>(endpoint + "/" + id, { signal }),
     create: (values) => apiClient<EntityMap[K]>(endpoint, { method: "POST", data: values }),
+    update: (id, values) => apiClient<EntityMap[K]>(endpoint + "/" + id, { method: "PUT", data: values }),
     remove: (id) => apiClient<void>(endpoint + "/" + id, { method: "DELETE" }),
   };
 }

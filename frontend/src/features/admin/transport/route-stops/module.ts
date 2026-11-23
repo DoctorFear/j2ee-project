@@ -6,6 +6,16 @@ import { num, ref } from "../shared/forms/fields";
 import { routesApi } from "../routes/api";
 import { stationsApi } from "../stations/api";
 
+const fields = [
+  ref("routeId", routesApi),
+  ref("stationId", stationsApi),
+  num("stopOrder"),
+  num("distanceKm", "0.01"),
+  num("offsetMinutes"),
+  { name: "allowPickup", kind: "checkbox" as const },
+  { name: "allowDropOff", kind: "checkbox" as const },
+];
+
 export const routeStopsModule: ModuleConfig<"route-stops"> = {
   resource: "route-stops",
   api: routeStopsApi,
@@ -15,16 +25,10 @@ export const routeStopsModule: ModuleConfig<"route-stops"> = {
   singular: "điểm dừng",
   description: "Thiết lập thứ tự, khoảng cách và điểm đón trả trên từng tuyến.",
   columns: ["routeId", "stationId", "stopOrder", "distanceKm", "offsetMinutes", "allowPickup", "allowDropOff"],
-  fields: [
-    ref("routeId", routesApi),
-    ref("stationId", stationsApi),
-    num("stopOrder"),
-    num("distanceKm", "0.01"),
-    num("offsetMinutes"),
-    { name: "allowPickup", kind: "checkbox" },
-    { name: "allowDropOff", kind: "checkbox" },
-  ],
+  fields,
+  updateFields: fields,
   schema: routeStopSchema,
+  updateSchema: routeStopSchema,
   defaults: {
     routeId: "",
     stationId: "",

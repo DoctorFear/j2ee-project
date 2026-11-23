@@ -13,7 +13,17 @@ import { EntityValue } from "@/features/admin/transport/shared/components/Entity
 import { EntityFormDialog } from "@/features/admin/transport/shared/components/EntityFormDialog";
 import { DeleteDialog } from "@/features/admin/transport/shared/components/DeleteDialog";
 
-export function EntityDetailPage({ config, children }: { config: ModuleConfig; children?: (id: number) => ReactNode }) {
+import type { TransportEntity } from "@/features/admin/transport/types";
+
+export function EntityDetailPage({
+  config,
+  children,
+  extraActions,
+}: {
+  config: ModuleConfig;
+  children?: (id: number) => ReactNode;
+  extraActions?: (entity: TransportEntity) => ReactNode;
+}) {
   const id = Number(useParams().id);
   const query = useEntityDetail(config.api, id);
   const navigate = useNavigate();
@@ -41,17 +51,20 @@ export function EntityDetailPage({ config, children }: { config: ModuleConfig; c
           </>
         }
         actions={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {extraActions?.(entity)}
             {config.updateSchema && (
               <Button variant="outline" onClick={() => setEdit(true)}>
                 <Pencil size={15} />
                 Chỉnh sửa
               </Button>
             )}
-            <Button variant="outline" className="text-destructive" onClick={() => setRemove(true)}>
-              <Trash2 size={15} />
-              Xóa {config.singular}
-            </Button>
+            {config.canDelete !== false && (
+              <Button variant="outline" className="text-destructive" onClick={() => setRemove(true)}>
+                <Trash2 size={15} />
+                Xóa {config.singular}
+              </Button>
+            )}
           </div>
         }
       />

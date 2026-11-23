@@ -1,8 +1,17 @@
 import type { ModuleConfig } from "../shared/types/module-config";
 import { transportTitles } from "../navigation";
-import { routeSchema } from "./schema";
+import { routeSchema, routeUpdateSchema } from "./schema";
 import { routesApi } from "./api";
-import { txt, num, date, active } from "../shared/forms/fields";
+import { txt, num, date, select, active } from "../shared/forms/fields";
+
+const fields = [
+  txt("code"),
+  txt("name"),
+  num("versionNo"),
+  num("basePrice"),
+  date("effectiveFromAt"),
+  date("effectiveToAt", true),
+];
 
 export const routesModule: ModuleConfig<"routes"> = {
   resource: "routes",
@@ -11,15 +20,10 @@ export const routesModule: ModuleConfig<"routes"> = {
   singular: "tuyến",
   description: "Quản lý tuyến đường, phiên bản khai thác và giá cơ bản.",
   columns: ["code", "name", "versionNo", "basePrice", "status"],
-  fields: [
-    txt("code"),
-    txt("name"),
-    num("versionNo"),
-    num("basePrice"),
-    date("effectiveFromAt"),
-    date("effectiveToAt", true),
-  ],
+  fields,
+  updateFields: [...fields, select("status", active)],
   schema: routeSchema,
+  updateSchema: routeUpdateSchema,
   defaults: {
     code: "",
     name: "",

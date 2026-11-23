@@ -8,6 +8,11 @@ export const date = (name: string, optional = false): FieldConfig => ({
   kind: "datetime-local",
   optional,
 });
+export const dateOnly = (name: string, optional = false): FieldConfig => ({
+  name,
+  kind: "date",
+  optional,
+});
 export const ref = (name: string, relation: EntityApi): FieldConfig => ({
   name,
   kind: "select",

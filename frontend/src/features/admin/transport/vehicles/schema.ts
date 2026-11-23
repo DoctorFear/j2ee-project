@@ -6,3 +6,7 @@ export const vehicleSchema = z.object({
   type: z.enum(["SEAT", "BERTH", "LIMOUSINE"]),
   capacity: int.min(1, "Sức chứa phải lớn hơn 0"),
 });
+
+export const vehicleUpdateSchema = vehicleSchema.extend({
+  status: z.enum(["ACTIVE", "MAINTENANCE", "INACTIVE"]),
+});

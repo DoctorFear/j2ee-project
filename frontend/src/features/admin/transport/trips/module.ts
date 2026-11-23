@@ -6,6 +6,15 @@ import { txt, num, date, ref } from "../shared/forms/fields";
 import { routesApi } from "../routes/api";
 import { vehiclesApi } from "../vehicles/api";
 
+const fields = [
+  txt("code"),
+  ref("routeId", routesApi),
+  ref("vehicleId", vehiclesApi),
+  date("departureAt"),
+  date("arrivalAt"),
+  num("ticketPrice"),
+];
+
 export const tripsModule: ModuleConfig<"trips"> = {
   resource: "trips",
   api: tripsApi,
@@ -13,15 +22,10 @@ export const tripsModule: ModuleConfig<"trips"> = {
   singular: "chuyến xe",
   description: "Lập lịch vận hành, chọn tuyến đường và phương tiện cho chuyến.",
   columns: ["code", "routeId", "vehicleId", "departureAt", "ticketPrice", "status", "saleStatus"],
-  fields: [
-    txt("code"),
-    ref("routeId", routesApi),
-    ref("vehicleId", vehiclesApi),
-    date("departureAt"),
-    date("arrivalAt"),
-    num("ticketPrice"),
-  ],
+  fields,
+  updateFields: fields,
   schema: tripSchema,
+  updateSchema: tripSchema,
   defaults: {
     code: "",
     routeId: "",

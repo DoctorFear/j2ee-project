@@ -15,5 +15,6 @@ export const tripStatisticsModule: ModuleConfig<"trip-statistics"> = {
   fields: [ref("tripId", tripsApi), num("validTicketCount"), num("collectedAmount"), num("refundedAmount")],
   schema: statisticSchema,
   defaults: { tripId: "", validTicketCount: 0, collectedAmount: 0, refundedAmount: 0 },
-  note: "Mỗi chuyến chỉ có một bản thống kê. API hiện hỗ trợ tạo và xóa bản ghi, chưa hỗ trợ cập nhật.",
+  canDelete: false,
+  note: "Mỗi chuyến chỉ có một bản thống kê đối soát được đối soát tự động hoặc khởi tạo theo từng chuyến.",
 };

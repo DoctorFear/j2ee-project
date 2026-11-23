@@ -29,15 +29,17 @@ export function EntityRowActions({
           <Pencil size={15} />
         </Button>
       )}
-      <Button
-        size="icon"
-        variant="ghost"
-        className="text-destructive"
-        aria-label={`Xóa ${entityLabel(row)}`}
-        onClick={() => onDelete()}
-      >
-        <Trash2 size={15} />
-      </Button>
+      {config.canDelete !== false && (
+        <Button
+          size="icon"
+          variant="ghost"
+          className="text-destructive"
+          aria-label={`Xóa ${entityLabel(row)}`}
+          onClick={() => onDelete()}
+        >
+          <Trash2 size={15} />
+        </Button>
+      )}
     </>
   );
 }
