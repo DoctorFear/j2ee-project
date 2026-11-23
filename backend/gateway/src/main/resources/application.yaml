@@ -31,31 +31,41 @@ spring:
             - id: auth-service-route
               uri: http://localhost:5001
               predicates:
-                - Path=/api/auth/**, /api/user/**
+                - Path=/auth/**, /user/**
+              filters:
+                - PrefixPath=/api
 
             # 2. BOOKING SERVICE: Soát vé và danh sách hành khách tài xế (Đặt trước route tổng quát của Transport)
             - id: booking-driver-route
               uri: http://localhost:8082
               predicates:
-                - Path=/api/driver/trips/{code}/passengers/**, /api/driver/trips/{code}/passengers, /api/driver/trips/{code}/summary, /api/driver/trips/{code}/tickets/**, /api/driver/trips/{code}/check-in/**, /api/driver/trips/{code}/check-in
+                - Path=/driver/trips/{code}/passengers/**, /driver/trips/{code}/passengers, /driver/trips/{code}/summary, /driver/trips/{code}/tickets/**, /driver/trips/{code}/check-in/**, /driver/trips/{code}/check-in
+              filters:
+                - PrefixPath=/api
 
             # 3. BOOKING SERVICE: Ghế chuyến đi (Đặt trước route tổng quát của Transport Service)
             - id: booking-trip-seats-route
               uri: http://localhost:8082
               predicates:
-                - Path=/api/trips/{code}/seats/**, /api/trips/{code}/seats
+                - Path=/trips/{code}/seats/**, /trips/{code}/seats
+              filters:
+                - PrefixPath=/api
 
             # 4. BOOKING SERVICE: Đặt chỗ, giữ vé, thanh toán, vé điện tử
             - id: booking-service-route
               uri: http://localhost:8082
               predicates:
-                - Path=/api/bookings/**, /api/tickets/**
+                - Path=/bookings/**, /tickets/**
+              filters:
+                - PrefixPath=/api
 
             # 5. TRANSPORT SERVICE: Tuyến, trạm, lịch chạy, điều phối, quản trị, lịch ca trực tài xế
             - id: transport-service-route
               uri: http://localhost:8081
               predicates:
-                - Path=/api/trips/**, /api/trip-drivers/**, /api/trip-statistics/**, /api/stations/**, /api/routes/**, /api/route-stops/**, /api/vehicles/**, /api/drivers/**, /api/admin/**, /api/driver/**
+                - Path=/trips/**, /trip-drivers/**, /trip-statistics/**, /stations/**, /routes/**, /route-stops/**, /vehicles/**, /drivers/**, /admin/**, /driver/**
+              filters:
+                - PrefixPath=/api/transport-service
 # Chặn truy cập trực tiếp các API nội bộ /internal/** từ Gateway
 futa:
   gateway:
