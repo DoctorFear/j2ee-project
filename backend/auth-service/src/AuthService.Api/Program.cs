@@ -17,8 +17,7 @@ using AuthService.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Cấu hình DbContext kết nối SQL Server (FutaBus_AuthDb)
-// Cấu hình PostgreSQL
+// 1. Cấu hình DbContext kết nối PostgreSQL (FutaBus_AuthDb)
 var connectionString = builder.Configuration
     .GetConnectionString("DefaultConnection");
 
@@ -109,20 +108,40 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+// 5.1. Cấu hình ContextPath (tương tự server.servlet.context-path trong Spring Boot)
+var contextPath = app.Configuration["Server:ContextPath"]
+    ?? app.Configuration["server:servlet:context-path"]
+    ?? app.Configuration["Server:Servlet:ContextPath"]
+    ?? app.Configuration["PathBase"]
+    ?? "/api";
+
+if (!string.IsNullOrWhiteSpace(contextPath))
+{
+    var normalizedPath = "/" + contextPath.Trim('/');
+    app.UsePathBase(normalizedPath);
+}
+
 // 6. Tự động Seed tài khoản Admin đầu tiên nếu chưa có
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var migrateOnStartup = app.Configuration.GetValue<bool>("Database:MigrateOnStartup");
+
     try
     {
         var context = services.GetRequiredService<AuthDbContext>();
+        if (migrateOnStartup)
+        {
+            await context.Database.MigrateAsync();
+        }
+
         var passwordHasher = services.GetRequiredService<IPasswordHasher>();
         await DatabaseSeeder.SeedAsync(context, passwordHasher);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!migrateOnStartup)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogWarning("Chưa thể kết nối MySQL để seed dữ liệu tự động: {Message}", ex.Message);
+        logger.LogWarning("Chưa thể seed tài khoản Auth trong PostgreSQL: {Message}", ex.Message);
     }
 }
 
@@ -135,6 +154,9 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Health check endpoint
+app.MapGet("/health", () => Results.Ok(new { status = "UP", service = "auth-service" }));
 
 app.MapControllers();
 
