@@ -6,14 +6,14 @@ Tài liệu này giới thiệu kiến trúc, phân công công việc, tổ ch�
 
 ## 1. Công nghệ và kiến trúc
 
-| Thành phần | Công nghệ | Trách nhiệm | Cổng local |
-| --- | --- | --- | --- |
-| Frontend | React, TypeScript, Vite, React Router | Giao diện cho khách hàng, quản trị/điều phối và tài xế | 5173 |
-| API Gateway | Spring Cloud Gateway | Cổng API chung, định tuyến, CORS, chặn đường dẫn nội bộ | 8080 |
-| Auth Service | .NET (ASP.NET Core Web API), Entity Framework Core, SQL Server | Tài khoản, vai trò, đăng nhập, đăng ký và token | 5001 |
-| Transport Service | Spring Boot, JPA, PostgreSQL (hiện có Station, Route và RouteStop API) | Tuyến, trạm, chuyến, xe, tài xế, giá vé và điều phối | 8081 |
-| Booking Service | Spring Boot, Spring Security, JPA, Flyway | Đơn đặt, giữ ghế, thanh toán, vé điện tử và soát vé | 8082 |
-| Database | SQL Server (Auth), PostgreSQL (Trip), MySQL (Booking) | Phân tách database theo từng microservice độc lập; cổng tùy cấu hình từng máy | 1433 / 5432 / 3306 (mặc định) |
+| Thành phần        | Công nghệ                                                      | Trách nhiệm                                                                   | Cổng local                    |
+| ----------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------- |
+| Frontend          | React, TypeScript, Vite, React Router                          | Giao diện cho khách hàng, quản trị/điều phối và tài xế                        | 5173                          |
+| API Gateway       | Spring Cloud Gateway                                           | Cổng API chung, định tuyến, CORS, chặn đường dẫn nội bộ                       | 8080                          |
+| Auth Service      | .NET (ASP.NET Core Web API), Entity Framework Core, SQL Server | Tài khoản, vai trò, đăng nhập, đăng ký và token                               | 5001                          |
+| Transport Service | Spring Boot, JPA, Flyway, PostgreSQL                           | Tuyến, trạm, chuyến, xe, tài xế, giá vé và điều phối                          | 8081                          |
+| Booking Service   | Spring Boot, Spring Security, JPA, Flyway                      | Đơn đặt, giữ ghế, thanh toán, vé điện tử và soát vé                           | 8082                          |
+| Database          | SQL Server (Auth), PostgreSQL (Trip), MySQL (Booking)          | Phân tách database theo từng microservice độc lập; cổng tùy cấu hình từng máy | 1433 / 5432 / 3306 (mặc định) |
 
 Các backend/frontend chạy trên môi trường local. Database có thể cài trực tiếp hoặc chạy trong container, tùy môi trường từng thành viên; cấu hình kết nối phải khớp database đang sử dụng. Hệ thống không sử dụng RabbitMQ. Giao tiếp giữa các service qua HTTP. Frontend gọi API qua Gateway; Auth và Booking kiểm tra JWT và quyền truy cập tại backend.
 
@@ -26,9 +26,9 @@ Frontend React :5173
         |
         v
 Gateway :8080
-        |-- /api/auth/** --------------------> Auth :5001 ----> SQL Server (FutaBus_AuthDb)
-        |-- API tuyến, chuyến, điều phối ----> Trip :8081 ----> PostgreSQL (trip_db)
-        |-- API ghế, đơn, vé, thanh toán ----> Booking :8082 -> MySQL (booking_db)
+        |-- /auth/**, /user/** (PrefixPath=/api) ------------> Auth :5001 ----> SQL Server (FutaBus_AuthDb)
+        |-- API tuyến, chuyến, điều phối (PrefixPath=/api/transport-service) -> Trip :8081 ----> PostgreSQL (futabus_transport_service)
+        |-- API ghế, đơn, vé, soát vé (PrefixPath=/api) -----> Booking :8082 -> MySQL (booking_db)
 
 Trip <---- HTTP nội bộ ----> Booking
 Trip ------ HTTP nội bộ ---> Auth
@@ -36,12 +36,12 @@ Trip ------ HTTP nội bộ ---> Auth
 
 ## 2. Phân công công việc
 
-| Thành viên | Phần phụ trách | Nội dung |
-| --- | --- | --- |
-| Mai Phương | Khách hàng và đặt vé | Tìm chuyến theo chặng, lọc nâng cao, chọn ghế, giữ chỗ, thông tin đón/trả, thanh toán, danh sách vé, vé điện tử và yêu cầu hủy/hoàn theo chính sách |
-| Văn Thuật | Quản trị và điều phối | Quản lý tuyến/trạm, giá vé, lập lịch chuyến, gán xe/tài xế, doanh thu và tỷ lệ lấp đầy |
-| Vũ Sang | Tài xế và soát vé | Lịch chuyến được phân công, danh sách khách theo trạm, gọi khách, quét QR, cập nhật lên/xuống xe và nhật ký chuyến |
-| Sơn | Xác thực và phân quyền (Auth) | Auth Service bằng .NET, phân quyền 3 vai trò (Member/Admin/Driver), Google OAuth 2.0, bảo mật JWT & Refresh Token, hồ sơ cá nhân và tích hợp Auth Frontend |
+| Thành viên | Phần phụ trách                | Nội dung                                                                                                                                                   |
+| ---------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Mai Phương | Khách hàng và đặt vé          | Tìm chuyến theo chặng, lọc nâng cao, chọn ghế, giữ chỗ, thông tin đón/trả, thanh toán, danh sách vé, vé điện tử và yêu cầu hủy/hoàn theo chính sách        |
+| Văn Thuật  | Quản trị và điều phối         | Quản lý tuyến/trạm, giá vé, lập lịch chuyến, gán xe/tài xế, doanh thu và tỷ lệ lấp đầy                                                                     |
+| Vũ Sang    | Tài xế và soát vé             | Lịch chuyến được phân công, danh sách khách theo trạm, gọi khách, quét QR, cập nhật lên/xuống xe và nhật ký chuyến                                         |
+| Sơn        | Xác thực và phân quyền (Auth) | Auth Service bằng .NET, phân quyền 3 vai trò (Member/Admin/Driver), Google OAuth 2.0, bảo mật JWT & Refresh Token, hồ sơ cá nhân và tích hợp Auth Frontend |
 
 Việc chia theo người dùng không đồng nghĩa mỗi thành viên sở hữu riêng một service. Booking cung cấp dữ liệu vé/hành khách cho khách hàng, quản trị và tài xế; Trip cung cấp dữ liệu chuyến/lộ trình cho cả ba phân hệ. Các thay đổi hợp đồng dữ liệu và API cần được thống nhất giữa các phần sử dụng.
 
@@ -50,6 +50,7 @@ Công nghệ và kiến trúc tuân theo tài liệu `cau_truc_thu_muc_FUTA.docx
 ## 3. Chức năng và phân quyền
 
 ### Xác thực và tài khoản
+
 - Phân hệ gồm 3 vai trò: `Member` (Khách hàng), `Admin` (Quản trị viên) và `Driver` (Tài xế / Soát vé).
 - Đăng ký khách hàng: Máy chủ tự gán vai trò `Member`, không nhận role từ biểu mẫu đăng ký, validate chuẩn định dạng SĐT (10 số VN) và kiểm tra email duy nhất (`IX_users_Email`).
 - Đăng nhập hệ thống: Cấp Access Token JWT (15 phút) và Refresh Token (3 ngày). Tự động điều hướng theo quyền (`Admin` vào `/admin/routes`, `Driver` vào `/driver/trips`, `Member` về trang chủ `/`).
@@ -93,20 +94,20 @@ Công nghệ và kiến trúc tuân theo tài liệu `cau_truc_thu_muc_FUTA.docx
 
 ### Route giao diện
 
-| Route | Vai trò | Nội dung |
-| --- | --- | --- |
-| `/login`, `/register` | Công khai | Đăng nhập chung (Form + Google OAuth), đăng ký khách hàng |
-| `/forgot-password`, `/reset-password` | Công khai | Quên và đặt lại mật khẩu qua email xác thực |
-| `/` | Công khai / Member | Tìm chuyến; đặt vé yêu cầu đăng nhập |
-| `/trips/:code/book` | Member | Chọn ghế và thanh toán |
-| `/my-tickets`, `/profile` | Member | Quản lý vé và hồ sơ cá nhân khách hàng |
-| `/admin/routes` | Admin | Quản lý tuyến đường và trạm dừng |
-| `/admin/trips` | Admin | Lịch chuyến, phân công xe và tài xế |
-| `/admin/reports` | Admin | Báo cáo doanh thu và tỷ lệ lấp đầy |
-| `/admin/drivers`, `/admin/vehicles` | Admin | Danh sách nhân sự tài xế và phương tiện |
-| `/driver/trips` | Driver | Lịch các chuyến xe được phân công |
-| `/driver/trips/:code/passengers` | Driver | Danh sách hành khách theo điểm đón/trả |
-| `/driver/trips/:code/scan`, `/driver/trips/:code/log` | Driver | Quét mã QR soát vé và nhật ký chuyến đi |
+| Route                                                 | Vai trò            | Nội dung                                                  |
+| ----------------------------------------------------- | ------------------ | --------------------------------------------------------- |
+| `/login`, `/register`                                 | Công khai          | Đăng nhập chung (Form + Google OAuth), đăng ký khách hàng |
+| `/forgot-password`, `/reset-password`                 | Công khai          | Quên và đặt lại mật khẩu qua email xác thực               |
+| `/`                                                   | Công khai / Member | Tìm chuyến; đặt vé yêu cầu đăng nhập                      |
+| `/trips/:code/book`                                   | Member             | Chọn ghế và thanh toán                                    |
+| `/my-tickets`, `/profile`                             | Member             | Quản lý vé và hồ sơ cá nhân khách hàng                    |
+| `/admin/routes`                                       | Admin              | Quản lý tuyến đường và trạm dừng                          |
+| `/admin/trips`                                        | Admin              | Lịch chuyến, phân công xe và tài xế                       |
+| `/admin/reports`                                      | Admin              | Báo cáo doanh thu và tỷ lệ lấp đầy                        |
+| `/admin/drivers`, `/admin/vehicles`                   | Admin              | Danh sách nhân sự tài xế và phương tiện                   |
+| `/driver/trips`                                       | Driver             | Lịch các chuyến xe được phân công                         |
+| `/driver/trips/:code/passengers`                      | Driver             | Danh sách hành khách theo điểm đón/trả                    |
+| `/driver/trips/:code/scan`, `/driver/trips/:code/log` | Driver             | Quét mã QR soát vé và nhật ký chuyến đi                   |
 
 > **Cơ chế điều hướng bảo vệ (`ProtectedRoute`)**: Không sử dụng trang 403 trung gian gây gián đoạn trải nghiệm người dùng. Khi truy cập vào route không thuộc quyền hạn, hệ thống tự động nhận diện vai trò và điều hướng thẳng về khu vực tương ứng của người dùng (`/admin/routes` cho Admin, `/driver/trips` cho Driver, hoặc `/` cho Member). Nếu chưa đăng nhập, tự động chuyển về `/login` kèm lưu lại trang đang truy cập để quay lại sau khi đăng nhập thành công.
 
@@ -142,26 +143,26 @@ j2ee-project/
 
 ### Kiểu dữ liệu frontend
 
-| Tệp dùng chung trong `frontend/src/features/customer/types/` | Nội dung | Phân hệ sử dụng |
-| --- | --- | --- |
-| `station.ts` | `Station` | Khách hàng, quản trị, tài xế |
-| `route-stop.ts` | `Station` | Tuyến, chuyến và lộ trình |
-| `seat.ts` | `Seat` | Đặt chỗ, sơ đồ hành khách, soát vé |
-| `vehicle.ts` | `VehicleType` | Phương tiện và chuyến |
-| `pricing.ts` | `Pricing` | Quản trị giá và bán vé |
-| `trip.ts` | `Trip` | Cả ba phân hệ |
-| `contact.ts` | `Contact` | Thông tin người đặt/hành khách |
-| `ticket.ts` | `Ticket` | Vé, danh sách hành khách và soát vé |
+| Tệp dùng chung trong `frontend/src/features/customer/types/` | Nội dung      | Phân hệ sử dụng                     |
+| ------------------------------------------------------------ | ------------- | ----------------------------------- |
+| `station.ts`                                                 | `Station`     | Khách hàng, quản trị, tài xế        |
+| `route-stop.ts`                                              | `Station`     | Tuyến, chuyến và lộ trình           |
+| `seat.ts`                                                    | `Seat`        | Đặt chỗ, sơ đồ hành khách, soát vé  |
+| `vehicle.ts`                                                 | `VehicleType` | Phương tiện và chuyến               |
+| `pricing.ts`                                                 | `Pricing`     | Quản trị giá và bán vé              |
+| `trip.ts`                                                    | `Trip`        | Cả ba phân hệ                       |
+| `contact.ts`                                                 | `Contact`     | Thông tin người đặt/hành khách      |
+| `ticket.ts`                                                  | `Ticket`      | Vé, danh sách hành khách và soát vé |
 
 Kiểu riêng cho khách hàng nằm tại `frontend/src/features/customer/types/`: `search.ts` chứa `SearchCriteria`, `booking.ts` chứa `BookingDraft`. Import trực tiếp từ tệp nghiệp vụ, không tạo một tệp `customer.ts` để tập hợp tất cả kiểu. Khi thêm DTO hoặc thực thể dùng chung, đặt tệp tương ứng trong `src/types/`; kiểu chỉ phục vụ một feature đặt trong `features/<feature>/types/`.
 
 ## 5. Database và quy tắc dữ liệu
 
-| Database | Service sở hữu | Hệ quản trị CSDL | Nhóm dữ liệu |
-| --- | --- | --- | --- |
-| `FutaBus_AuthDb` | Auth | SQL Server | Tài khoản `users`, vai trò và refresh token |
-| `trip_db` | Trip | PostgreSQL | Địa chỉ, trạm, tuyến, chuyến, xe, tài xế, delay và thông báo |
-| `booking_db` | Booking | MySQL | Đơn đặt, giữ ghế, thanh toán và vé |
+| Database                    | Service sở hữu | Hệ quản trị CSDL | Nhóm dữ liệu                                                                              |
+| --------------------------- | -------------- | ---------------- | ----------------------------------------------------------------------------------------- |
+| `FutaBus_AuthDb`            | Auth           | SQL Server       | Tài khoản `users`, vai trò và refresh token                                               |
+| `futabus_transport_service` | Trip           | PostgreSQL       | Trạm, địa chỉ, đoạn đường, tuyến, điểm dừng, xe, tài xế, chuyến, phân công và thống kê vé |
+| `booking_db`                | Booking        | MySQL            | Đơn đặt, giữ ghế, thanh toán và vé                                                        |
 
 > **Ghi chú kiến trúc**: Áp dụng nguyên lý **Polyglot Persistence** trong Microservices: Auth dùng SQL Server, Trip dùng PostgreSQL và Booking dùng MySQL. Các service giao tiếp với nhau qua HTTP API và xác thực token JWT, hoàn toàn không phụ thuộc chéo vào hệ quản trị cơ sở dữ liệu của nhau.
 
@@ -205,13 +206,13 @@ Các database phải sẵn sàng và thông tin kết nối trong cấu hình lo
 
 ## 7. Cấu hình local
 
-| Thành phần | Tệp cấu hình | Giá trị cần khai báo |
-| --- | --- | --- |
-| Frontend | `frontend/.env.development` | `VITE_API_BASE_URL=http://localhost:8080` |
-| Auth | `backend/auth-service/src/AuthService.Api/appsettings.json` | Kết nối `FutaBus_AuthDb` (SQL Server), JWT Secret, SMTP Gmail, URL Frontend |
-| Trip | `backend/transport-service/src/main/resources/application-local.yml` | Cổng API 8081, kết nối PostgreSQL `trip_db` theo máy; mẫu `application.example.yaml` |
-| Booking | `backend/booking-service/src/main/resources/application-local.yml` | MySQL `booking_db`, JWT secret/issuer/audience khớp Auth, URL Transport, sơ đồ ghế từng xe, khóa nội bộ, PayOS và SMTP |
-| Gateway | `backend/gateway/src/main/resources/application.yaml` | Cổng 8080, định tuyến service và CORS cho frontend cổng 5173 |
+| Thành phần | Tệp cấu hình                                                         | Giá trị cần khai báo                                                                                                   |
+| ---------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Frontend   | `frontend/.env.development`                                          | `VITE_API_BASE_URL=http://localhost:8080`                                                                              |
+| Auth       | `backend/auth-service/src/AuthService.Api/appsettings.json`          | Kết nối `FutaBus_AuthDb` (SQL Server), JWT Secret, SMTP Gmail, URL Frontend                                            |
+| Trip       | `backend/transport-service/src/main/resources/application-local.yml` | Cổng API 8081, kết nối PostgreSQL `futabus_transport_service` theo máy; mẫu `application.example.yaml`                 |
+| Booking    | `backend/booking-service/src/main/resources/application-local.yml`   | MySQL `booking_db`, JWT secret/issuer/audience khớp Auth, URL Transport, sơ đồ ghế từng xe, khóa nội bộ, PayOS và SMTP |
+| Gateway    | `backend/gateway/src/main/resources/application.yaml`                | Cổng 8080, định tuyến service và CORS cho frontend cổng 5173                                                           |
 
 Tên các trường cấu hình backend phải khớp với lớp cấu hình của service. Không commit mật khẩu, token, secret PayOS, khóa RSA riêng hoặc tệp cấu hình local. Các tệp example chỉ chứa tên trường và giá trị không nhạy cảm.
 
@@ -221,10 +222,10 @@ Tạo cấu hình frontend từ thư mục gốc:
 if (!(Test-Path frontend/.env.development)) { Copy-Item frontend/.env.example frontend/.env.development }
 ```
 
-Nếu database chưa tồn tại, tạo `trip_db` trong PostgreSQL cho Transport Service:
+Nếu database chưa tồn tại, tạo `futabus_transport_service` trong PostgreSQL cho Transport Service:
 
 ```sql
-CREATE DATABASE trip_db;
+CREATE DATABASE futabus_transport_service;
 ```
 
 Nếu `booking_db` chưa có, tạo trong MySQL cho Booking Service:
@@ -232,6 +233,7 @@ Nếu `booking_db` chưa có, tạo trong MySQL cho Booking Service:
 ```sql
 CREATE DATABASE IF NOT EXISTS booking_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
+
 Auth tạo database/bảng khi chạy `dotnet ef database update`; khởi động ứng dụng thực hiện seed tài khoản sau khi schema đã có.
 
 Cấp quyền theo database cho tài khoản service tương ứng và khai báo kết nối trong cấu hình local. SQL khởi tạo/seed dùng chung đặt tại `backend/infra/mysql/`; thay đổi schema của từng service quản lý qua migration của service đó.
@@ -245,13 +247,16 @@ Thứ tự: **Database (SQL Server, PostgreSQL, MySQL) → Auth → Trip và Boo
 ### Auth Service (.NET - Cổng 5001)
 
 Có 2 cách chạy:
+
 - **Cách 1 (Bằng Visual Studio - Khuyên dùng)**: Mở tệp `backend/auth-service/AuthService.sln` bằng Visual Studio và nhấn nút **Play (http)** hoặc `Ctrl + F5`. Trình duyệt sẽ tự động mở Swagger UI tại `http://localhost:5001/swagger`.
 - **Cách 2 (Bằng Terminal)**:
+
 ```powershell
 dotnet ef database update --project backend/auth-service/src/AuthService.Api
 dotnet run --project backend/auth-service/src/AuthService.Api --urls "http://localhost:5001"
 ```
-*(Chi tiết cấu trúc, danh sách DTOs, endpoint Google Auth, câu lệnh CLI và 15 tài khoản seed sẵn cho 3 vai trò xem tại: `backend/auth-service/readmeAuth.MD`).*
+
+_(Chi tiết cấu trúc, danh sách DTOs, endpoint Google Auth, câu lệnh CLI và 15 tài khoản seed sẵn cho 3 vai trò xem tại: `backend/auth-service/readmeAuth.MD`)._
 
 ### Transport Service
 
@@ -259,7 +264,7 @@ dotnet run --project backend/auth-service/src/AuthService.Api --urls "http://loc
 mvn -f backend/transport-service/pom.xml spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
-Transport kết nối PostgreSQL `trip_db`; schema được Hibernate cập nhật trong môi trường phát triển. Thông tin kết nối nằm trong `backend/transport-service/src/main/resources/application-local.yml`.
+Transport kết nối PostgreSQL `futabus_transport_service` và quản lý schema bằng Flyway. Xem cấu hình và cách nâng cấp database PostgreSQL cũ trong [README của Transport](backend/transport-service/README.md).
 
 ### Booking Service
 
@@ -273,7 +278,7 @@ if (!(Test-Path backend/booking-service/src/main/resources/application-local.yml
 
 - `spring.datasource`: tài khoản MySQL có quyền trên `booking_db`; Flyway tự tạo bảng khi khởi động, không cần chạy thủ công SQL bảng.
 - `booking.jwt-secret`: trùng `JwtSettings:Secret` của Auth, ít nhất 32 byte.
-- `booking.transport-url`: `http://localhost:8081`; `transport-zone: UTC` theo quy ước dữ liệu Transport. Đổi thành `Asia/Ho_Chi_Minh` nếu dữ liệu `LocalDateTime` của nhóm được nhập theo giờ Việt Nam.
+- `booking.transport-url` mặc định là `http://localhost:8081/api/transport-service`. `booking.transport-zone` mặc định là `Asia/Ho_Chi_Minh` để Booking đọc đúng giờ chuyến do Transport trả về.
 - `booking.vehicle-seats`: khóa là ID xe thực tế, giá trị là danh sách mã ghế theo đúng thứ tự trên xe, ví dụ `"1": [A01, A02, B01, B02]` cho xe 4 chỗ. Với xe 34 chỗ, khai báo đủ các mã ghế thực tế. Để trống hoặc lệch sức chứa thì chuyến không mở bán.
 - `booking.PayOS`: tài khoản merchant, access key, secret key và IPN URL công khai `https://<host>/api/bookings/payments/PayOS/ipn`. Endpoint mặc định là PayOS sandbox; cấu hình endpoint tương ứng tài khoản sử dụng.
 - `spring.mail` và `booking.email-from`: tài khoản SMTP gửi vé; Gmail dùng mật khẩu ứng dụng. Email có mã vé, thông tin đón và ảnh QR đính kèm; gửi lỗi sẽ được thử lại.
@@ -287,30 +292,32 @@ mvn -f backend/booking-service/pom.xml spring-boot:run "-Dspring-boot.run.profil
 
 Có thể dùng Maven Wrapper trong từng service nếu không cài Maven riêng. Booking chạy tại `http://localhost:8082`. Frontend dùng `VITE_API_BASE_URL=http://localhost:8080` để gọi qua Gateway. Tiền và trạng thái thành công lấy từ backend; frontend không tự xác nhận thanh toán. Giao dịch về sau khi hết hạn/nhả ghế chuyển sang `PAYMENT_REVIEW` để đối soát và không phát vé trùng ghế.
 
-| API Booking qua Gateway | Quyền và chức năng |
-| --- | --- |
-| `GET /api/bookings/catalog/stations`, `GET /api/bookings/catalog/trips`, `GET /api/bookings/catalog/trips/{code}` | Công khai, danh mục trạm/chuyến từ Transport |
-| `POST /api/bookings/hold` | Member, giữ tối đa 5 ghế, tối đa 600 giây và không vượt giờ đón |
-| `GET /api/bookings/{id}`, `DELETE /api/bookings/{id}/hold` | Chủ đơn tra cứu/nhả ghế chưa thanh toán |
-| `POST /api/bookings/{id}/pay` | Chủ đơn tạo hoặc lấy lại phiên PayOS |
-| `POST /api/bookings/payments/PayOS/ipn` | PayOS callback, bắt buộc xác minh chữ ký và số tiền |
-| `GET /api/tickets/my`, `GET /api/tickets/{code}`, `GET /api/tickets/{code}/qr` | Chủ vé xem danh sách, thông tin và mã QR |
-| `POST /api/tickets/{code}/cancel`, `GET /api/tickets/{code}/refund` | Chủ vé yêu cầu hủy/tra cứu kết quả hoàn tiền |
+| API Booking qua Gateway                                                                                           | Quyền và chức năng                                              |
+| ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `GET /api/bookings/catalog/stations`, `GET /api/bookings/catalog/trips`, `GET /api/bookings/catalog/trips/{code}` | Công khai, danh mục trạm/chuyến từ Transport                    |
+| `POST /api/bookings/hold`                                                                                         | Member, giữ tối đa 5 ghế, tối đa 600 giây và không vượt giờ đón |
+| `GET /api/bookings/{id}`, `DELETE /api/bookings/{id}/hold`                                                        | Chủ đơn tra cứu/nhả ghế chưa thanh toán                         |
+| `POST /api/bookings/{id}/pay`                                                                                     | Chủ đơn tạo hoặc lấy lại phiên PayOS                            |
+| `POST /api/bookings/payments/PayOS/ipn`                                                                           | PayOS callback, bắt buộc xác minh chữ ký và số tiền             |
+| `GET /api/tickets/my`, `GET /api/tickets/{code}`, `GET /api/tickets/{code}/qr`                                    | Chủ vé xem danh sách, thông tin và mã QR                        |
+| `POST /api/tickets/{code}/cancel`, `GET /api/tickets/{code}/refund`                                               | Chủ vé yêu cầu hủy/tra cứu kết quả hoàn tiền                    |
 
 Các đơn và vé được kiểm tra chủ sở hữu bằng `sub` trong JWT; mã người dùng, giá và trạng thái thanh toán không lấy từ dữ liệu khách gửi.
 
 ### API Gateway (Cổng 8080)
 
 Chạy qua Maven:
+
 ```powershell
 mvn -f backend/gateway/pom.xml spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
 Gateway tích hợp:
+
 - Bộ lọc `InternalPathBlockFilter` tự động chặn mọi truy cập từ bên ngoài vào `/internal/**` với mã `403 Forbidden`.
 - Bộ lọc CORS deduplication `DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST` ngăn trùng lặp header CORS giữa Gateway và microservices.
-- Định tuyến `/api/bookings/**`, `/api/tickets/**` và `/api/trips/*/seats` tới Booking; các API vận tải tới Transport.
-  *(Chi tiết cấu hình Gateway: `backend/gateway/src/main/resources/application.yaml`).*
+- Định tuyến `/bookings/**`, `/tickets/**`, `/trips/{code}/seats` và `/driver/trips/{code}/**` (qua filter `PrefixPath=/api`) tới Booking Service; `/auth/**`, `/user/**` (qua filter `PrefixPath=/api`) tới Auth Service; các API vận tải (`/trips/**`, `/routes/**`, `/stations/**`, `/vehicles/**`, `/drivers/**`, `/driver/trips`, v.v.) qua filter `PrefixPath=/api/transport-service` tới Transport Service. Gateway đồng bộ chuẩn hóa bỏ pattern `/api` ở predicates và chuyển tiếp bằng bộ lọc `PrefixPath` tương ứng.
+  _(Chi tiết cấu hình Gateway: `backend/gateway/src/main/resources/application.yaml`)._
 
 ### Frontend
 
@@ -374,14 +381,14 @@ Bổ sung project test cho Auth và chạy `dotnet test` với đường dẫn s
 
 Mọi API nội bộ kèm `X-Internal-Key`; service nhận xác minh khóa, Gateway không định tuyến các đường dẫn này.
 
-| Luồng | Endpoint nội bộ | Mục đích |
-| --- | --- | --- |
-| Trip → Auth | `POST /internal/users` | Tạo tài khoản tài xế và liên kết `user_id` |
-| Booking → Trip | `GET /internal/trips/{code}` | Lấy tuyến, giờ, giá, sơ đồ xe và tài xế được phân công |
-| Trip → Booking | `POST /internal/bookings/booked-counts` | Lấy số ghế đã đặt theo danh sách chuyến |
-| Trip → Booking | `GET /internal/reports/trip-sales` | Tổng hợp vé bán và doanh thu |
-| Trip → Booking | `GET /internal/trips/{code}/stop-counts` | Số khách đón/trả theo trạm |
-| Trip → Booking | `POST /internal/bookings/trip-delayed` | Gửi thông báo hoãn chuyến tới hành khách |
+| Luồng          | Endpoint nội bộ                          | Mục đích                                               |
+| -------------- | ---------------------------------------- | ------------------------------------------------------ |
+| Trip → Auth    | `POST /internal/users`                   | Tạo tài khoản tài xế và liên kết `user_id`             |
+| Booking → Trip | `GET /internal/trips/{code}`             | Lấy tuyến, giờ, giá, sơ đồ xe và tài xế được phân công |
+| Trip → Booking | `POST /internal/bookings/booked-counts`  | Lấy số ghế đã đặt theo danh sách chuyến                |
+| Trip → Booking | `GET /internal/reports/trip-sales`       | Tổng hợp vé bán và doanh thu                           |
+| Trip → Booking | `GET /internal/trips/{code}/stop-counts` | Số khách đón/trả theo trạm                             |
+| Trip → Booking | `POST /internal/bookings/trip-delayed`   | Gửi thông báo hoãn chuyến tới hành khách               |
 
 Các endpoint trên là hợp đồng kiến trúc; controller, DTO, validation và xử lý lỗi phải thống nhất với service gọi. Thống nhất mã lỗi nghiệp vụ như `SEAT_UNAVAILABLE`, `HOLD_EXPIRED`, `INVALID_SEGMENT`, `PRICE_CHANGED`, `FORBIDDEN` để frontend xử lý nhất quán.
 
@@ -399,16 +406,16 @@ Booking đã cung cấp `POST /internal/bookings/booked-counts` với body danh 
 
 ## 12. Xử lý lỗi môi trường
 
-| Hiện tượng | Kiểm tra |
-| --- | --- |
-| Frontend không gọi được API | Gateway đã chạy, đúng `VITE_API_BASE_URL`, CORS và route tới service |
-| API trả 401/403 | Hạn token, JWT secret HS256 khớp Auth, issuer/audience, role và quyền sở hữu dữ liệu |
-| Service không kết nối database | Kiểm tra đúng PostgreSQL cho Trip hoặc MySQL cho Booking, user/password, quyền, port và cấu hình local |
-| Spring không nạp cấu hình local | Profile `local` đã bật, tệp `application-local.yml` đúng thư mục |
-| Auth không đọc cấu hình | Environment `Development`, connection string SQL Server và JWT secret |
-| Migration thất bại | Phiên bản migration, quyền database và dữ liệu hiện có; không xóa database để xử lý tùy tiện |
-| PayOS không báo kết quả | Cấu hình provider, chữ ký, mã đơn/số tiền và khả năng truy cập IPN URL từ bên ngoài |
-| Cổng đã được sử dụng | Xác định tiến trình dùng cổng và thống nhất cổng trong cấu hình các service |
+| Hiện tượng                      | Kiểm tra                                                                                            |
+| ------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Frontend không gọi được API     | Gateway đã chạy, đúng `VITE_API_BASE_URL`, CORS và route tới service                                |
+| API trả 401/403                 | Hạn token, JWT secret HS256 khớp Auth, issuer/audience, role và quyền sở hữu dữ liệu                |
+| Service không kết nối database  | Kiểm tra URL PostgreSQL của Trip và URL MySQL của Booking, tài khoản, quyền, cổng và cấu hình local |
+| Spring không nạp cấu hình local | Profile `local` đã bật, tệp `application-local.yml` đúng thư mục                                    |
+| Auth không đọc cấu hình         | Environment `Development`, connection string SQL Server và JWT secret                               |
+| Migration thất bại              | Phiên bản migration, quyền database và dữ liệu hiện có; không xóa database để xử lý tùy tiện        |
+| PayOS không báo kết quả         | Cấu hình provider, chữ ký, mã đơn/số tiền và khả năng truy cập IPN URL từ bên ngoài                 |
+| Cổng đã được sử dụng            | Xác định tiến trình dùng cổng và thống nhất cổng trong cấu hình các service                         |
 
 ## 13. Hướng dẫn chạy kiểm thử chuyển khoản thanh toán VietQR PayOS (Local Dev Test Flow)
 
@@ -419,16 +426,19 @@ Phần này hướng dẫn các thành viên cấu hình thông số API Key Pay
 Mỗi thành viên khi tự chạy dự án dưới máy cá nhân cần cấu hình bộ 3 mã khóa Sandbox PayOS do Trưởng nhóm cung cấp vào tệp cấu hình local (`application-local.yml`).
 
 Các thông số bao gồm:
+
 - `client-id`: Mã định danh ứng dụng PayOS Sandbox.
 - `api-key`: Mã khóa kết nối API PayOS.
 - `checksum-key`: Mã chữ ký bảo mật xác minh dữ liệu Webhook.
 
 ### 13.2. Cấu hình tệp `application-local.yml`
+
 Mở tệp `backend/booking-service/src/main/resources/application-local.yml` và khai báo bộ thông số kết nối dưới khối `booking.payos`:
+
 ```yaml
 booking:
   sales-enabled: true
-  transport-zone: UTC
+  transport-zone: Asia/Ho_Chi_Minh
   payos:
     client-id: "DÁN_CLIENT_ID_VÀO_ĐÂY"
     api-key: "DÁN_API_KEY_VÀO_ĐÂY"
@@ -436,9 +446,11 @@ booking:
     return-url: http://localhost:5173/payment-result
     cancel-url: http://localhost:5173/booking
 ```
+
 > ⚠️ **CẢNH BÁO BẢO MẬT**: Tệp `application-local.yml` đã được thêm vào `.gitignore`. Tuyệt đối không commit tệp chứa khóa bí mật thật lên Git repository.
 
 ### 13.3. Quy trình kích hoạt ngrok để nhận Webhook ( AI CHƯA CÓ NGROK THÌ TỰ CÀI TRÊN MICROSOFT STORE/WEB )
+
 PayOS bắt buộc một đường dẫn HTTPS công khai trên Internet để gửi thông báo biến động số dư (Webhook) về Backend khi nhận được tiền.
 
 1. Mở cửa sổ Terminal / PowerShell mới và chạy ngrok trỏ về cổng Backend Booking Service (`8082`):

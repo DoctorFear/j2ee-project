@@ -7,8 +7,8 @@
 - **Admin:** dashboard và tám nhóm dữ liệu Transport; tạo, xem, xóa và sửa Station theo API hiện có. Có giao diện sáng/tối và menu mobile.
 - **Tài khoản Admin:** xem họ tên, tên đăng nhập, email, số điện thoại và vai trò tại `/admin/account`; mở từ avatar hoặc menu “Thông tin tài khoản”.
 - **Tài khoản:** đăng nhập, Google Sign-In, phân quyền tuyến đường, quản lý hồ sơ và phiên đăng nhập dùng chung.
-- **Khách hàng:** tìm chuyến, chọn ghế, thanh toán minh họa và xem vé bằng dữ liệu demo. Các luồng này chưa tích hợp Booking Service.
-- **Tài xế:** trang thông báo dành cho role Driver; chưa có nghiệp vụ điều hành riêng.
+- **Khách hàng:** tìm chuyến, chọn ghế, giữ chỗ và thanh toán qua Booking Service (tích hợp PayOS VietQR), xem danh sách vé điện tử tại `/my-tickets`.
+- **Tài xế:** xem lịch ca trực chuyến đi, quản lý danh sách hành khách theo trạm đón/trả, quét mã QR soát vé tự động hoặc nhập 4 số cuối SĐT, cập nhật trạng thái chuyến xe (`RUNNING`, `COMPLETED`).
 
 ## Cài đặt
 
@@ -40,7 +40,9 @@ Với PowerShell, dùng `Copy-Item .env.example .env.development` thay cho `cp`.
 | `/admin/stations`, `/admin/routes`, `/admin/route-stops` | Trạm, tuyến và lộ trình                      |
 | `/admin/vehicles`, `/admin/drivers`, `/admin/trips`      | Phương tiện, tài xế và chuyến                |
 | `/admin/trip-drivers`, `/admin/trip-statistics`          | Phân công và thống kê                        |
-| `/driver/trips`                                          | Khu vực Driver                               |
+| `/driver/trips`                                          | Lịch ca trực của tài xế                      |
+| `/driver/trips/:code/passengers`                         | Danh sách hành khách đón/trả theo chuyến     |
+| `/driver/trips/:code/scan`                               | Quét mã QR và soát vé trực tiếp              |
 
 ## Cấu hình
 

@@ -30,7 +30,7 @@ mvn -pl transport-service spring-boot:run "-Dspring-boot.run.profiles=local"
 mvn -pl booking-service spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
-Transport Service cần cấu hình PostgreSQL trong `application-local.yml` để chạy
-với profile `local`. Các bài kiểm thử hiện có dùng H2 với profile `test`.
+Transport Service dùng PostgreSQL, database `futabus_transport_service` và Flyway.
+Xem cách kết nối và nâng cấp schema PostgreSQL trong [README của Transport](transport-service/README.md). Các bài kiểm thử API dùng H2 với profile `test`.
 Booking Service cần cấu hình MySQL trong `application-local.yml` để chạy với
 profile `local`.

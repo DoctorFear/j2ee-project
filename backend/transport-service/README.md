@@ -1,187 +1,75 @@
-# API tuyến và điểm dừng
+# Transport Service
 
-Dùng URL `http://localhost:8081` khi gọi trực tiếp hoặc `http://localhost:8080` khi gọi qua Gateway.
-Phản hồi thành công có nội dung dùng `ApiResponse` với các trường `success`, `data` và `timestamp`.
-Khi có lỗi, Spring trả trực tiếp `ProblemDetail` với `Content-Type: application/problem+json` và
-các trường `status`, `detail`, `errorCode`. Với lỗi kiểm tra dữ liệu đầu vào,
-trường `errors` chứa danh sách thông báo cho từng trường có lỗi.
+Service vận tải quản lý 10 bảng theo mô hình FUTA MVP trên PostgreSQL. Flyway tạo hoặc nâng cấp schema, Hibernate kiểm tra schema khi khởi động.
 
-| Tài nguyên | Tạo | Danh sách | Chi tiết | Cập nhật | Xóa |
-| ---------- | --- | --------- | -------- | -------- | --- |
-| Tuyến (`Route`) | `POST /api/routes` | `GET /api/routes` | `GET /api/routes/{id}` | `PUT /api/routes/{id}` | `DELETE /api/routes/{id}` |
-| Điểm dừng (`RouteStop`) | `POST /api/route-stops` | `GET /api/route-stops` | `GET /api/route-stops/{id}` | `PUT /api/route-stops/{id}` | `DELETE /api/route-stops/{id}` |
+## Chạy local
 
-Khi tạo thành công, API trả **201** và header `Location`. Thao tác đọc và cập nhật
-trả **200**. Thao tác xóa trả **204** với thân phản hồi rỗng. Danh sách trả toàn bộ
-kết quả trong một lần, giống API trạm (`Station)). Các controller này không áp dụng
-thêm bước xác thực.
+Tạo database `futabus_transport_service` trên PostgreSQL và cấp quyền cho tài khoản kết nối. Nếu dùng Docker Compose của project, đặt `DB_URL=jdbc:postgresql://localhost:5433/futabus_transport_service` theo cổng PostgreSQL trên máy host. Có thể cấu hình kết nối trong `application-local.yml`.
 
-## Tuyến (`Route`)
+| Biến môi trường     | Giá trị mặc định                                             |
+| ------------------- | ------------------------------------------------------------ |
+| `DB_URL`            | `jdbc:postgresql://localhost:5432/futabus_transport_service` |
+| `DB_USERNAME`       | `postgres`                                                   |
+| `DB_PASSWORD`       | Chuỗi rỗng                                                   |
+| `FUTA_SEED_ENABLED` | `true` trong profile `local`                                 |
 
-Thân yêu cầu khi tạo tuyến
+Chạy `./mvnw spring-boot:run` từ thư mục `transport-service`. URL gốc khi gọi trực tiếp là `http://localhost:8081/api/transport-service`. Qua Gateway, gọi `http://localhost:8080` với đường dẫn tài nguyên tương ứng (ví dụ `/trips`, `/routes`). Seed local tạo các chuyến mẫu còn thiếu theo lịch tại lần tạo đầu tiên.
 
-```json
-{
-  "code": "HCM-DL",
-  "versionNo": 1,
-  "name": "Ho Chi Minh - Da Lat",
-  "basePrice": 250000,
-  "effectiveFromAt": "2026-10-21T08:00:00",
-  "effectiveToAt": null
-}
-```
+### Database PostgreSQL đã có dữ liệu
 
-Các trường đều bắt buộc ngoại trừ `effectiveToAt`. `code` và `name` phải có nội dung
-và dài tối đa 255 ký tự. `versionNo` phải lớn hơn 0. `basePrice` là số nguyên
-không âm, tối đa 15 chữ số. Giá trị ngày giờ dùng định dạng giờ địa phương,
-không kèm múi giờ. Nếu gửi `effectiveToAt`, giá trị này phải sau `effectiveFromAt`.
+Giữ URL PostgreSQL trong `DB_URL` hoặc `application-local.yml`. Xóa cấu hình ghi đè `ddl-auto: update` để Hibernate dùng `validate`. Với database được bản cũ tạo bằng Hibernate và chưa có lịch sử Flyway, sao lưu rồi đặt `SPRING_FLYWAY_BASELINE_ON_MIGRATE=true` cho lần chạy đầu tiên. Flyway đánh dấu phiên bản 1 và áp dụng [migration nâng cấp](src/main/resources/db/migration/V2__upgrade_legacy_transport_schema.sql). Bỏ biến này sau khi nâng cấp.
 
-Tuyến mới có `status: "INACTIVE"`. Yêu cầu PUT dùng các trường như khi tạo tuyến
-và thêm `status: "ACTIVE"` hoặc `"INACTIVE"`. Bỏ qua `effectiveToAt`
-hoặc gửi giá trị `null` để xóa thời điểm kết thúc hiệu lực đã lưu. Phản hồi
-chứa các trường lúc tạo cùng với `id` và `status`.
+Migration giữ ID hiện có, đưa địa chỉ trạm cũ vào lịch sử và chuyển thứ tự điểm dừng bắt đầu từ 0 sang bắt đầu từ 1. Mốc công bố, hủy và phiên bản thống kê thiếu trong dữ liệu cũ được khởi tạo theo quy tắc ghi trong migration. Nếu dữ liệu vi phạm ràng buộc mới, PostgreSQL hủy giao dịch nâng cấp để người quản trị có thể sửa dữ liệu và chạy lại.
 
-Mỗi cặp `(code, versionNo)` là duy nhất. Tạo hoặc cập nhật trùng cặp giá trị
-này trả **409**. Cần xóa các điểm dừng trước khi xóa tuyến. Nếu tuyến vẫn còn
-điểm dừng, API trả **409**. ID tài nguyên không tồn tại trả **404**. Thân yêu cầu
-không hợp lệ trả **400**.
+[Migration V3](src/main/resources/db/migration/V3__use_vietnam_local_time.sql) chuyển các cột ngày giờ từ quy ước UTC cũ sang giờ Việt Nam một lần. Migration giả định dữ liệu cũ đã lưu theo UTC.
 
-## Điểm dừng (`RouteStop`)
+## API
 
-POST và PUT yêu cầu tất cả các trường dưới đây, kể cả hai trường kiểu boolean.
+Phản hồi thành công dùng `ApiResponse` với `success`, `data` và `timestamp`. Lỗi dùng `application/problem+json` với `status`, `detail`, `errorCode` và `errors` khi có lỗi trường. Tạo mới thường trả `201` và `Location`, đọc và cập nhật trả `200`, xóa trả `204`.
 
-```json
-{
-  "routeId": 1,
-  "stationId": 1,
-  "stopOrder": 0,
-  "distanceKm": 0,
-  "offsetMinutes": 0,
-  "allowPickup": true,
-  "allowDropOff": false
-}
-```
+Schema và API dùng giờ Việt Nam (`Asia/Ho_Chi_Minh`). Ngày giờ có định dạng ISO local datetime, ví dụ `2026-11-23T08:00:00` là 8 giờ sáng tại Việt Nam. API lọc ca trực theo ngày Việt Nam. `licenseExpiryOn` là ngày lịch, định dạng `YYYY-MM-DD`. Giá vé và các khoản tiền tính bằng VND nguyên.
 
-`routeId` và `stationId` phải là ID dương của bản ghi đang tồn tại. Nếu tuyến
-hoặc trạm được tham chiếu không tồn tại, API trả **404**. `stopOrder` và
-`offsetMinutes` là số nguyên không âm. `distanceKm` là số không âm với tối đa
-8 chữ số ở phần nguyên và 2 chữ số ở phần thập phân. Khoảng cách và số phút di chuyển
-được tính lũy kế từ đầu tuyến. API không kiểm tra các giá trị này có tăng dần
-giữa các điểm dừng hay không và không tự đánh lại thứ tự điểm dừng.
+### Cách gọi API
 
-Phản hồi trả các trường trên cùng với `id` dưới dạng JSON từ DTO. PUT có thể thay đổi tuyến hoặc trạm
-của điểm dừng. Cặp `(routeId, stopOrder)` phải duy nhất. Nếu bị trùng, API trả
-**409**, kể cả khi chuyển điểm dừng sang tuyến khác. Một trạm có thể xuất hiện
-ở nhiều điểm dừng. Thân yêu cầu không hợp lệ trả **400**.
+- **Qua API Gateway (cổng 8080):** Gateway tự động áp dụng filter `PrefixPath=/api/transport-service`, client gọi theo đường dẫn tài nguyên không có tiền tố `/api`. Ví dụ: `http://localhost:8080/trips`, `http://localhost:8080/routes`, `http://localhost:8080/driver/trips`.
+- **Gọi trực tiếp Transport Service (cổng 8081):** Servlet context-path là `/api/transport-service`. Ví dụ: `http://localhost:8081/api/transport-service/trips`.
 
-`GET /api/route-stops?routeId=1` liệt kê các điểm dừng của tuyến theo thứ tự
-`stopOrder` tăng dần. Tuyến không tồn tại trả **404**. Tuyến chưa có điểm dừng
-trả mảng rỗng. Khi không lọc theo tuyến, kết quả được sắp xếp theo `routeId`,
-sau đó theo `stopOrder`. ID điểm dừng không tồn tại trả **404**. Xóa điểm dừng
-chỉ xóa bản ghi điểm dừng. Nếu một trạm còn được điểm dừng tham chiếu, yêu cầu
-xóa trạm trả **409**.
+| Tài nguyên     | Endpoint qua Gateway (:8080)   | Endpoint trực tiếp (:8081)                         | Thao tác                                                                                                                    |
+| -------------- | ------------------------------ | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Trạm           | `/stations`                    | `/api/transport-service/stations`                  | CRUD trạm. `GET /stations/{id}?at=...` lấy địa chỉ hiệu lực tại thời điểm theo giờ Việt Nam.                                |
+| Địa chỉ trạm   | `/stations/{id}/addresses`     | `/api/transport-service/stations/{id}/addresses`   | GET và POST danh sách địa chỉ. POST nhận `address` và `effectiveFromAt`. PUT trạm thêm bản ghi khi địa chỉ đổi.             |
+| Đoạn đường mẫu | `/stations/segments`           | `/api/transport-service/stations/segments`         | CRUD đoạn đường mẫu, nhận `fromStationId`, `toStationId`, `distanceKm` và `durationMinutes`.                               |
+| Tuyến          | `/routes`                      | `/api/transport-service/routes`                    | CRUD tuyến. PUT nhận các trường lúc tạo và `status` (ACTIVE, INACTIVE).                                                      |
+| Điểm dừng      | `/route-stops`                 | `/api/transport-service/route-stops`               | CRUD điểm dừng trên tuyến. GET danh sách hỗ trợ lọc theo tuyến `?routeId=...`.                                              |
+| Xe             | `/vehicles`                    | `/api/transport-service/vehicles`                  | POST, GET, DELETE xe. `PUT /vehicles/{id}/status` nhận `status` (ACTIVE, MAINTENANCE, INACTIVE).                            |
+| Tài xế         | `/drivers`                     | `/api/transport-service/drivers`                   | CRUD tài xế. PUT nhận các trường lúc tạo và `status` (ACTIVE, INACTIVE).                                                    |
+| Chuyến         | `/trips`                       | `/api/transport-service/trips`                     | POST và GET chuyến. GET, PUT và DELETE `/trips/{id}`. PUT và DELETE áp dụng cho bản nháp (DRAFT).                           |
+| Phân công      | `/trip-drivers`                | `/api/transport-service/trip-drivers`              | POST, GET, DELETE phân công tài xế. POST nhận `tripId`, `driverId` và `role` (PRIMARY, RELIEF).                             |
+| Thống kê vé    | `/trip-statistics`             | `/api/transport-service/trip-statistics`           | POST nhận ingest thống kê vé. GET danh sách hoặc GET theo chuyến tại `/trip-statistics/{tripId}`.                           |
+| Hồ sơ tài xế   | `/driver/trips/profile`        | `/api/transport-service/driver/trips/profile`      | GET: Lấy hồ sơ tài xế đồng bộ từ Admin (hỗ trợ params `driverId`, `phone`, header `X-User-Id`).                             |
+| Lịch ca trực   | `/driver/trips`                | `/api/transport-service/driver/trips`              | GET: Lịch trình ca trực tài xế (hỗ trợ lọc `date`, params `driverId`, `phone`, header `X-User-Id`).                        |
+| Trạng thái xe  | `/driver/trips/{code}/status`  | `/api/transport-service/driver/trips/{code}/status`| PUT: Tài xế cập nhật trạng thái chuyến (`?status=RUNNING` hoặc `COMPLETED`).                                                |
 
-Bộ sưu tập Postman trong `../postman` có yêu cầu mẫu cho cả hai tài nguyên,
-gồm gọi trực tiếp và gọi qua Gateway. Hãy tạo trạm và tuyến trước khi tạo
-điểm dừng. Khi xóa, hãy xóa điểm dừng trước khi xóa bản ghi cha.
+### Lập tuyến và công bố chuyến
 
-Chạy `./mvnw test` để kiểm thử API với H2. Trên Windows, chạy `.\mvnw.cmd test`.
+1. Tạo các trạm. Tạo tuyến với `code`, `versionNo` (mặc định 1), `name`, `basePrice`, `effectiveFromAt` và `effectiveToAt` tùy chọn. Các phiên bản cùng mã dùng khoảng hiệu lực `[effectiveFromAt, effectiveToAt)` riêng.
+2. Tạo điểm dừng với `routeId`, `stationId`, `stopOrder`, `distanceKm`, `offsetMinutes`, `allowPickup` và `allowDropOff`. Một tuyến dùng được cần ít nhất hai điểm, thứ tự liên tục từ 1 và cự ly, phút lũy kế tăng dần từ 0. Điểm đầu đón khách và điểm cuối trả khách. Khi đã có chuyến tham chiếu, lộ trình được ghim vào phiên bản đó.
+3. Tạo chuyến `DRAFT` với `code`, `routeId`, `departureAt`, `arrivalAt` và `ticketPrice`. `vehicleId` có thể trống. Giờ đến theo lịch bằng giờ đi cộng `offsetMinutes` của điểm cuối.
+4. Phân xe và tài xế, sau đó gọi `POST /trips/{id}/publish`. Service kiểm tra tuyến hiệu lực, xe hoạt động, đúng một tài xế chính, tài xế hoạt động và lịch điều phối của xe, tài xế.
 
-## Xe và tài xế (`Vehicle` và `Driver`)
+| Thao tác                   | Endpoint qua Gateway                                              | Dữ liệu                                      |
+| -------------------------- | ----------------------------------------------------------------- | -------------------------------------------- |
+| Phân hoặc đổi xe           | `PUT /trips/{id}/vehicle`                                         | `vehicleId`                                  |
+| Thay tài xế chính          | `PUT /trips/{id}/primary-driver`                                  | `driverId`                                   |
+| Mở, tạm dừng hoặc đóng bán | `PUT /trips/{id}/sale-status`                                     | `saleStatus` (OPEN, PAUSED, CLOSED)          |
+| Cập nhật ước tính          | `PUT /trips/{id}/estimate`                                        | `estimatedDepartureAt`, `estimatedArrivalAt` |
+| Xuất bến hoặc hoàn thành   | `PUT /driver/trips/{code}/status?status=RUNNING` hoặc `COMPLETED` | Tham số `status`                             |
+| Hủy trước khi xuất bến     | `POST /trips/{id}/cancel`                                         | `reason`                                     |
 
-API xe và tài xế dùng cùng cấu trúc phản hồi và mã HTTP như API trạm. Hai API
-chỉ hỗ trợ tạo, xem danh sách, xem chi tiết và xóa. PUT và PATCH không được hỗ trợ.
-Có thể gọi cả hai API qua Gateway.
+Sau khi công bố, các mốc theo lịch được giữ cố định. Hệ thống ghi riêng giờ ước tính, giờ thực tế và thông tin hủy. Đổi xe được hỗ trợ ở bản nháp và chuyến đã công bố còn `NOT_OPEN`. Kể từ khi mở bán, sơ đồ ghế và lượt giữ chỗ của Booking cần được kiểm tra để hỗ trợ đổi xe.
 
-| Tài nguyên | Tạo | Danh sách | Chi tiết | Xóa |
-| ---------- | --- | --------- | -------- | --- |
-| Xe (`Vehicle`) | `POST /api/vehicles` | `GET /api/vehicles` | `GET /api/vehicles/{id}` | `DELETE /api/vehicles/{id}` |
-| Tài xế (`Driver`) | `POST /api/drivers` | `GET /api/drivers` | `GET /api/drivers/{id}` | `DELETE /api/drivers/{id}` |
+### Nhận thống kê theo phiên bản
 
-Tất cả các trường trong thân yêu cầu tạo xe đều bắt buộc.
+POST `/trip-statistics` nhận một bộ gồm `tripId`, `validTicketCount`, `collectedAmount`, `refundedAmount`, `sourceRevision` và `sourceAsOfAt`. Mỗi chuyến có tối đa một bản ghi, với `updatedAt` do Transport gán tại lần nhận. Lần đầu trả `201`. Các lần sau trả `200` và chỉ thay toàn bộ bản ghi khi `sourceRevision` lớn hơn bản hiện tại. API nhận số liệu từ nguồn bán, việc tự động gửi từ Booking chưa được nối vào luồng này.
 
-```json
-{
-  "licensePlate": "51B-12345",
-  "type": "SEAT",
-  "capacity": 45
-}
-```
-
-`licensePlate` phải có nội dung và dài tối đa 255 ký tự. `type` nhận một trong
-ba giá trị `SEAT`, `BERTH` và `LIMOUSINE`. `capacity` là số nguyên dương.
-
-Thân yêu cầu khi tạo tài xế
-
-```json
-{
-  "fullName": "Nguyen Van A",
-  "phone": "0901234567",
-  "licenseNumber": "GPLX123",
-  "licenseClass": "D",
-  "licenseExpiryOn": "2030-01-01T00:00:00"
-}
-```
-
-`fullName` và `phone` là trường bắt buộc và phải có nội dung. Mọi trường kiểu
-chuỗi dài tối đa 255 ký tự. Các trường về giấy phép lái xe là tùy chọn.
-`licenseExpiryOn` dùng ngày giờ địa phương, không kèm múi giờ.
-
-Xe và tài xế mới có `status: "INACTIVE"`. Phản hồi chứa các trường lúc tạo
-cùng với `id` và `status`. POST trả **201** và header `Location`. GET trả
-**200**. DELETE trả **204** với thân phản hồi rỗng. Danh sách trả toàn bộ kết
-quả trong một lần. Dữ liệu đầu vào không hợp lệ trả **400**. Xem hoặc xóa một
-ID không tồn tại trả **404**.
-
-## Chuyến xe và phân công tài xế (`Trip` và `TripDriver`)
-
-Hai API dùng cùng cấu trúc phản hồi như API trạm. POST trả **201** và header
-`Location`. GET trả **200**. DELETE trả **204** với thân phản hồi rỗng. API
-chỉ hỗ trợ tạo, xem danh sách, xem chi tiết và xóa. PUT và PATCH trả **405**.
-
-| Tài nguyên | Tạo / Danh sách | Chi tiết / Xóa |
-| ---------- | --------------- | -------------- |
-| Chuyến xe (`Trip`) | `POST /api/trips`, `GET /api/trips` | `GET /api/trips/{id}`, `DELETE /api/trips/{id}` |
-| Phân công tài xế (`TripDriver`) | `POST /api/trip-drivers`, `GET /api/trip-drivers` | `GET /api/trip-drivers/{id}`, `DELETE /api/trip-drivers/{id}` |
-
-Có thể gọi cả hai API qua Gateway. Danh sách trả toàn bộ kết quả trong một lần.
-
-Tất cả các trường trong thân yêu cầu tạo chuyến xe đều bắt buộc.
-
-```json
-{
-  "code": "HCM-DL-001",
-  "routeId": 1,
-  "vehicleId": 1,
-  "departureAt": "2026-10-23T08:00:00",
-  "arrivalAt": "2026-10-23T14:00:00",
-  "ticketPrice": 250000
-}
-```
-
-`code` phải có nội dung và dài tối đa 255 ký tự. ID tham chiếu phải là số dương
-của bản ghi đang tồn tại. `arrivalAt` phải sau `departureAt`. Cả hai trường dùng
-ngày giờ địa phương, không kèm múi giờ. `ticketPrice` là số nguyên không âm,
-tối đa 15 chữ số. Chuyến xe mới có `status: "DRAFT"` và `saleStatus: "NOT_OPEN"`.
-Hệ thống lưu sức chứa của xe được chọn vào `capacitySnapshot` tại thời điểm
-tạo chuyến. Phản hồi cũng có `id` và các mốc thời gian dự kiến, thực tế. Các mốc
-này có giá trị ban đầu là `null`.
-
-Tất cả các trường trong thân yêu cầu phân công tài xế đều bắt buộc.
-
-```json
-{
-  "tripId": 1,
-  "driverId": 1,
-  "role": "PRIMARY"
-}
-```
-
-`tripId` và `driverId` phải là ID dương của bản ghi đang tồn tại. `role` nhận
-`PRIMARY` hoặc `RELIEF`. Phản hồi chứa các trường này cùng với `id`. Phân
-công lại cùng một tài xế cho cùng chuyến xe trả **409** dù vai trò khác nhau.
-
-Dữ liệu đầu vào không hợp lệ trả **400**. Tài nguyên hoặc bản ghi tham chiếu
-không tồn tại trả **404**. Cần xóa các phân công tài xế trước khi xóa chuyến xe.
-Nếu chuyến xe vẫn còn phân công, API trả **409**. Xóa phân công giữ lại chuyến xe
-và tài xế. Xóa chuyến xe giữ lại tuyến và xe.
+Chạy `./mvnw test` để kiểm thử API với H2.
