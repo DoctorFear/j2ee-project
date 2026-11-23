@@ -2,30 +2,28 @@ package com.futabus.transport.resource.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class DriverCreationRequest {
     @NotBlank
-    @Size(max = 255)
+    @Size(max = 150)
     String fullName;
 
     @NotBlank
-    @Size(max = 255)
+    @Size(max = 20)
     String phone;
 
-    @Size(max = 255)
+    @Size(max = 50)
     String licenseNumber;
 
-    @Size(max = 255)
+    @Size(max = 20)
     String licenseClass;
 
-    LocalDateTime licenseExpiryOn;
+    LocalDate licenseExpiryOn;
 }

@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import com.futabus.transport.trip.enums.RoleDriver;
 
 @Repository
 public interface TripDriverRepository extends JpaRepository<TripDriver, Long> {
@@ -12,7 +13,9 @@ public interface TripDriverRepository extends JpaRepository<TripDriver, Long> {
 
     boolean existsByTripId(Long tripId);
 
-    void deleteByTripId(Long tripId);
+    boolean existsByTripIdAndRole(Long tripId, RoleDriver role);
+
+    List<TripDriver> findByTripIdOrderByDriverIdAsc(Long tripId);
 
     List<TripDriver> findByDriverId(Long driverId);
 }

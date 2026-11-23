@@ -15,7 +15,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/trip-drivers")
+@RequestMapping("/trip-drivers")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class TripDriverController {
@@ -28,11 +28,12 @@ public class TripDriverController {
         TripDriverResponse tripDriver = tripDriverService.create(request);
 
         return ResponseEntity
-                .created(URI.create("/api/trip-drivers/" + tripDriver.getId()))
-                .body(ApiResponse.<TripDriverResponse>builder()
-                        .success(true)
-                        .data(tripDriver)
-                        .build()
+                .created(URI.create("/trip-drivers/" + tripDriver.getId()))
+                .body(
+                        ApiResponse.<TripDriverResponse>builder()
+                                .success(true)
+                                .data(tripDriver)
+                                .build()
                 );
     }
 

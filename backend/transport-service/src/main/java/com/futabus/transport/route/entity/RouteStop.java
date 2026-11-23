@@ -8,10 +8,11 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(
-        name = "route_stops",
-        uniqueConstraints = @UniqueConstraint(
-                columnNames = {"route_id", "stop_order"}
-        )
+    name = "route_stops",
+    uniqueConstraints = @UniqueConstraint(
+        name = "uq_route_stop_order",
+        columnNames = { "route_id", "stop_order" }
+    )
 )
 @Getter
 @Setter
@@ -44,6 +45,6 @@ public class RouteStop {
     @Column(nullable = false)
     boolean allowPickup;
 
-    @Column(nullable = false)
+    @Column(name = "allow_dropoff", nullable = false)
     boolean allowDropOff;
 }

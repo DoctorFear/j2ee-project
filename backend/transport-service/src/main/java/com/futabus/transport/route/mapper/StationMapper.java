@@ -5,13 +5,18 @@ import com.futabus.transport.route.dto.request.StationUpdateRequest;
 import com.futabus.transport.route.dto.response.StationResponse;
 import com.futabus.transport.route.entity.Station;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface StationMapper {
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "status", ignore = true)
     Station toStation(StationCreationRequest request);
 
+    @Mapping(target = "address", ignore = true)
     StationResponse toStationResponse(Station station);
 
+    @Mapping(target = "id", ignore = true)
     void updateStation(StationUpdateRequest request, @MappingTarget Station station);
 }

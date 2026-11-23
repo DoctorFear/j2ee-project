@@ -8,8 +8,11 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum TripStatisticErrorCode implements ErrorCode {
-    TRANSPORT_TRIP_STATISTIC_NOT_FOUND(HttpStatus.NOT_FOUND, "Trip statistic not found"),
-    TRANSPORT_TRIP_STATISTIC_ALREADY_EXISTS(HttpStatus.CONFLICT, "Trip statistic already exists for this trip");
+    TRANSPORT_TRIP_STATISTIC_NOT_FOUND(
+            HttpStatus.NOT_FOUND,
+            "Trip statistic not found"
+    ),
+    ;
 
     private final HttpStatus status;
     private final String message;

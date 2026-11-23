@@ -1,7 +1,8 @@
 package com.futabus.transport.statistics.controller;
 
 import com.futabus.transport.common.response.ApiResponse;
-import com.futabus.transport.statistics.dto.request.TripStatisticCreationRequest;
+import com.futabus.transport.statistics.dto.TripStatisticIngestResult;
+import com.futabus.transport.statistics.dto.request.TripStatisticIngestRequest;
 import com.futabus.transport.statistics.dto.response.TripStatisticResponse;
 import com.futabus.transport.statistics.service.TripStatisticService;
 import jakarta.validation.Valid;
@@ -15,7 +16,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/trip-statistics")
+@RequestMapping("/trip-statistics")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class TripStatisticController {
@@ -23,19 +24,23 @@ public class TripStatisticController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<TripStatisticResponse>> create(
-            @Valid @RequestBody TripStatisticCreationRequest request
+            @Valid @RequestBody TripStatisticIngestRequest request
     ) {
-        TripStatisticResponse tripStatistic = tripStatisticService.create(request);
+        TripStatisticIngestResult result = tripStatisticService.ingest(request);
+        TripStatisticResponse statistic = result.statistic();
 
-        String pathURI = "/api/trip-statistics/" + tripStatistic.getTripId();
+        var body = ApiResponse.<TripStatisticResponse>builder()
+                .success(true)
+                .data(statistic)
+                .build();
 
-        return ResponseEntity
-                .created(URI.create(pathURI))
-                .body(ApiResponse.<TripStatisticResponse>builder()
-                        .success(true)
-                        .data(tripStatistic)
-                        .build()
-                );
+        if (result.created()) {
+            return ResponseEntity
+                    .created(URI.create("/trip-statistics/" + statistic.getTripId()))
+                    .body(body);
+        }
+
+        return ResponseEntity.ok(body);
     }
 
     @GetMapping
@@ -58,10 +63,4 @@ public class TripStatisticController {
                 .build();
     }
 
-    @DeleteMapping("/{tripId}")
-    public ResponseEntity<Void> delete(@PathVariable Long tripId) {
-        tripStatisticService.delete(tripId);
-
-        return ResponseEntity.noContent().build();
-    }
 }

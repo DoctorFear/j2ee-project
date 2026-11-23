@@ -8,10 +8,15 @@ import lombok.experimental.FieldDefaults;
 
 @Entity
 @Table(
-        name = "trip_drivers",
-        uniqueConstraints = @UniqueConstraint(
-                columnNames = {"trip_id", "driver_id"}
-        )
+    name = "trip_drivers",
+    uniqueConstraints = @UniqueConstraint(
+        name = "uq_trip_driver",
+        columnNames = { "trip_id", "driver_id" }
+    ),
+    indexes = @Index(
+        name = "idx_trip_driver_assignments",
+        columnList = "driver_id, trip_id"
+    )
 )
 @Getter
 @Setter

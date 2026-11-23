@@ -1,15 +1,13 @@
 package com.futabus.transport.route.dto.request;
 
 import jakarta.validation.constraints.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RouteStopCreationRequest {
     @NotNull
@@ -21,7 +19,7 @@ public class RouteStopCreationRequest {
     Long stationId;
 
     @NotNull
-    @PositiveOrZero
+    @Positive
     Integer stopOrder;
 
     @NotNull
@@ -34,8 +32,8 @@ public class RouteStopCreationRequest {
     Integer offsetMinutes;
 
     @NotNull
-    Boolean allowPickup;
+    Boolean allowPickup = false;
 
     @NotNull
-    Boolean allowDropOff;
+    Boolean allowDropOff = false;
 }

@@ -1,17 +1,17 @@
 package com.futabus.transport.statistics.dto.request;
 
 import jakarta.validation.constraints.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.LocalDateTime;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TripStatisticCreationRequest {
+public class TripStatisticIngestRequest {
     @NotNull
     @Positive
     Long tripId;
@@ -29,4 +29,12 @@ public class TripStatisticCreationRequest {
     @PositiveOrZero
     @Digits(integer = 15, fraction = 0)
     BigDecimal refundedAmount;
+
+    @NotNull
+    @Positive
+    @DecimalMax("18446744073709551615")
+    BigInteger sourceRevision;
+
+    @NotNull
+    LocalDateTime sourceAsOfAt;
 }

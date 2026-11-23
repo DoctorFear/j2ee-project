@@ -22,10 +22,9 @@ class GlobalExceptionHandlerTests {
         when(service.updateTripStatus("TRIP-1", "RUNNING"))
                 .thenThrow(new IllegalStateException("Internal database details"));
         MockMvc mvc = MockMvcBuilders.standaloneSetup(new DriverTripController(service))
-                .setControllerAdvice(new GlobalExceptionHandler())
-                .build();
+                .setControllerAdvice(new GlobalExceptionHandler()).build();
 
-        mvc.perform(put("/api/driver/trips/TRIP-1/status").param("status", "RUNNING"))
+        mvc.perform(put("/driver/trips/TRIP-1/status").param("status", "RUNNING"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(500))

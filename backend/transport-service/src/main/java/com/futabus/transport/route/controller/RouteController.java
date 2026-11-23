@@ -2,6 +2,7 @@ package com.futabus.transport.route.controller;
 
 import com.futabus.transport.common.response.ApiResponse;
 import com.futabus.transport.route.dto.request.RouteCreationRequest;
+import com.futabus.transport.route.dto.request.RouteUpdateRequest;
 import com.futabus.transport.route.dto.response.RouteResponse;
 import com.futabus.transport.route.service.RouteService;
 import jakarta.validation.Valid;
@@ -15,7 +16,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/routes")
+@RequestMapping("/routes")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RouteController {
@@ -27,29 +28,46 @@ public class RouteController {
     ) {
         RouteResponse route = routeService.create(request);
 
-        URI routeURI = URI.create("/api/routes/" + route.getId());
-
-        return ResponseEntity.created(routeURI)
-                .body(ApiResponse.<RouteResponse>builder()
-                        .success(true)
-                        .data(route)
-                        .build()
+        return ResponseEntity
+                .created(URI.create("/routes/" + route.getId()))
+                .body(
+                        ApiResponse.<RouteResponse>builder()
+                                .success(true)
+                                .data(route)
+                                .build()
                 );
     }
 
     @GetMapping
     public ApiResponse<List<RouteResponse>> findAll() {
+        List<RouteResponse> routeResponses = routeService.findAll();
+
         return ApiResponse.<List<RouteResponse>>builder()
                 .success(true)
-                .data(routeService.findAll())
+                .data(routeResponses)
                 .build();
     }
 
     @GetMapping("/{id}")
     public ApiResponse<RouteResponse> findById(@PathVariable Long id) {
+        RouteResponse routeResponse = routeService.findById(id);
+
         return ApiResponse.<RouteResponse>builder()
                 .success(true)
-                .data(routeService.findById(id))
+                .data(routeResponse)
+                .build();
+    }
+
+    @PutMapping("/{id}")
+    public ApiResponse<RouteResponse> update(
+            @PathVariable Long id,
+            @Valid @RequestBody RouteUpdateRequest request
+    ) {
+        RouteResponse routeResponse = routeService.update(id, request);
+
+        return ApiResponse.<RouteResponse>builder()
+                .success(true)
+                .data(routeResponse)
                 .build();
     }
 

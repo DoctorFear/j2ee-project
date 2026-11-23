@@ -2,6 +2,7 @@ package com.futabus.transport.resource.controller;
 
 import com.futabus.transport.common.response.ApiResponse;
 import com.futabus.transport.resource.dto.request.DriverCreationRequest;
+import com.futabus.transport.resource.dto.request.DriverUpdateRequest;
 import com.futabus.transport.resource.dto.response.DriverResponse;
 import com.futabus.transport.resource.service.DriverService;
 import jakarta.validation.Valid;
@@ -15,7 +16,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/drivers")
+@RequestMapping("/drivers")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class DriverController {
@@ -28,11 +29,12 @@ public class DriverController {
         DriverResponse driver = driverService.create(request);
 
         return ResponseEntity
-                .created(URI.create("/api/drivers/" + driver.getId()))
-                .body(ApiResponse.<DriverResponse>builder()
-                        .success(true)
-                        .data(driver)
-                        .build()
+                .created(URI.create("/drivers/" + driver.getId()))
+                .body(
+                        ApiResponse.<DriverResponse>builder()
+                                .success(true)
+                                .data(driver)
+                                .build()
                 );
     }
 
@@ -49,6 +51,19 @@ public class DriverController {
     @GetMapping("/{id}")
     public ApiResponse<DriverResponse> findById(@PathVariable Long id) {
         DriverResponse driverResponse = driverService.findById(id);
+
+        return ApiResponse.<DriverResponse>builder()
+                .success(true)
+                .data(driverResponse)
+                .build();
+    }
+
+    @PutMapping("/{id}")
+    public ApiResponse<DriverResponse> update(
+            @PathVariable Long id,
+            @Valid @RequestBody DriverUpdateRequest request
+    ) {
+        DriverResponse driverResponse = driverService.update(id, request);
 
         return ApiResponse.<DriverResponse>builder()
                 .success(true)

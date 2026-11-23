@@ -12,7 +12,17 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "trips")
+@Table(
+    name = "trips",
+    uniqueConstraints = @UniqueConstraint(
+        name = "uq_trip_code",
+        columnNames = "code"
+    ),
+    indexes = {
+        @Index(name = "idx_trips_route_departure", columnList = "route_id, departure_at"),
+        @Index(name = "idx_trips_vehicle_departure", columnList = "vehicle_id, departure_at")
+    }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -24,7 +34,7 @@ public class Trip {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 60)
     String code;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -32,7 +42,7 @@ public class Trip {
     Route route;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vehicle_id", nullable = false)
+    @JoinColumn(name = "vehicle_id")
     Vehicle vehicle;
 
     @Column(nullable = false)
@@ -40,6 +50,8 @@ public class Trip {
 
     @Column(nullable = false)
     LocalDateTime arrivalAt;
+
+    LocalDateTime publishedAt;
 
     LocalDateTime estimatedDepartureAt;
 
@@ -49,10 +61,15 @@ public class Trip {
 
     LocalDateTime actualArrivalAt;
 
+    LocalDateTime cancelledAt;
+
+    @Column(length = 255)
+    String cancelReason;
+
     @Column(nullable = false, precision = 15, scale = 0)
     BigDecimal ticketPrice;
 
-    int capacitySnapshot;
+    Integer capacitySnapshot;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

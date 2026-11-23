@@ -1,7 +1,8 @@
 package com.futabus.transport.statistics.service;
 
 import com.futabus.transport.common.exception.BusinessException;
-import com.futabus.transport.statistics.dto.request.TripStatisticCreationRequest;
+import com.futabus.transport.statistics.dto.TripStatisticIngestResult;
+import com.futabus.transport.statistics.dto.request.TripStatisticIngestRequest;
 import com.futabus.transport.statistics.dto.response.TripStatisticResponse;
 import com.futabus.transport.statistics.entity.TripStatistic;
 import com.futabus.transport.statistics.exception.TripStatisticErrorCode;
@@ -14,6 +15,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -26,19 +28,35 @@ public class TripStatisticService {
     TripRepository tripRepository;
     TripStatisticMapper tripStatisticMapper;
 
-    @Transactional
-    public TripStatisticResponse create(TripStatisticCreationRequest request) {
-        Trip trip = tripRepository.findById(request.getTripId())
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public TripStatisticIngestResult ingest(TripStatisticIngestRequest request) {
+        Trip trip = tripRepository.findLockedById(request.getTripId())
                 .orElseThrow(() -> new BusinessException(TripErrorCode.TRANSPORT_TRIP_NOT_FOUND));
 
-        if (tripStatisticRepository.existsById(request.getTripId())) {
-            throw new BusinessException(TripStatisticErrorCode.TRANSPORT_TRIP_STATISTIC_ALREADY_EXISTS);
+        TripStatistic statistic = tripStatisticRepository.findById(trip.getId()).orElse(null);
+        boolean created = statistic == null;
+
+        if (created) {
+            statistic = tripStatisticMapper.toTripStatistic(request);
+            statistic.setTrip(trip);
+        } else if (request.getSourceRevision().compareTo(statistic.getSourceRevision()) <= 0) {
+            TripStatisticResponse response = tripStatisticMapper.toTripStatisticResponse(statistic);
+
+            return TripStatisticIngestResult.builder()
+                    .statistic(response)
+                    .created(false)
+                    .build();
+        } else {
+            tripStatisticMapper.updateStatistic(request, statistic);
         }
 
-        TripStatistic tripStatistic = tripStatisticMapper.toTripStatistic(request);
-        tripStatistic.setTrip(trip);
+        statistic = tripStatisticRepository.saveAndFlush(statistic);
+        TripStatisticResponse response = tripStatisticMapper.toTripStatisticResponse(statistic);
 
-        return tripStatisticMapper.toTripStatisticResponse(tripStatisticRepository.save(tripStatistic));
+        return TripStatisticIngestResult.builder()
+                .statistic(response)
+                .created(created)
+                .build();
     }
 
     @Transactional(readOnly = true)
@@ -51,13 +69,9 @@ public class TripStatisticService {
 
     @Transactional(readOnly = true)
     public TripStatisticResponse findById(Long tripId) {
-        return tripStatisticMapper.toTripStatisticResponse(getTripStatistic(tripId));
-    }
+        TripStatistic statistic = getTripStatistic(tripId);
 
-    @Transactional
-    public void delete(Long tripId) {
-        TripStatistic tripStatistic = getTripStatistic(tripId);
-        tripStatisticRepository.delete(tripStatistic);
+        return tripStatisticMapper.toTripStatisticResponse(statistic);
     }
 
     private TripStatistic getTripStatistic(Long tripId) {

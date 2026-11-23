@@ -4,6 +4,7 @@ import com.futabus.transport.common.exception.BusinessException;
 import com.futabus.transport.common.exception.CommonErrorCode;
 import com.futabus.transport.common.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -35,8 +36,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return respond(exception, problem, HttpHeaders.EMPTY, request);
     }
 
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<Object> handleDataIntegrity(DataIntegrityViolationException exception, WebRequest request) {
+    @ExceptionHandler({ DataIntegrityViolationException.class, ConcurrencyFailureException.class })
+    public ResponseEntity<Object> handleDataIntegrity(Exception exception, WebRequest request) {
         ErrorCode code = CommonErrorCode.COMMON_DATA_CONFLICT;
         return respond(exception, problem(code.getStatus(), code), HttpHeaders.EMPTY, request);
     }
@@ -49,7 +50,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
     protected ResponseEntity<Object> handleExceptionInternal(
-            Exception exception, Object body, HttpHeaders headers, HttpStatusCode status, WebRequest request
+            Exception exception,
+            Object body,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request
     ) {
         ProblemDetail response;
         if (status.is5xxServerError()) {
@@ -60,9 +65,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 case MethodArgumentNotValidException validation -> validationProblem(status, validation);
                 case HttpMessageNotReadableException ignored -> problem(status, CommonErrorCode.COMMON_INVALID_JSON);
                 case MissingServletRequestParameterException missing ->
-                        parameterProblem(status, CommonErrorCode.COMMON_MISSING_PARAMETER, missing.getParameterName());
+                    parameterProblem(status, CommonErrorCode.COMMON_MISSING_PARAMETER, missing.getParameterName());
                 case MethodArgumentTypeMismatchException mismatch ->
-                        parameterProblem(status, CommonErrorCode.COMMON_INVALID_PARAMETER, mismatch.getName());
+                    parameterProblem(status, CommonErrorCode.COMMON_INVALID_PARAMETER, mismatch.getName());
                 default -> problem(status, frameworkErrorCode(status));
             };
         }
@@ -70,7 +75,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     private ResponseEntity<Object> respond(
-            Exception exception, ProblemDetail problem, HttpHeaders headers, WebRequest request
+            Exception exception,
+            ProblemDetail problem,
+            HttpHeaders headers,
+            WebRequest request
     ) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.putAll(headers);
@@ -83,10 +91,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ErrorCode code = CommonErrorCode.COMMON_VALIDATION_FAILED;
         Map<String, List<String>> errors = new LinkedHashMap<>();
         for (FieldError fieldError : exception.getBindingResult().getFieldErrors()) {
-            String message = fieldError.getDefaultMessage() != null ? fieldError.getDefaultMessage() : code.getMessage();
+            String message = fieldError.getDefaultMessage() != null ? fieldError.getDefaultMessage()
+                    : code.getMessage();
             errors.computeIfAbsent(fieldError.getField(), field -> new ArrayList<>()).add(message);
         }
-        String detail = errors.entrySet().stream().findFirst()
+        String detail = errors.entrySet()
+                .stream()
+                .findFirst()
                 .map(field -> field.getKey() + ": " + field.getValue().getFirst())
                 .orElse(code.getMessage());
         ProblemDetail problem = problem(status, code, detail);

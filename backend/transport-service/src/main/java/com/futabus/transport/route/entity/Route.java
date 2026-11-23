@@ -1,5 +1,6 @@
 package com.futabus.transport.route.entity;
 
+
 import com.futabus.transport.route.enums.RouteStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,10 +11,11 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(
-        name = "routes",
-        uniqueConstraints = @UniqueConstraint(
-                columnNames = {"code", "version_no"}
-        )
+    name = "routes",
+    uniqueConstraints = @UniqueConstraint(
+        name = "uq_route_code_version",
+        columnNames = { "code", "version_no" }
+    )
 )
 @Getter
 @Setter
@@ -26,13 +28,13 @@ public class Route {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @Column(name = "code", nullable = false)
+    @Column(name = "code", nullable = false, length = 30)
     String code;
 
     @Column(name = "version_no", nullable = false)
     int versionNo;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 200)
     String name;
 
     @Column(nullable = false, precision = 15, scale = 0)

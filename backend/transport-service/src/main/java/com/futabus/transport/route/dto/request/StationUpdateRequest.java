@@ -10,7 +10,7 @@ import lombok.Data;
 @Data
 public class StationUpdateRequest {
     @NotBlank
-    @Size(max = 255)
+    @Size(max = 150)
     private String name;
 
     @NotBlank

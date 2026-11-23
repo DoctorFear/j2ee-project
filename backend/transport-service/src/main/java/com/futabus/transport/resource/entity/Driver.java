@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "drivers")
@@ -20,17 +20,19 @@ public class Driver {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 150)
     String fullName;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     String phone;
 
+    @Column(length = 50)
     String licenseNumber;
 
+    @Column(length = 20)
     String licenseClass;
 
-    LocalDateTime licenseExpiryOn;
+    LocalDate licenseExpiryOn;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

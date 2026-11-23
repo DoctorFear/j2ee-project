@@ -1,4 +1,30 @@
 # Cấu hình khởi động dịch vụ vận tải
+server:
+  port: 8081
+  servlet:
+    context-path: /api/transport-service
+
 spring:
+  application:
+    name: transport-service
   profiles:
     default: local
+  datasource:
+    url: jdbc:postgresql://localhost:5432/futabus_transport_service
+    username: postgres
+    password: "01052005"
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        type:
+          java_time_use_direct_jdbc: true
+        format_sql: true
+  jackson:
+    time-zone: Asia/Ho_Chi_Minh
+    deserialization:
+      accept-float-as-int: false
+    datatype:
+      enum:
+        fail-on-numbers-for-enums: true

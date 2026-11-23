@@ -5,6 +5,9 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+
+import static com.futabus.transport.common.config.JpaAuditingConfig.VIETNAM_ZONE;
 
 @Data
 @NoArgsConstructor
@@ -13,12 +16,13 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
-    boolean success;
+    @Builder.Default
+    boolean success = true;
 
     String message;
 
     T data;
 
     @Builder.Default
-    LocalDateTime timestamp = LocalDateTime.now();
+    LocalDateTime timestamp = LocalDateTime.now(VIETNAM_ZONE).truncatedTo(ChronoUnit.MICROS);
 }

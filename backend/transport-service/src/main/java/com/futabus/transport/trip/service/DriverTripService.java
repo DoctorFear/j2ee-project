@@ -2,6 +2,8 @@
 package com.futabus.transport.trip.service;
 
 import com.futabus.transport.common.exception.BusinessException;
+import com.futabus.transport.route.entity.StationAddress;
+import com.futabus.transport.route.repository.StationAddressRepository;
 import com.futabus.transport.resource.entity.Driver;
 import com.futabus.transport.resource.repository.DriverRepository;
 import com.futabus.transport.route.entity.RouteStop;
@@ -13,34 +15,37 @@ import com.futabus.transport.trip.entity.TripDriver;
 import com.futabus.transport.trip.enums.TripStatus;
 import com.futabus.transport.trip.exception.TripErrorCode;
 import com.futabus.transport.trip.repository.TripDriverRepository;
-import com.futabus.transport.trip.repository.TripRepository;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class DriverTripService {
 
-    private final TripDriverRepository tripDriverRepository;
-    private final TripRepository tripRepository;
-    private final DriverRepository driverRepository;
-    private final RouteStopRepository routeStopRepository;
+    TripDriverRepository tripDriverRepository;
+    TripService tripService;
+    StationAddressRepository stationAddressRepository;
+    DriverRepository driverRepository;
+    RouteStopRepository routeStopRepository;
 
     /**
-     * Lấy thông tin hồ sơ tài xế đồng bộ từ danh sách tài xế của Admin (Transport DB)
+     * Lấy thông tin hồ sơ tài xế đồng bộ từ danh sách tài xế của Admin (Transport
+     * DB)
      */
     @Transactional(readOnly = true)
-    public java.util.Map<String, Object> getDriverProfile(Long driverId, String phone) {
+    public Map<String, Object> getDriverProfile(Long driverId, String phone) {
         Driver driver = resolveDriver(driverId, phone);
         if (driver == null) {
             return Collections.emptyMap();
@@ -52,7 +57,7 @@ public class DriverTripService {
                 .findFirst()
                 .orElse("PRIMARY");
 
-        java.util.Map<String, Object> profile = new java.util.LinkedHashMap<>();
+        Map<String, Object> profile = new LinkedHashMap<>();
         profile.put("id", driver.getId());
         profile.put("fullName", driver.getFullName());
         profile.put("phone", driver.getPhone());
@@ -78,45 +83,32 @@ public class DriverTripService {
 
         return assignments.stream()
                 .filter(a -> a.getTrip() != null && (date == null || matchesDate(a.getTrip().getDepartureAt(), date)))
-                .sorted((a, b) -> {
-                    if (a.getTrip().getDepartureAt() == null || b.getTrip().getDepartureAt() == null) return 0;
-                    return a.getTrip().getDepartureAt().compareTo(b.getTrip().getDepartureAt());
-                })
-                .map(a -> mapToTripScheduleResponse(a.getTrip(), driver, a.getRole() != null ? a.getRole().name() : "PRIMARY"))
+                .sorted(Comparator.comparing(
+                        a -> a.getTrip().getDepartureAt(),
+                        Comparator.nullsLast(Comparator.naturalOrder())))
+                .map(a -> mapToTripScheduleResponse(
+                        a.getTrip(),
+                        driver,
+                        a.getRole() != null ? a.getRole().name() : "PRIMARY"))
                 .collect(Collectors.toList());
     }
 
     /**
-     * Cập nhật trạng thái chuyến xe (Bắt đầu chạy RUNNING hoặc Hoàn thành COMPLETED)
+     * Cập nhật trạng thái chuyến xe (Bắt đầu chạy RUNNING hoặc Hoàn thành
+     * COMPLETED)
      */
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public DriverTripScheduleResponse updateTripStatus(String tripCode, String statusName) {
-        Trip trip = tripRepository.findByCode(tripCode)
-                .orElseThrow(() -> new BusinessException(TripErrorCode.TRANSPORT_TRIP_CODE_NOT_FOUND));
-
-        TripStatus newStatus;
+        TripStatus target;
         try {
-            newStatus = TripStatus.valueOf(statusName.toUpperCase());
+            target = TripStatus.valueOf(statusName.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             throw new BusinessException(TripErrorCode.TRANSPORT_TRIP_INVALID_STATUS);
         }
 
-        trip.setStatus(newStatus);
-        LocalDateTime now = LocalDateTime.now();
+        Trip updatedTrip = tripService.updateDrivingStatus(tripCode, target);
 
-        if (newStatus == TripStatus.RUNNING) {
-            if (trip.getActualDepartureAt() == null) {
-                trip.setActualDepartureAt(now);
-            }
-        } else if (newStatus == TripStatus.COMPLETED) {
-            if (trip.getActualDepartureAt() == null) {
-                trip.setActualDepartureAt(trip.getDepartureAt());
-            }
-            trip.setActualArrivalAt(now);
-        }
-
-        tripRepository.save(trip);
-        return mapToTripScheduleResponse(trip, null, "PRIMARY");
+        return mapToTripScheduleResponse(updatedTrip, null, "PRIMARY");
     }
 
     private Driver resolveDriver(Long driverId, String phone) {
@@ -126,7 +118,8 @@ public class DriverTripService {
             if (driverOpt.isPresent()) {
                 return driverOpt.get();
             }
-            // Ánh xạ SĐT tài khoản Auth (0983456701..05) sang SĐT tài xế tương ứng trong danh sách Admin (0909000001..05)
+            // Ánh xạ SĐT tài khoản Auth (0983456701..05) sang SĐT tài xế tương ứng
+            // trong danh sách Admin (0909000001..05)
             if (cleanPhone.matches("09834567[0-9]{2}")) {
                 try {
                     int idx = Integer.parseInt(cleanPhone.substring(8));
@@ -152,65 +145,73 @@ public class DriverTripService {
     }
 
     private boolean matchesDate(LocalDateTime departureAt, LocalDate date) {
-        if (departureAt == null) return false;
+        if (departureAt == null) {
+            return false;
+        }
         return departureAt.toLocalDate().isEqual(date);
     }
 
     private DriverTripScheduleResponse mapToTripScheduleResponse(Trip trip, Driver driver, String role) {
-        DriverTripScheduleResponse res = new DriverTripScheduleResponse();
-        res.setTripCode(trip.getCode());
-
-        if (trip.getRoute() != null) {
-            res.setRouteCode(trip.getRoute().getCode());
-            res.setRouteName(trip.getRoute().getName());
-        }
-
-        if (trip.getVehicle() != null) {
-            res.setLicensePlate(trip.getVehicle().getLicensePlate());
-            res.setVehicleType(trip.getVehicle().getType() != null ? trip.getVehicle().getType().name() : null);
-            res.setCapacity(trip.getVehicle().getCapacity());
-        }
-
-        res.setDepartureAt(trip.getDepartureAt());
-        res.setArrivalAt(trip.getArrivalAt());
-        res.setActualDepartureAt(trip.getActualDepartureAt());
-        res.setActualArrivalAt(trip.getActualArrivalAt());
-        res.setTripStatus(trip.getStatus() != null ? trip.getStatus().name() : "SCHEDULED");
-        res.setDriverRole(role != null ? role : "PRIMARY");
-        if (driver != null) {
-            res.setDriverId(driver.getId());
-            res.setDriverName(driver.getFullName());
-            res.setDriverPhone(driver.getPhone());
-            res.setDriverLicenseNumber(driver.getLicenseNumber());
-        }
-        res.setBookedCount(0);
-        res.setBoardedCount(0);
-
+        List<DriverTripStopDto> stopDtos = Collections.emptyList();
         if (trip.getRoute() != null) {
             List<RouteStop> routeStops = routeStopRepository.findByRouteIdOrderByStopOrderAsc(trip.getRoute().getId());
-            List<DriverTripStopDto> stopDtos = routeStops.stream().map(rs -> {
-                DriverTripStopDto sDto = new DriverTripStopDto();
+            stopDtos = routeStops.stream().map(rs -> {
+                LocalDateTime plannedAt = trip.getDepartureAt().plusMinutes(rs.getOffsetMinutes());
+                String address = null;
                 if (rs.getStation() != null) {
-                    sDto.setStationId(rs.getStation().getId());
-                    sDto.setStationName(rs.getStation().getName());
-                    sDto.setStationAddress(rs.getStation().getAddress());
+                    address = stationAddressRepository
+                            .findFirstByStationIdAndEffectiveFromAtLessThanEqualOrderByEffectiveFromAtDesc(
+                                    rs.getStation().getId(), plannedAt)
+                            .map(StationAddress::getAddress)
+                            .orElse(null);
                 }
-                sDto.setStopOrder(rs.getStopOrder());
-                sDto.setOffsetMinutes(rs.getOffsetMinutes());
-                if (trip.getDepartureAt() != null) {
-                    sDto.setEstimatedTime(trip.getDepartureAt().plusMinutes(rs.getOffsetMinutes()));
-                }
-                sDto.setAllowPickup(rs.isAllowPickup());
-                sDto.setAllowDropOff(rs.isAllowDropOff());
-                sDto.setPickupCount(0);
-                sDto.setDropOffCount(0);
-                return sDto;
+                return DriverTripStopDto.builder()
+                        .stationId(rs.getStation() != null ? rs.getStation().getId() : null)
+                        .stationName(rs.getStation() != null ? rs.getStation().getName() : null)
+                        .stationAddress(address)
+                        .stopOrder(rs.getStopOrder())
+                        .offsetMinutes(rs.getOffsetMinutes())
+                        .estimatedTime(resolveDepartureTime(trip).plusMinutes(rs.getOffsetMinutes()))
+                        .allowPickup(rs.isAllowPickup())
+                        .allowDropOff(rs.isAllowDropOff())
+                        .pickupCount(0)
+                        .dropOffCount(0)
+                        .build();
             }).collect(Collectors.toList());
-            res.setStops(stopDtos);
-        } else {
-            res.setStops(Collections.emptyList());
         }
 
-        return res;
+        return DriverTripScheduleResponse.builder()
+                .tripCode(trip.getCode())
+                .routeCode(trip.getRoute() != null ? trip.getRoute().getCode() : null)
+                .routeName(trip.getRoute() != null ? trip.getRoute().getName() : null)
+                .licensePlate(trip.getVehicle() != null ? trip.getVehicle().getLicensePlate() : null)
+                .vehicleType(trip.getVehicle() != null && trip.getVehicle().getType() != null
+                        ? trip.getVehicle().getType().name()
+                        : null)
+                .capacity(trip.getCapacitySnapshot() != null ? trip.getCapacitySnapshot() : 0)
+                .departureAt(trip.getDepartureAt())
+                .arrivalAt(trip.getArrivalAt())
+                .actualDepartureAt(trip.getActualDepartureAt())
+                .actualArrivalAt(trip.getActualArrivalAt())
+                .tripStatus(trip.getStatus() != null ? trip.getStatus().name() : "SCHEDULED")
+                .driverRole(role != null ? role : "PRIMARY")
+                .driverId(driver != null ? driver.getId() : null)
+                .driverName(driver != null ? driver.getFullName() : null)
+                .driverPhone(driver != null ? driver.getPhone() : null)
+                .driverLicenseNumber(driver != null ? driver.getLicenseNumber() : null)
+                .bookedCount(0)
+                .boardedCount(0)
+                .stops(stopDtos)
+                .build();
+    }
+
+    private LocalDateTime resolveDepartureTime(Trip trip) {
+        if (trip.getActualDepartureAt() != null) {
+            return trip.getActualDepartureAt();
+        }
+        if (trip.getEstimatedDepartureAt() != null) {
+            return trip.getEstimatedDepartureAt();
+        }
+        return trip.getDepartureAt();
     }
 }

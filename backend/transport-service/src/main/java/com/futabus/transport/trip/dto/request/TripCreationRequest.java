@@ -1,27 +1,24 @@
 package com.futabus.transport.trip.dto.request;
 
 import jakarta.validation.constraints.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TripCreationRequest {
     @NotBlank
-    @Size(max = 255)
+    @Size(max = 60)
     String code;
 
     @NotNull
     @Positive
     Long routeId;
 
-    @NotNull
     @Positive
     Long vehicleId;
 

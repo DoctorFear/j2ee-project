@@ -7,7 +7,13 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "vehicles")
+@Table(
+    name = "vehicles",
+    uniqueConstraints = @UniqueConstraint(
+        name = "uq_vehicle_license_plate",
+        columnNames = "license_plate"
+    )
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,11 +25,11 @@ public class Vehicle {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     String licensePlate;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "service_type", nullable = false)
     ServiceType type;
 
     @Column(nullable = false)

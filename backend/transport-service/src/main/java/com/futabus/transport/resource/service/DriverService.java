@@ -2,6 +2,7 @@ package com.futabus.transport.resource.service;
 
 import com.futabus.transport.common.exception.BusinessException;
 import com.futabus.transport.resource.dto.request.DriverCreationRequest;
+import com.futabus.transport.resource.dto.request.DriverUpdateRequest;
 import com.futabus.transport.resource.dto.response.DriverResponse;
 import com.futabus.transport.resource.entity.Driver;
 import com.futabus.transport.resource.enums.DriverStatus;
@@ -27,9 +28,10 @@ public class DriverService {
     public DriverResponse create(DriverCreationRequest request) {
         Driver driver = driverMapper.toDriver(request);
 
-        driver.setStatus(DriverStatus.INACTIVE);
+        driver.setStatus(DriverStatus.ACTIVE);
+        Driver savedDriver = driverRepository.save(driver);
 
-        return driverMapper.toDriverResponse(driverRepository.save(driver));
+        return driverMapper.toDriverResponse(savedDriver);
     }
 
     @Transactional(readOnly = true)
@@ -42,7 +44,17 @@ public class DriverService {
 
     @Transactional(readOnly = true)
     public DriverResponse findById(Long id) {
-        return driverMapper.toDriverResponse(getDriver(id));
+        Driver driver = getDriver(id);
+
+        return driverMapper.toDriverResponse(driver);
+    }
+
+    @Transactional
+    public DriverResponse update(Long id, DriverUpdateRequest request) {
+        Driver driver = driverRepository.findLockedById(id)
+                .orElseThrow(() -> new BusinessException(ResourceErrorCode.TRANSPORT_DRIVER_NOT_FOUND));
+        driverMapper.updateDriver(request, driver);
+        return driverMapper.toDriverResponse(driver);
     }
 
     @Transactional

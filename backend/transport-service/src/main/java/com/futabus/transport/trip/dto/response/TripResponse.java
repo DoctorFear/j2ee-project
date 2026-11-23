@@ -26,6 +26,8 @@ public class TripResponse {
 
     LocalDateTime arrivalAt;
 
+    LocalDateTime publishedAt;
+
     LocalDateTime estimatedDepartureAt;
 
     LocalDateTime estimatedArrivalAt;
@@ -34,9 +36,13 @@ public class TripResponse {
 
     LocalDateTime actualArrivalAt;
 
+    LocalDateTime cancelledAt;
+
+    String cancelReason;
+
     BigDecimal ticketPrice;
 
-    int capacitySnapshot;
+    Integer capacitySnapshot;
 
     TripStatus status;
 

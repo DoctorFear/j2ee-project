@@ -4,6 +4,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 
 @Data
@@ -21,4 +22,8 @@ public class TripStatisticResponse {
     BigDecimal refundedAmount;
 
     LocalDateTime updatedAt;
+
+    BigInteger sourceRevision;
+
+    LocalDateTime sourceAsOfAt;
 }

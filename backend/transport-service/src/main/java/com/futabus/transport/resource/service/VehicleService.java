@@ -27,9 +27,10 @@ public class VehicleService {
     public VehicleResponse create(VehicleCreationRequest request) {
         Vehicle vehicle = vehicleMapper.toVehicle(request);
 
-        vehicle.setStatus(VehicleStatus.INACTIVE);
+        vehicle.setStatus(VehicleStatus.ACTIVE);
+        Vehicle savedVehicle = vehicleRepository.save(vehicle);
 
-        return vehicleMapper.toVehicleResponse(vehicleRepository.save(vehicle));
+        return vehicleMapper.toVehicleResponse(savedVehicle);
     }
 
     @Transactional(readOnly = true)
@@ -42,7 +43,17 @@ public class VehicleService {
 
     @Transactional(readOnly = true)
     public VehicleResponse findById(Long id) {
-        return vehicleMapper.toVehicleResponse(getVehicle(id));
+        Vehicle vehicle = getVehicle(id);
+
+        return vehicleMapper.toVehicleResponse(vehicle);
+    }
+
+    @Transactional
+    public VehicleResponse changeStatus(Long id, VehicleStatus status) {
+        Vehicle vehicle = vehicleRepository.findLockedById(id)
+                .orElseThrow(() -> new BusinessException(ResourceErrorCode.TRANSPORT_VEHICLE_NOT_FOUND));
+        vehicle.setStatus(status);
+        return vehicleMapper.toVehicleResponse(vehicle);
     }
 
     @Transactional

@@ -8,17 +8,18 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "trip_statistic")
+@EntityListeners(AuditingEntityListener.class)
+@Table(name = "trip_statistics")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@EntityListeners(AuditingEntityListener.class)
 public class TripStatistic {
     @Id
     @Column(name = "trip_id")
@@ -38,6 +39,13 @@ public class TripStatistic {
     @Column(nullable = false, precision = 15, scale = 0)
     BigDecimal refundedAmount;
 
+    @Column(nullable = false, precision = 20, scale = 0)
+    BigInteger sourceRevision;
+
+    @Column(nullable = false)
+    LocalDateTime sourceAsOfAt;
+
     @LastModifiedDate
+    @Column(nullable = false)
     LocalDateTime updatedAt;
 }

@@ -19,14 +19,11 @@ public class Station {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 150)
     String name;
 
-    @Column(nullable = false)
-    String address;
-
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "station_type", nullable = false)
     StationType type;
 
     @Enumerated(EnumType.STRING)
