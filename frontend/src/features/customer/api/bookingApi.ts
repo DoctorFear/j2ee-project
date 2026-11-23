@@ -31,15 +31,15 @@ export type CustomerTicket = Ticket & {
   arrivalAt: string;
 };
 export const bookingApi = {
-  stations: () => apiClient<Station[]>("/api/bookings/catalog/stations"),
+  stations: () => apiClient<Station[]>("/bookings/catalog/stations"),
   trips: async () =>
-    (await apiClient<JourneyResponse[]>("/api/bookings/catalog/trips")).map(
+    (await apiClient<JourneyResponse[]>("/bookings/catalog/trips")).map(
       journeyFromApi,
     ),
   trip: async (code: string) =>
     journeyFromApi(
       await apiClient<JourneyResponse>(
-        `/api/bookings/catalog/trips/${encodeURIComponent(code)}`,
+        `/bookings/catalog/trips/${encodeURIComponent(code)}`,
       ),
     ),
   hold: (
@@ -49,7 +49,7 @@ export const bookingApi = {
     seatCodes: string[],
     contact: Contact,
   ) =>
-    apiClient<BookingOrder>("/api/bookings/hold", {
+    apiClient<BookingOrder>("/bookings/hold", {
       method: "POST",
       data: {
         tripCode,
@@ -60,13 +60,13 @@ export const bookingApi = {
       },
     }),
   order: (id: string) =>
-    apiClient<BookingOrder>(`/api/bookings/${encodeURIComponent(id)}`),
+    apiClient<BookingOrder>(`/bookings/${encodeURIComponent(id)}`),
   release: (id: string) =>
-    apiClient<boolean>(`/api/bookings/${encodeURIComponent(id)}/hold`, {
+    apiClient<boolean>(`/bookings/${encodeURIComponent(id)}/hold`, {
       method: "DELETE",
     }),
   pay: (id: string) =>
-    apiClient<PaymentSession>(`/api/bookings/${encodeURIComponent(id)}/pay`, {
+    apiClient<PaymentSession>(`/bookings/${encodeURIComponent(id)}/pay`, {
       method: "POST",
     }),
   tickets: async () =>
@@ -77,14 +77,14 @@ export const bookingApi = {
           pickupAt: string;
           arrivalAt: string;
         })[]
-      >("/api/tickets/my")
+      >("/tickets/my")
     ).map((t) => ({ ...t, trip: journeyFromApi(t.trip) })),
   cancel: (code: string) =>
-    apiClient<RefundStatus>(`/api/tickets/${encodeURIComponent(code)}/cancel`, {
+    apiClient<RefundStatus>(`/tickets/${encodeURIComponent(code)}/cancel`, {
       method: "POST",
     }),
   refund: (code: string) =>
     apiClient<RefundStatus | null>(
-      `/api/tickets/${encodeURIComponent(code)}/refund`,
+      `/tickets/${encodeURIComponent(code)}/refund`,
     ),
 };

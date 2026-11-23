@@ -5,7 +5,7 @@ export function createResourceApi<K extends Resource>(
   resource: K,
   listParams?: (options: EntityListOptions) => Record<string, number> | undefined
 ): EntityApi<K> {
-  const endpoint = "/api/" + resource;
+  const endpoint = "/" + resource;
   return {
     resource,
     list: (options = {}) =>

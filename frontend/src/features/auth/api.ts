@@ -8,13 +8,13 @@ import type {
 
 export const authFormsApi = {
   register: (data: RegisterRequestDto) =>
-    apiClient<RegisterResponseDto>("/api/auth/register", {
+    apiClient<RegisterResponseDto>("/auth/register", {
       method: "POST",
       data,
       authMode: "none",
     }),
   forgotPassword: (data: ForgotPasswordRequestDto) =>
-    apiClient<boolean>("/api/auth/forgot-password", { method: "POST", data, authMode: "none" }),
+    apiClient<boolean>("/auth/forgot-password", { method: "POST", data, authMode: "none" }),
   resetPassword: (data: ResetPasswordRequestDto) =>
-    apiClient<boolean>("/api/auth/reset-password", { method: "POST", data, authMode: "none" }),
+    apiClient<boolean>("/auth/reset-password", { method: "POST", data, authMode: "none" }),
 };

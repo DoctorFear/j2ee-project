@@ -65,7 +65,7 @@ function refreshSession(version: number): Promise<string> {
     }
     try {
       const response = await refreshHttp.post(
-        "/api/auth/refresh-token",
+        "/auth/refresh-token",
         { refreshToken },
         { baseURL: http.defaults.baseURL }
       );

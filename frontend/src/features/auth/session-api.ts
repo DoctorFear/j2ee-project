@@ -23,15 +23,15 @@ const loginSchema = profileSchema.omit({ id: true, phoneNumber: true }).extend({
 
 export const sessionApi = {
   async login(payload: LoginRequestDto): Promise<LoginResponseDto> {
-    return loginSchema.parse(await apiClient("/api/auth/login", { method: "POST", data: payload, authMode: "none" }));
+    return loginSchema.parse(await apiClient("/auth/login", { method: "POST", data: payload, authMode: "none" }));
   },
   async googleLogin(payload: GoogleLoginRequestDto): Promise<LoginResponseDto> {
     return loginSchema.parse(
-      await apiClient("/api/auth/google-login", { method: "POST", data: payload, authMode: "none" })
+      await apiClient("/auth/google-login", { method: "POST", data: payload, authMode: "none" })
     );
   },
   async getProfile(): Promise<UserProfileResponseDto> {
-    return profileSchema.parse(await apiClient("/api/user/profile"));
+    return profileSchema.parse(await apiClient("/user/profile"));
   },
   async logout(): Promise<void> {
     const accessToken = getAccessToken();
@@ -39,7 +39,7 @@ export const sessionApi = {
     // Clear synchronously so pending refresh/profile responses cannot revive this session.
     clearTokens();
     if (accessToken)
-      await apiClient("/api/auth/logout", {
+      await apiClient("/auth/logout", {
         method: "POST",
         data: { refreshToken },
         authMode: "none",
