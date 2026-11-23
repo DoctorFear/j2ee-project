@@ -17,7 +17,7 @@ booking:
   email-from: YOUR_EMAIL
   internal-key: YOUR_SHARED_INTERNAL_KEY
   sales-enabled: true
-  transport-zone: UTC
+  transport-zone: ${TRANSPORT_ZONE:Asia/Ho_Chi_Minh}
   # Mã xe và danh sách ghế phải khớp phương tiện thực tế
   vehicle-seats: {}
   momo:

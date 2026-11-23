@@ -24,7 +24,7 @@ public class TransportClient {
   public List<JsonNode> list(String resource) {
     try {
       var request =
-          HttpRequest.newBuilder(URI.create(properties.getTransportUrl() + "/api/" + resource))
+          HttpRequest.newBuilder(URI.create(properties.getTransportUrl() + "/" + resource))
               .timeout(Duration.ofSeconds(10))
               .GET()
               .build();

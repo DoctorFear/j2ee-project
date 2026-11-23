@@ -23,13 +23,13 @@ public class BookingController {
   @PostMapping("/hold")
   public ApiResponse<?> hold(
       @Valid @RequestBody HoldRequest request, @AuthenticationPrincipal Jwt jwt) {
-    return response(bookings.hold(request, jwt.getSubject()));
+    return toBookingApiResponse(bookings.hold(request, jwt.getSubject()));
   }
 
   // Tra cứu đơn thuộc tài khoản đang đăng nhập
   @GetMapping("/{id}")
   public ApiResponse<?> get(@PathVariable String id, @AuthenticationPrincipal Jwt jwt) {
-    return response(bookings.owned(id, jwt.getSubject()));
+    return toBookingApiResponse(bookings.owned(id, jwt.getSubject()));
   }
 
   // Hủy giữ chỗ chưa hoàn tất thanh toán
@@ -56,7 +56,7 @@ public class BookingController {
   }
 
   // Trả trạng thái đơn và dữ liệu để khôi phục phiên giữ ghế
-  private ApiResponse<?> response(Booking booking) {
+  private ApiResponse<?> toBookingApiResponse(Booking booking) {
     return ApiResponse.of(
         Map.ofEntries(
             Map.entry("id", booking.getId()),
