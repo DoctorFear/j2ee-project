@@ -25,6 +25,12 @@ function normalizeError(error: unknown): Error {
   if (!axios.isAxiosError(error)) return error instanceof Error ? error : new ApiError("Yêu cầu không thành công.");
   const status = error.response?.status;
   const body = error.response?.data;
+  const errorCode =
+    typeof body?.errorCode === "string"
+      ? body.errorCode
+      : typeof body?.code === "string"
+        ? body.code
+        : undefined;
   const responseMessage = typeof body?.message === "string" ? body.message : body?.detail;
   const validation = body?.errors;
   const messages: unknown[] = Array.isArray(validation)
@@ -32,20 +38,21 @@ function normalizeError(error: unknown): Error {
     : validation && typeof validation === "object"
       ? Object.values(validation).flat()
       : [];
+  const joinedValidation = messages.filter((item): item is string => typeof item === "string").join(" ");
   const message =
-    status === 401
-      ? "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
-      : status === 403
-        ? "Bạn không có quyền thực hiện thao tác này."
-        : typeof responseMessage === "string"
-          ? responseMessage
-          : messages.filter((item): item is string => typeof item === "string").join(", ") ||
-            (error.code === "ECONNABORTED"
-              ? "Máy chủ phản hồi quá chậm. Vui lòng thử lại."
-              : !error.response
-                ? "Không thể kết nối máy chủ. Vui lòng kiểm tra backend và cấu hình API."
-                : `Yêu cầu thất bại (HTTP ${status})`);
-  return new ApiError(message, status, /^([A-Za-z]+):/.exec(message)?.[1]);
+    joinedValidation ||
+    (typeof responseMessage === "string"
+      ? responseMessage
+      : status === 401
+        ? "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
+        : status === 403
+          ? "Bạn không có quyền thực hiện thao tác này."
+          : error.code === "ECONNABORTED"
+            ? "Máy chủ phản hồi quá chậm. Vui lòng thử lại."
+            : !error.response
+              ? "Không thể kết nối máy chủ. Vui lòng kiểm tra backend và cấu hình API."
+              : `Yêu cầu thất bại (HTTP ${status})`);
+  return new ApiError(message, status, /^([A-Za-z]+):/.exec(message)?.[1], errorCode, validation);
 }
 
 function refreshSession(version: number): Promise<string> {
