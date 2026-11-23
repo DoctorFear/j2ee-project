@@ -1,6 +1,15 @@
 server:
   port: 8080
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: always
+
 spring:
   application:
     name: gateway
@@ -27,9 +36,31 @@ spring:
                 allowCredentials: true
                 maxAge: 3600
           routes:
+            # 0. HEALTH CHECK ROUTES CHO CÁC SERVICE
+            - id: auth-health-route
+              uri: ${AUTH_SERVICE_URL:http://localhost:5001}
+              predicates:
+                - Path=/health/auth, /auth/health
+              filters:
+                - SetPath=/api/health
+
+            - id: transport-health-route
+              uri: ${TRANSPORT_SERVICE_URL:http://localhost:8081}
+              predicates:
+                - Path=/health/transport, /transport/health
+              filters:
+                - SetPath=/api/transport-service/health
+
+            - id: booking-health-route
+              uri: ${BOOKING_SERVICE_URL:http://localhost:8082}
+              predicates:
+                - Path=/health/booking, /booking/health, /bookings/health
+              filters:
+                - SetPath=/api/health
+
             # 1. AUTH SERVICE (.NET - Cổng 5001)
             - id: auth-service-route
-              uri: http://localhost:5001
+              uri: ${AUTH_SERVICE_URL:http://localhost:5001}
               predicates:
                 - Path=/auth/**, /user/**
               filters:
@@ -37,7 +68,7 @@ spring:
 
             # 2. BOOKING SERVICE: Soát vé và danh sách hành khách tài xế (Đặt trước route tổng quát của Transport)
             - id: booking-driver-route
-              uri: http://localhost:8082
+              uri: ${BOOKING_SERVICE_URL:http://localhost:8082}
               predicates:
                 - Path=/driver/trips/{code}/passengers/**, /driver/trips/{code}/passengers, /driver/trips/{code}/summary, /driver/trips/{code}/tickets/**, /driver/trips/{code}/check-in/**, /driver/trips/{code}/check-in
               filters:
@@ -45,7 +76,7 @@ spring:
 
             # 3. BOOKING SERVICE: Ghế chuyến đi (Đặt trước route tổng quát của Transport Service)
             - id: booking-trip-seats-route
-              uri: http://localhost:8082
+              uri: ${BOOKING_SERVICE_URL:http://localhost:8082}
               predicates:
                 - Path=/trips/{code}/seats/**, /trips/{code}/seats
               filters:
@@ -53,7 +84,7 @@ spring:
 
             # 4. BOOKING SERVICE: Đặt chỗ, giữ vé, thanh toán, vé điện tử
             - id: booking-service-route
-              uri: http://localhost:8082
+              uri: ${BOOKING_SERVICE_URL:http://localhost:8082}
               predicates:
                 - Path=/bookings/**, /tickets/**
               filters:
@@ -61,7 +92,7 @@ spring:
 
             # 5. TRANSPORT SERVICE: Tuyến, trạm, lịch chạy, điều phối, quản trị, lịch ca trực tài xế
             - id: transport-service-route
-              uri: http://localhost:8081
+              uri: ${TRANSPORT_SERVICE_URL:http://localhost:8081}
               predicates:
                 - Path=/trips/**, /trip-drivers/**, /trip-statistics/**, /stations/**, /routes/**, /route-stops/**, /vehicles/**, /drivers/**, /admin/**, /driver/**
               filters:

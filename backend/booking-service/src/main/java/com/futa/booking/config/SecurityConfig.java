@@ -50,6 +50,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(
                     a ->
                             a.requestMatchers(
+                                            "/api/health",
+                                            "/health",
                                             "/api/bookings/catalog/**",
                                             "/payos/webhook",
                                             "/api/bookings/payments/payos/webhook",

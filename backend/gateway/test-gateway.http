@@ -1,6 +1,18 @@
 ### 1. Kiểm tra trạng thái Gateway (Health Check)
 GET http://localhost:8080/actuator/health
 
+### 1.1 Kiểm tra trạng thái Gateway (Endpoint tùy biến)
+GET http://localhost:8080/health
+
+### 1.2 Kiểm tra trạng thái Auth Service (.NET qua Gateway)
+GET http://localhost:8080/health/auth
+
+### 1.3 Kiểm tra trạng thái Transport Service qua Gateway
+GET http://localhost:8080/health/transport
+
+### 1.4 Kiểm tra trạng thái Booking Service qua Gateway
+GET http://localhost:8080/health/booking
+
 ### 2. Kiểm tra định tuyến Đăng nhập (Auth Service .NET qua Gateway)
 POST http://localhost:8080/auth/login
 Content-Type: application/json
