@@ -242,7 +242,9 @@ Auth hiện ký JWT bằng HS256. Booking xác minh cùng secret trong `JwtSetti
 
 ## 8. Chạy toàn hệ thống
 
-Thứ tự: **Database (SQL Server, PostgreSQL, MySQL) → Auth → Trip và Booking → Gateway → Frontend**. Chạy các service ở terminal riêng. Các đường dẫn trong các lệnh này tính từ thư mục gốc repository.
+Có thể chạy Gateway, Auth, Transport, Booking và database bằng [Docker Compose](backend/README.md#chạy-backend-bằng-docker-compose). Frontend chạy riêng trên máy.
+
+Khi chạy từng service trên máy, khởi động **PostgreSQL và MySQL → Auth → Trip và Booking → Gateway → Frontend**. Chạy các service ở terminal riêng. Các đường dẫn trong các lệnh này tính từ thư mục gốc repository.
 
 ### Auth Service (.NET - Cổng 5001)
 

@@ -1,0 +1,152 @@
+name: futa-backend
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: futabus_transport_service
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in the Docker env file}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the Docker env file}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -h 127.0.0.1 -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: booking_db
+      MYSQL_USER: ${MYSQL_USER:?Set MYSQL_USER in the Docker env file}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in the Docker env file}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in the Docker env file}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          MYSQL_PWD="$$MYSQL_PASSWORD" mysql --protocol=TCP -h 127.0.0.1
+          -u "$$MYSQL_USER" -D "$$MYSQL_DATABASE" -e 'SELECT 1' >/dev/null
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  auth-service:
+    build:
+      context: ./backend
+      dockerfile: auth-service/Dockerfile
+    environment:
+      ASPNETCORE_HTTP_PORTS: "5001"
+      ASPNETCORE_ENVIRONMENT: Development
+      Server__ContextPath: "/api"
+      Database__MigrateOnStartup: "true"
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=FutaBus_AuthDb;Username=${POSTGRES_USER};Password=\"${POSTGRES_PASSWORD}\""
+      JwtSettings__Secret: ${AUTH_JWT_SECRET:?Set AUTH_JWT_SECRET in the Docker env file}
+      JwtSettings__Issuer: ${AUTH_JWT_ISSUER:-FutaBusAuthApi}
+      JwtSettings__Audience: ${AUTH_JWT_AUDIENCE:-FutaBusClient}
+      FrontendUrl: ${FRONTEND_URL:-http://localhost:5173}
+      EmailSettings__Server: ${SMTP_HOST:-smtp.gmail.com}
+      EmailSettings__Port: ${SMTP_PORT:-587}
+      EmailSettings__SenderEmail: ${SMTP_USERNAME:-}
+      EmailSettings__SenderPassword: ${SMTP_PASSWORD:-}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/5001 && echo -e \"GET /api/health HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n\" >&3 && cat <&3 | grep -q \"UP\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  transport-service:
+    build:
+      context: ./backend
+      args:
+        MODULE: transport-service
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/futabus_transport_service
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      FUTA_SEED_ENABLED: ${FUTA_SEED_ENABLED:-true}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:8081/api/transport-service/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  booking-service:
+    build:
+      context: ./backend
+      args:
+        MODULE: booking-service
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      BOOKING_DB_URL: jdbc:mysql://mysql:3306/booking_db?connectionTimeZone=UTC&allowPublicKeyRetrieval=true
+      BOOKING_DB_USERNAME: ${MYSQL_USER}
+      BOOKING_DB_PASSWORD: ${MYSQL_PASSWORD}
+      TRANSPORT_URL: http://transport-service:8081/api/transport-service
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET}
+      AUTH_JWT_ISSUER: ${AUTH_JWT_ISSUER:-FutaBusAuthApi}
+      AUTH_JWT_AUDIENCE: ${AUTH_JWT_AUDIENCE:-FutaBusClient}
+      BOOKING_INTERNAL_KEY: ${BOOKING_INTERNAL_KEY:?Set BOOKING_INTERNAL_KEY in the Docker env file}
+      BOOKING_SEED_ENABLED: ${BOOKING_SEED_ENABLED:-true}
+      BOOKING_SEED_USER_ID: ${BOOKING_SEED_USER_ID:-}
+      PAYOS_CLIENT_ID: ${PAYOS_CLIENT_ID:-}
+      PAYOS_API_KEY: ${PAYOS_API_KEY:-}
+      PAYOS_CHECKSUM_KEY: ${PAYOS_CHECKSUM_KEY:-}
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:8082/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    depends_on:
+      mysql:
+        condition: service_healthy
+      transport-service:
+        condition: service_healthy
+
+  gateway:
+    build:
+      context: ./backend
+      args:
+        MODULE: gateway
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:5001
+      TRANSPORT_SERVICE_URL: http://transport-service:8081
+      BOOKING_SERVICE_URL: http://booking-service:8082
+    ports:
+      - "127.0.0.1:${GATEWAY_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:8080/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      transport-service:
+        condition: service_healthy
+      booking-service:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  mysql_data:
