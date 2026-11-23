@@ -4,6 +4,7 @@ import com.futabus.transport.common.response.ApiResponse;
 import com.futabus.transport.route.dto.request.RouteCreationRequest;
 import com.futabus.transport.route.dto.request.RouteUpdateRequest;
 import com.futabus.transport.route.dto.response.RouteResponse;
+import com.futabus.transport.route.enums.RouteStatus;
 import com.futabus.transport.route.service.RouteService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -39,8 +40,8 @@ public class RouteController {
     }
 
     @GetMapping
-    public ApiResponse<List<RouteResponse>> findAll() {
-        List<RouteResponse> routeResponses = routeService.findAll();
+    public ApiResponse<List<RouteResponse>> findAll(@RequestParam(required = false) RouteStatus status) {
+        List<RouteResponse> routeResponses = routeService.findAll(status);
 
         return ApiResponse.<List<RouteResponse>>builder()
                 .success(true)

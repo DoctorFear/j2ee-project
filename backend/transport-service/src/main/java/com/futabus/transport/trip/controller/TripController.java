@@ -6,16 +6,22 @@ import com.futabus.transport.trip.dto.request.TripOperations;
 import com.futabus.transport.trip.dto.request.TripUpdateRequest;
 import com.futabus.transport.trip.dto.response.TripResponse;
 import com.futabus.transport.trip.dto.response.TripDriverResponse;
+import com.futabus.transport.trip.enums.SaleStatus;
+import com.futabus.transport.trip.enums.TripStatus;
 import com.futabus.transport.trip.service.TripDriverService;
 import com.futabus.transport.trip.service.TripService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -43,13 +49,40 @@ public class TripController {
     }
 
     @GetMapping
-    public ApiResponse<List<TripResponse>> findAll() {
-        List<TripResponse> tripResponses = tripService.findAll();
+    public ResponseEntity<ApiResponse<List<TripResponse>>> findAll(
+            @RequestParam(required = false) Long routeId,
+            @RequestParam(required = false) TripStatus status,
+            @RequestParam(required = false) SaleStatus saleStatus,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDepartureAt,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDepartureAt,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size
+    ) {
+        HttpHeaders headers = new HttpHeaders();
+        List<TripResponse> tripResponses;
 
-        return ApiResponse.<List<TripResponse>>builder()
-                .success(true)
-                .data(tripResponses)
-                .build();
+        if (page != null && size != null) {
+            var paged = tripService.findAllPaged(
+                    routeId, status, saleStatus, departureDate, fromDepartureAt, toDepartureAt, page, size
+            );
+            headers.add("X-Total-Count", String.valueOf(paged.getTotalElements()));
+            headers.add("X-Total-Pages", String.valueOf(paged.getTotalPages()));
+            headers.add("X-Page-Number", String.valueOf(paged.getNumber()));
+            headers.add("X-Page-Size", String.valueOf(paged.getSize()));
+            tripResponses = paged.getContent();
+        } else {
+            tripResponses = tripService.findAll(
+                    routeId, status, saleStatus, departureDate, fromDepartureAt, toDepartureAt
+            );
+        }
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(ApiResponse.<List<TripResponse>>builder()
+                        .success(true)
+                        .data(tripResponses)
+                        .build());
     }
 
     @GetMapping("/{id}")

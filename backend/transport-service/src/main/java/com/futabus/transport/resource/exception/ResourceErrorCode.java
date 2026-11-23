@@ -12,9 +12,17 @@ public enum ResourceErrorCode implements ErrorCode {
             HttpStatus.NOT_FOUND,
             "Vehicle not found"
     ),
+    TRANSPORT_VEHICLE_IN_USE(
+            HttpStatus.CONFLICT,
+            "Vehicle is already assigned to a trip"
+    ),
     TRANSPORT_DRIVER_NOT_FOUND(
             HttpStatus.NOT_FOUND,
             "Driver not found"
+    ),
+    TRANSPORT_DRIVER_IN_USE(
+            HttpStatus.CONFLICT,
+            "Driver is already assigned to a trip"
     ),
     ;
 

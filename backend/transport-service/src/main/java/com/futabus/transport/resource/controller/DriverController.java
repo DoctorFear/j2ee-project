@@ -4,6 +4,7 @@ import com.futabus.transport.common.response.ApiResponse;
 import com.futabus.transport.resource.dto.request.DriverCreationRequest;
 import com.futabus.transport.resource.dto.request.DriverUpdateRequest;
 import com.futabus.transport.resource.dto.response.DriverResponse;
+import com.futabus.transport.resource.enums.DriverStatus;
 import com.futabus.transport.resource.service.DriverService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -39,8 +40,10 @@ public class DriverController {
     }
 
     @GetMapping
-    public ApiResponse<List<DriverResponse>> findAll() {
-        List<DriverResponse> driverResponses = driverService.findAll();
+    public ApiResponse<List<DriverResponse>> findAll(
+            @RequestParam(required = false) DriverStatus status
+    ) {
+        List<DriverResponse> driverResponses = driverService.findAll(status);
 
         return ApiResponse.<List<DriverResponse>>builder()
                 .success(true)

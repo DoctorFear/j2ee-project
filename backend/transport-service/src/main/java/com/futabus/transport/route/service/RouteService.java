@@ -40,8 +40,7 @@ public class RouteService {
                 request.getVersionNo(),
                 request.getEffectiveFromAt(),
                 request.getEffectiveToAt(),
-                null
-        );
+                null);
         Route route = routeMapper.toRoute(request);
         route.setStatus(RouteStatus.ACTIVE);
         if (route.getVersionNo() <= 0) {
@@ -63,8 +62,7 @@ public class RouteService {
                 request.getVersionNo(),
                 request.getEffectiveFromAt(),
                 request.getEffectiveToAt(),
-                id
-        );
+                id);
         if (tripRepository.existsByRouteId(id) && changesPinnedData(route, request)) {
             throw new BusinessException(RouteErrorCode.TRANSPORT_ROUTE_PINNED);
         }
@@ -75,7 +73,16 @@ public class RouteService {
 
     @Transactional(readOnly = true)
     public List<RouteResponse> findAll() {
-        return routeRepository.findAll().stream().map(routeMapper::toRouteResponse).toList();
+        return findAll(null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RouteResponse> findAll(RouteStatus status) {
+        var stream = status != null
+                ? routeRepository.findByStatus(status).stream()
+                : routeRepository.findAll().stream();
+
+        return stream.map(routeMapper::toRouteResponse).toList();
     }
 
     @Transactional(readOnly = true)
@@ -109,8 +116,7 @@ public class RouteService {
             Integer versionNo,
             LocalDateTime start,
             LocalDateTime end,
-            Long currentId
-    ) {
+            Long currentId) {
         boolean invalidEffectivePeriod = end != null && !start.isBefore(end);
         if (invalidEffectivePeriod) {
             throw new BusinessException(RouteErrorCode.TRANSPORT_ROUTE_INVALID_EFFECTIVE_PERIOD);

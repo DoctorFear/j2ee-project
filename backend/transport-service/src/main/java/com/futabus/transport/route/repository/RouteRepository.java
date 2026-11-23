@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
 import com.futabus.transport.route.entity.Route;
+import com.futabus.transport.route.enums.RouteStatus;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -21,4 +23,6 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
     Optional<Route> findLockedById(Long id);
 
     List<Route> findByCode(String code);
+
+    List<Route> findByStatus(RouteStatus status);
 }

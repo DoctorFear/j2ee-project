@@ -373,4 +373,38 @@ class TripApiTests {
                 {"tripId":%d,"driverId":%d,"role":"PRIMARY"}
                 """.formatted(tripId, driverId);
     }
+
+    @Test
+    void findAllSupportsFiltersAndPagination() throws Exception {
+        createTrip();
+
+        mvc.perform(get("/trips").param("routeId", route.getId().toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(1));
+
+        mvc.perform(get("/trips").param("routeId", "999999"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isEmpty());
+
+        mvc.perform(get("/trips").param("status", "DRAFT"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(1));
+        mvc.perform(get("/trips").param("status", "COMPLETED"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isEmpty());
+
+        mvc.perform(get("/trips").param("departureDate", "2026-10-23"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(1));
+        mvc.perform(get("/trips").param("departureDate", "2026-10-24"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isEmpty());
+
+        mvc.perform(get("/trips").param("page", "0").param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("X-Total-Count", "1"))
+                .andExpect(header().string("X-Total-Pages", "1"))
+                .andExpect(header().string("X-Page-Number", "0"))
+                .andExpect(jsonPath("$.data.length()").value(1));
+    }
 }

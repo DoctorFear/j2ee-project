@@ -1,7 +1,15 @@
 package com.futabus.transport;
 
+import com.futabus.transport.resource.entity.Driver;
+import com.futabus.transport.resource.entity.Vehicle;
 import com.futabus.transport.resource.repository.DriverRepository;
 import com.futabus.transport.resource.repository.VehicleRepository;
+import com.futabus.transport.route.entity.Route;
+import com.futabus.transport.route.repository.RouteRepository;
+import com.futabus.transport.trip.entity.Trip;
+import com.futabus.transport.trip.entity.TripDriver;
+import com.futabus.transport.trip.repository.TripDriverRepository;
+import com.futabus.transport.trip.repository.TripRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -32,11 +40,23 @@ class ResourceApiTests {
     @Autowired
     DriverRepository driverRepository;
 
+    @Autowired
+    TripRepository tripRepository;
+
+    @Autowired
+    TripDriverRepository tripDriverRepository;
+
+    @Autowired
+    RouteRepository routeRepository;
+
     MockMvc mvc;
 
     @BeforeEach
     void setUp() {
         mvc = MockMvcBuilders.webAppContextSetup(context).build();
+        tripDriverRepository.deleteAll();
+        tripRepository.deleteAll();
+        routeRepository.deleteAll();
         vehicleRepository.deleteAll();
         driverRepository.deleteAll();
     }
@@ -75,6 +95,9 @@ class ResourceApiTests {
                     .content(body.replace("}", ",\"status\":\"INACTIVE\"}"))).andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.status").value("INACTIVE"));
         } else {
+            mvc.perform(put(location).contentType(MediaType.APPLICATION_JSON)
+                    .content(body.replace("}", ",\"status\":\"INACTIVE\"}"))).andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.status").value("INACTIVE"));
             mvc.perform(put(location + "/status").contentType(MediaType.APPLICATION_JSON)
                     .content("{\"status\":\"MAINTENANCE\"}")).andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.status").value("MAINTENANCE"));
@@ -116,5 +139,80 @@ class ResourceApiTests {
         mvc.perform(post("/drivers").contentType(MediaType.APPLICATION_JSON).content("""
                 {"fullName":"Nguyen Van B","phone":"0907654321"}
                 """)).andExpect(status().isCreated()).andExpect(jsonPath("$.data.status").value("ACTIVE"));
+    }
+
+    @Test
+    void cannotDeleteVehicleWhenAssignedToTrip() throws Exception {
+        Route route = routeRepository.save(Route.builder()
+                .code("ROUTE-TEST-VEHICLE-DEL")
+                .versionNo(1)
+                .name("HCM - Vung Tau")
+                .basePrice(new java.math.BigDecimal("150000"))
+                .effectiveFromAt(java.time.LocalDateTime.of(2026, 1, 1, 0, 0))
+                .status(com.futabus.transport.route.enums.RouteStatus.ACTIVE)
+                .build());
+
+        Vehicle vehicle = vehicleRepository.save(Vehicle.builder()
+                .licensePlate("51B-99999")
+                .type(com.futabus.transport.resource.enums.ServiceType.SEAT)
+                .capacity(45)
+                .status(com.futabus.transport.resource.enums.VehicleStatus.ACTIVE)
+                .build());
+
+        tripRepository.save(Trip.builder()
+                .code("TRIP-TEST-VEHICLE-DEL")
+                .route(route)
+                .vehicle(vehicle)
+                .departureAt(java.time.LocalDateTime.of(2026, 10, 1, 8, 0))
+                .arrivalAt(java.time.LocalDateTime.of(2026, 10, 1, 11, 0))
+                .ticketPrice(new java.math.BigDecimal("150000"))
+                .capacitySnapshot(45)
+                .status(com.futabus.transport.trip.enums.TripStatus.DRAFT)
+                .saleStatus(com.futabus.transport.trip.enums.SaleStatus.NOT_OPEN)
+                .build());
+
+        mvc.perform(delete("/vehicles/" + vehicle.getId()))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.errorCode").value("TRANSPORT_VEHICLE_IN_USE"));
+    }
+
+    @Test
+    void cannotDeleteDriverWhenAssignedToTrip() throws Exception {
+        Route route = routeRepository.save(Route.builder()
+                .code("ROUTE-TEST-DRIVER-DEL")
+                .versionNo(1)
+                .name("HCM - Phan Thiet")
+                .basePrice(new java.math.BigDecimal("180000"))
+                .effectiveFromAt(java.time.LocalDateTime.of(2026, 1, 1, 0, 0))
+                .status(com.futabus.transport.route.enums.RouteStatus.ACTIVE)
+                .build());
+
+        Trip trip = tripRepository.save(Trip.builder()
+                .code("TRIP-TEST-DRIVER-DEL")
+                .route(route)
+                .departureAt(java.time.LocalDateTime.of(2026, 10, 1, 8, 0))
+                .arrivalAt(java.time.LocalDateTime.of(2026, 10, 1, 12, 0))
+                .ticketPrice(new java.math.BigDecimal("180000"))
+                .status(com.futabus.transport.trip.enums.TripStatus.DRAFT)
+                .saleStatus(com.futabus.transport.trip.enums.SaleStatus.NOT_OPEN)
+                .build());
+
+        Driver driver = driverRepository.save(Driver.builder()
+                .fullName("Nguyen Van Tai Xe")
+                .phone("0988776655")
+                .status(com.futabus.transport.resource.enums.DriverStatus.ACTIVE)
+                .build());
+
+        tripDriverRepository.save(TripDriver.builder()
+                .trip(trip)
+                .driver(driver)
+                .role(com.futabus.transport.trip.enums.RoleDriver.PRIMARY)
+                .build());
+
+        mvc.perform(delete("/drivers/" + driver.getId()))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.errorCode").value("TRANSPORT_DRIVER_IN_USE"));
     }
 }

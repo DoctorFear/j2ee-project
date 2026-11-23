@@ -3,7 +3,10 @@ package com.futabus.transport.resource.controller;
 import com.futabus.transport.common.response.ApiResponse;
 import com.futabus.transport.resource.dto.request.VehicleCreationRequest;
 import com.futabus.transport.resource.dto.request.VehicleStatusRequest;
+import com.futabus.transport.resource.dto.request.VehicleUpdateRequest;
 import com.futabus.transport.resource.dto.response.VehicleResponse;
+import com.futabus.transport.resource.enums.ServiceType;
+import com.futabus.transport.resource.enums.VehicleStatus;
 import com.futabus.transport.resource.service.VehicleService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -39,8 +42,11 @@ public class VehicleController {
     }
 
     @GetMapping
-    public ApiResponse<List<VehicleResponse>> findAll() {
-        List<VehicleResponse> vehicleResponses = vehicleService.findAll();
+    public ApiResponse<List<VehicleResponse>> findAll(
+            @RequestParam(required = false) VehicleStatus status,
+            @RequestParam(required = false) ServiceType type
+    ) {
+        List<VehicleResponse> vehicleResponses = vehicleService.findAll(status, type);
 
         return ApiResponse.<List<VehicleResponse>>builder()
                 .success(true)
@@ -51,6 +57,19 @@ public class VehicleController {
     @GetMapping("/{id}")
     public ApiResponse<VehicleResponse> findById(@PathVariable Long id) {
         VehicleResponse vehicleResponse = vehicleService.findById(id);
+
+        return ApiResponse.<VehicleResponse>builder()
+                .success(true)
+                .data(vehicleResponse)
+                .build();
+    }
+
+    @PutMapping("/{id}")
+    public ApiResponse<VehicleResponse> update(
+            @PathVariable Long id,
+            @Valid @RequestBody VehicleUpdateRequest request
+    ) {
+        VehicleResponse vehicleResponse = vehicleService.update(id, request);
 
         return ApiResponse.<VehicleResponse>builder()
                 .success(true)

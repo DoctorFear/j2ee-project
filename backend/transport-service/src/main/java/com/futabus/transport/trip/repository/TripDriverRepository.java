@@ -13,6 +13,8 @@ public interface TripDriverRepository extends JpaRepository<TripDriver, Long> {
 
     boolean existsByTripId(Long tripId);
 
+    boolean existsByDriverId(Long driverId);
+
     boolean existsByTripIdAndRole(Long tripId, RoleDriver role);
 
     List<TripDriver> findByTripIdOrderByDriverIdAsc(Long tripId);

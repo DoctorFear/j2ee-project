@@ -27,15 +27,22 @@ import com.futabus.transport.trip.exception.TripErrorCode;
 import com.futabus.transport.trip.mapper.TripMapper;
 import com.futabus.transport.trip.repository.TripDriverRepository;
 import com.futabus.transport.trip.repository.TripRepository;
+import com.futabus.transport.trip.repository.TripSpecifications;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Clock;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.EnumSet;
 import java.util.List;
@@ -271,10 +278,45 @@ public class TripService {
 
     @Transactional(readOnly = true)
     public List<TripResponse> findAll() {
-        return tripRepository.findAll()
+        return findAll(null, null, null, null, null, null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TripResponse> findAll(
+            Long routeId,
+            TripStatus status,
+            SaleStatus saleStatus,
+            LocalDate departureDate,
+            LocalDateTime fromDepartureAt,
+            LocalDateTime toDepartureAt) {
+        Specification<Trip> spec = TripSpecifications.withFilters(
+                routeId, status, saleStatus, departureDate, fromDepartureAt, toDepartureAt);
+        Sort sort = Sort.by(Sort.Direction.ASC, "departureAt");
+
+        return tripRepository.findAll(spec, sort)
                 .stream()
                 .map(tripMapper::toTripResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<TripResponse> findAllPaged(
+            Long routeId,
+            TripStatus status,
+            SaleStatus saleStatus,
+            LocalDate departureDate,
+            LocalDateTime fromDepartureAt,
+            LocalDateTime toDepartureAt,
+            int page,
+            int size) {
+        Specification<Trip> spec = TripSpecifications.withFilters(
+                routeId, status, saleStatus, departureDate, fromDepartureAt, toDepartureAt);
+        Pageable pageable = PageRequest.of(
+                page,
+                Math.min(size, 100),
+                Sort.by(Sort.Direction.ASC, "departureAt"));
+
+        return tripRepository.findAll(spec, pageable).map(tripMapper::toTripResponse);
     }
 
     @Transactional(readOnly = true)

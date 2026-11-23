@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import com.futabus.transport.trip.entity.Trip;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import com.futabus.transport.trip.enums.TripStatus;
@@ -15,7 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface TripRepository extends JpaRepository<Trip, Long> {
+public interface TripRepository extends JpaRepository<Trip, Long>, JpaSpecificationExecutor<Trip> {
     Optional<Trip> findByCode(String code);
 
     boolean existsByCode(String code);
@@ -29,6 +30,8 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
     Optional<Trip> findLockedByCode(String code);
 
     boolean existsByRouteId(Long routeId);
+
+    boolean existsByVehicleId(Long vehicleId);
 
     boolean existsByRouteIdAndDepartureAtGreaterThanEqual(Long routeId, LocalDateTime departureAt);
 
